@@ -124,28 +124,17 @@ class _TrendsTabViewState extends State<TrendsTabView> {
       child: Stack(
         clipBehavior: Clip.antiAlias,
         children: [
-          // Subtle layered glow decoration
-          Positioned(
-            right: -30,
-            top: -30,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: (isNetPositive ? colors.success : colors.primary)
-                    .withValues(alpha: isDark ? 0.08 : 0.05),
-              ),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.all(18.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Top row: Period label & Contextual trend indicator
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 8,
                   children: [
                     Row(
                       children: [
@@ -249,6 +238,7 @@ class _TrendsTabViewState extends State<TrendsTabView> {
                       ],
                     ),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           width: 8,

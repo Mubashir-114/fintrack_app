@@ -25,9 +25,7 @@ void main() {
     Brightness brightness = Brightness.dark,
   }) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => CurrencyProvider()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => CurrencyProvider())],
       child: MaterialApp(
         theme: AppTheme.buildTheme(theme, brightness),
         home: Scaffold(body: child),
@@ -136,7 +134,9 @@ void main() {
   ];
 
   group('Trends Tab Redesign', () {
-    testWidgets('renders primary performance card and secondary metrics', (tester) async {
+    testWidgets('renders primary performance card and secondary metrics', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createTestApp(
           child: TrendsTabView(
@@ -151,6 +151,20 @@ void main() {
 
       expect(find.text("Net Cash Flow"), findsOneWidget);
       expect(find.text("Net Surplus"), findsOneWidget);
+      final surplusBadgeRow = find
+          .ancestor(of: find.text("Net Surplus"), matching: find.byType(Row))
+          .first;
+      expect(
+        find.descendant(
+          of: surplusBadgeRow,
+          matching: find.byIcon(Icons.trending_up_rounded),
+        ),
+        findsOneWidget,
+      );
+      final performanceCardStack = find
+          .ancestor(of: find.text("Net Surplus"), matching: find.byType(Stack))
+          .first;
+      expect(tester.widget<Stack>(performanceCardStack).children, hasLength(1));
       expect(find.text("Total Inflow"), findsOneWidget);
       expect(find.text("Total Outflow"), findsOneWidget);
       expect(find.text("Savings Rate"), findsOneWidget);
@@ -160,26 +174,34 @@ void main() {
       expect(find.textContaining("Healthy Savings Retention"), findsOneWidget);
     });
 
-    testWidgets('adapts gracefully to single month of data with comparative card', (tester) async {
-      await tester.pumpWidget(
-        createTestApp(
-          child: TrendsTabView(
-            summary: sampleSummary,
-            trends: sampleTrendsSingle,
-            periodLabel: "October 2026",
-            onRefresh: () async {},
+    testWidgets(
+      'adapts gracefully to single month of data with comparative card',
+      (tester) async {
+        await tester.pumpWidget(
+          createTestApp(
+            child: TrendsTabView(
+              summary: sampleSummary,
+              trends: sampleTrendsSingle,
+              periodLabel: "October 2026",
+              onRefresh: () async {},
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text("October 2026"), findsNWidgets(2));
-      expect(find.text("Monthly Inflow"), findsOneWidget);
-      expect(find.text("Monthly Outflow"), findsOneWidget);
-      expect(find.textContaining("Displaying isolated single-month performance"), findsOneWidget);
-    });
+        expect(find.text("October 2026"), findsNWidgets(2));
+        expect(find.text("Monthly Inflow"), findsOneWidget);
+        expect(find.text("Monthly Outflow"), findsOneWidget);
+        expect(
+          find.textContaining("Displaying isolated single-month performance"),
+          findsOneWidget,
+        );
+      },
+    );
 
-    testWidgets('handles empty trends data with informative empty state', (tester) async {
+    testWidgets('handles empty trends data with informative empty state', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createTestApp(
           child: TrendsTabView(
@@ -192,12 +214,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text("No monthly periods recorded in this range"), findsOneWidget);
+      expect(
+        find.text("No monthly periods recorded in this range"),
+        findsOneWidget,
+      );
     });
   });
 
   group('Categories Tab Redesign', () {
-    testWidgets('renders interactive donut distribution and legend', (tester) async {
+    testWidgets('renders interactive donut distribution and legend', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createTestApp(
           child: CategoriesTabView(
@@ -211,12 +238,17 @@ void main() {
       expect(find.text("Expense Distribution"), findsOneWidget);
       expect(find.text("Total Spent"), findsOneWidget);
       expect(find.text("Category Spending Breakdown"), findsOneWidget);
-      expect(find.text("Food"), findsNWidgets(3)); // Legend chip, spending card, budget card
+      expect(
+        find.text("Food"),
+        findsNWidgets(3),
+      ); // Legend chip, spending card, budget card
       expect(find.text("Transport"), findsNWidgets(3));
       expect(find.text("Shopping"), findsNWidgets(3));
     });
 
-    testWidgets('correctly distinguishes unconfigured budgets from ₹0 budgets', (tester) async {
+    testWidgets('correctly distinguishes unconfigured budgets from ₹0 budgets', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createTestApp(
           child: CategoriesTabView(
@@ -229,55 +261,73 @@ void main() {
 
       // Shopping has budget: 0.0 -> Must be labeled "No Budget Set", NOT over limit!
       expect(find.text("No Budget Set"), findsOneWidget);
-      expect(find.text("Near Limit"), findsOneWidget); // Food at 18.5k / 20k (92.5%)
-      expect(find.text("Exceeded Limit"), findsOneWidget); // Transport at 12k / 10k (120%)
-      expect(find.textContaining("No budget configured for this category"), findsOneWidget);
-    });
-
-    testWidgets('handles single category 100% spending without meaningless chart', (tester) async {
-      const singleCategory = [
-        CategoryReport(
-          categoryId: 3,
-          category: "Food",
-          budget: 10000.0,
-          spent: 5000.0,
-          remaining: 5000.0,
-          percentage: 100.0,
-        ),
-      ];
-
-      await tester.pumpWidget(
-        createTestApp(
-          child: CategoriesTabView(
-            categoryReports: singleCategory,
-            onRefresh: () async {},
-          ),
-        ),
+      expect(
+        find.text("Near Limit"),
+        findsOneWidget,
+      ); // Food at 18.5k / 20k (92.5%)
+      expect(
+        find.text("Exceeded Limit"),
+        findsOneWidget,
+      ); // Transport at 12k / 10k (120%)
+      expect(
+        find.textContaining("No budget configured for this category"),
+        findsOneWidget,
       );
-      await tester.pumpAndSettle();
-
-      expect(find.text("100% Share"), findsOneWidget);
-      expect(find.textContaining("concentrated solely in Food"), findsOneWidget);
     });
+
+    testWidgets(
+      'handles single category 100% spending without meaningless chart',
+      (tester) async {
+        const singleCategory = [
+          CategoryReport(
+            categoryId: 3,
+            category: "Food",
+            budget: 10000.0,
+            spent: 5000.0,
+            remaining: 5000.0,
+            percentage: 100.0,
+          ),
+        ];
+
+        await tester.pumpWidget(
+          createTestApp(
+            child: CategoriesTabView(
+              categoryReports: singleCategory,
+              onRefresh: () async {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text("100% Share"), findsOneWidget);
+        expect(
+          find.textContaining("concentrated solely in Food"),
+          findsOneWidget,
+        );
+      },
+    );
   });
 
   group('Cashflow Tab Redesign', () {
-    testWidgets('renders date-grouped timeline with friendly localized timestamps', (tester) async {
-      await tester.pumpWidget(
-        createTestApp(
-          child: CashflowTabView(
-            cashflowReports: sampleCashflows,
-            onRefresh: () async {},
+    testWidgets(
+      'renders date-grouped timeline with friendly localized timestamps',
+      (tester) async {
+        await tester.pumpWidget(
+          createTestApp(
+            child: CashflowTabView(
+              cashflowReports: sampleCashflows,
+              onRefresh: () async {},
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text("Salary Credited"), findsOneWidget);
-      expect(find.text("Grocery Supermarket"), findsOneWidget);
-      expect(find.text("Fuel Station"), findsOneWidget);
-      expect(find.textContaining("Flow:"), findsNWidgets(3));
-    });
+        expect(find.text("Salary Credited"), findsOneWidget);
+        expect(find.text("Grocery Supermarket"), findsOneWidget);
+        expect(find.text("Fuel Station"), findsOneWidget);
+        expect(find.textContaining("Flow:"), findsNWidgets(3));
+      },
+    );
 
     testWidgets('opens transaction details sheet upon tap', (tester) async {
       await tester.pumpWidget(
@@ -304,7 +354,9 @@ void main() {
   });
 
   group('Reports Date Range Bar', () {
-    testWidgets('renders reset button when date filter is active', (tester) async {
+    testWidgets('renders reset button when date filter is active', (
+      tester,
+    ) async {
       bool cleared = false;
       bool selected = false;
 
@@ -336,23 +388,26 @@ void main() {
   group('Strict Theme Independence across All Three Collections', () {
     for (final collection in ThemeCollection.values) {
       for (final brightness in [Brightness.dark, Brightness.light]) {
-        testWidgets('Trends and Categories render without error in $collection ${brightness.name}', (tester) async {
-          await tester.pumpWidget(
-            createTestApp(
-              theme: collection,
-              brightness: brightness,
-              child: TrendsTabView(
-                summary: sampleSummary,
-                trends: sampleTrendsMulti,
-                periodLabel: "Q3 2026",
-                onRefresh: () async {},
+        testWidgets(
+          'Trends and Categories render without error in $collection ${brightness.name}',
+          (tester) async {
+            await tester.pumpWidget(
+              createTestApp(
+                theme: collection,
+                brightness: brightness,
+                child: TrendsTabView(
+                  summary: sampleSummary,
+                  trends: sampleTrendsMulti,
+                  periodLabel: "Q3 2026",
+                  onRefresh: () async {},
+                ),
               ),
-            ),
-          );
-          await tester.pumpAndSettle();
+            );
+            await tester.pumpAndSettle();
 
-          expect(find.byType(TrendsTabView), findsOneWidget);
-        });
+            expect(find.byType(TrendsTabView), findsOneWidget);
+          },
+        );
       }
     }
   });

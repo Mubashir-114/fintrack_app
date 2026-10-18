@@ -257,7 +257,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
 
           // Category Dropdown
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
             decoration: BoxDecoration(
               color: hasActiveCategory
                   ? colors.primary.withValues(alpha: isDark ? 0.2 : 0.1)
@@ -272,6 +272,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
             ),
             child: DropdownButton<int?>(
               value: provider.selectedCategoryId,
+              isDense: true,
               hint: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
