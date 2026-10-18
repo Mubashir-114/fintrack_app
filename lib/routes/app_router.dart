@@ -1,4 +1,6 @@
 import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
+import '../core/constants/app_motion.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
@@ -78,7 +80,17 @@ final GoRouter appRouter = GoRouter(
       routes: [
         GoRoute(
           path: '/dashboard',
-          builder: (context, state) => const DashboardScreen(),
+          pageBuilder: (context, state) => CustomTransitionPage<void>(
+            key: state.pageKey,
+            transitionDuration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : AppMotion.quick,
+            reverseTransitionDuration: Duration.zero,
+            child: const DashboardScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    FadeTransition(opacity: animation, child: child),
+          ),
         ),
         GoRoute(
           path: '/transactions',

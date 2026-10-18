@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
+import 'fin_surface.dart';
 
 class EmptyState extends StatelessWidget {
   final IconData icon;
@@ -29,29 +30,7 @@ class EmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: colors.surface,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: colors.primary.withValues(alpha: 0.08),
-                    blurRadius: 16,
-                    spreadRadius: 4,
-                  ),
-                ],
-                border: Border.all(
-                  color: colors.divider,
-                  width: 1.0,
-                ),
-              ),
-              child: Icon(
-                icon,
-                size: 40,
-                color: colors.primary,
-              ),
-            ),
+            FinIconTile(icon: icon, color: colors.primary, size: 72),
             AppDimensions.hLG,
             Text(
               title,
@@ -69,10 +48,7 @@ class EmptyState extends StatelessWidget {
               child: Text(
                 description,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 14, color: colors.textSecondary),
               ),
             ),
             if (actionLabel != null && onAction != null) ...[
@@ -80,7 +56,7 @@ class EmptyState extends StatelessWidget {
               ElevatedButton(
                 onPressed: onAction,
                 style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(120, 40),
+                  minimumSize: const Size(120, 48),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
@@ -88,7 +64,10 @@ class EmptyState extends StatelessWidget {
                 ),
                 child: Text(
                   actionLabel!,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

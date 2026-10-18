@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../core/widgets/financial_chart.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../models/dashboard_models.dart';
 import '../../core/utils/category_utils.dart';
@@ -68,7 +69,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             selected: currentPeriod == "current_month" && customMonth == null,
             onSelected: (_) => provider.setPeriod("current_month"),
             selectedColor: colors.primary.withValues(alpha: 0.18),
-            labelStyle: TextStyle(
+            labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: currentPeriod == "current_month" && customMonth == null
@@ -82,7 +83,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             selected: currentPeriod == "previous_month",
             onSelected: (_) => provider.setPeriod("previous_month"),
             selectedColor: colors.primary.withValues(alpha: 0.18),
-            labelStyle: TextStyle(
+            labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: currentPeriod == "previous_month"
@@ -98,7 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             backgroundColor: customMonth != null
                 ? colors.primary.withValues(alpha: 0.18)
                 : colors.surface,
-            labelStyle: TextStyle(
+            labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: customMonth != null
@@ -154,10 +155,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 5),
           Text(
             "Your position across every connected account",
-            style: TextStyle(
-              fontSize: 11,
-              color: colors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 11, color: colors.textSecondary),
           ),
           if (monthlySummaries.length > 1) ...[
             const SizedBox(height: 14),
@@ -190,8 +188,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Container(
                   width: 1,
                   height: 38,
-                  color:
-                      colors.divider.withValues(alpha: .7),
+                  color: colors.divider.withValues(alpha: .7),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -262,11 +259,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
     return Semantics(
-      label: 'Net savings trend for the last ${values.length} months',
+      label:
+          'Net savings trend. ${values.map((item) => '${item.month}: ${MoneyText.format((item.income - item.expense).toStringAsFixed(2), 'INR')}').join('; ')}',
       child: SizedBox(
         height: 38,
         child: LineChart(
           LineChartData(
+            minY: values.fold<double>(
+              0,
+              (min, item) => item.income - item.expense < min
+                  ? item.income - item.expense
+                  : min,
+            ),
+            maxY: values.fold<double>(
+              0,
+              (max, item) => item.income - item.expense > max
+                  ? item.income - item.expense
+                  : max,
+            ),
             gridData: const FlGridData(show: false),
             borderData: FlBorderData(show: false),
             titlesData: const FlTitlesData(show: false),
@@ -274,7 +284,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             lineBarsData: [
               LineChartBarData(
                 spots: spots,
-                isCurved: true,
+                isCurved: false,
                 curveSmoothness: .35,
                 color: colors.secondary,
                 barWidth: 2.4,
@@ -577,10 +587,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Text(
                     "Savings rate",
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: colors.textSecondary,
-                    ),
+                    style: TextStyle(fontSize: 10, color: colors.textSecondary),
                   ),
                   Text(
                     "$savingsRate%",
@@ -594,9 +601,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 6),
               AnimatedProgressBar(
                 value: parsedRate,
-                color: savings.startsWith('-')
-                    ? colors.danger
-                    : colors.primary,
+                color: savings.startsWith('-') ? colors.danger : colors.primary,
                 backgroundColor: colors.divider,
                 height: 6,
                 semanticLabel: "Savings rate",
@@ -726,10 +731,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
-                    ? [
-                        accentColor.withValues(alpha: .12),
-                        colors.surface,
-                      ]
+                    ? [accentColor.withValues(alpha: .12), colors.surface]
                     : [accentColor.withValues(alpha: .07), Colors.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -807,9 +809,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: isCredit
-                            ? colors.danger
-                            : colors.textPrimary,
+                        color: isCredit ? colors.danger : colors.textPrimary,
                       ),
                     ),
                     if (isCredit && acc.utilizationPercentage != null) ...[
@@ -860,12 +860,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .toList()
         .reversed
         .toList();
-    if (summaries.isEmpty) {
+    if (summaries.isEmpty ||
+        summaries.every((item) => item.income == 0 && item.expense == 0)) {
       return SizedBox(
         height: 180,
         child: Center(
           child: Text(
-            "No monthly summary data available.",
+            "No income or expenses recorded in these months.",
             style: TextStyle(color: colors.textSecondary, fontSize: 13),
           ),
         ),
@@ -886,99 +887,127 @@ class _DashboardScreenState extends State<DashboardScreen> {
       expenseSpots.add(FlSpot(i.toDouble(), summaries[i].expense));
     }
 
-    return Container(
-      height: 200,
-      padding: const EdgeInsets.only(top: 16, right: 16, left: 16, bottom: 8),
-      child: LineChart(
-        LineChartData(
-          maxY: adjustedMax,
-          lineTouchData: LineTouchData(
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (_) =>
-                  colors.elevated,
-              getTooltipItems: (touchedSpots) {
-                return touchedSpots.map((spot) {
-                  final String type = spot.barIndex == 0 ? "Income" : "Expense";
-                  return LineTooltipItem(
-                    "$type: ₹${spot.y.toStringAsFixed(2)}",
-                    TextStyle(
-                      color: colors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  );
-                }).toList();
-              },
-            ),
-          ),
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            getDrawingHorizontalLine: (value) {
-              return FlLine(
-                color: colors.divider.withValues(alpha: 0.4),
-                strokeWidth: 1,
-              );
-            },
-          ),
-          borderData: FlBorderData(show: false),
-          titlesData: FlTitlesData(
-            show: true,
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 24,
-                getTitlesWidget: (double value, TitleMeta meta) {
-                  final index = value.toInt();
-                  if (index >= 0 && index < summaries.length) {
-                    final parts = summaries[index].month.split('-');
-                    final monthNum = int.tryParse(parts.last) ?? 1;
-                    final monthName = DateFormat(
-                      'MMM',
-                    ).format(DateTime(2026, monthNum));
-                    return SideTitleWidget(
-                      meta: meta,
-                      space: 6,
-                      child: Text(
-                        monthName,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: colors.textSecondary,
-                        ),
+    return FinancialChart(
+      description:
+          'Monthly income and expenses, zero baseline. ${summaries.map((item) => '${item.month}: income ${MoneyText.format(item.income.toStringAsFixed(2), 'INR')}, expense ${MoneyText.format(item.expense.toStringAsFixed(2), 'INR')}').join('; ')}',
+      child: Container(
+        height: 220,
+        padding: const EdgeInsets.only(top: 16, right: 16, left: 16, bottom: 8),
+        child: LineChart(
+          LineChartData(
+            minY: 0,
+            maxY: adjustedMax,
+            lineTouchData: LineTouchData(
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipColor: (_) => colors.elevated,
+                getTooltipItems: (touchedSpots) {
+                  return touchedSpots.map((spot) {
+                    final String type = spot.barIndex == 0
+                        ? "Income"
+                        : "Expense";
+                    return LineTooltipItem(
+                      "$type: ₹${spot.y.toStringAsFixed(2)}",
+                      TextStyle(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     );
-                  }
-                  return const SizedBox();
+                  }).toList();
                 },
               ),
             ),
-            leftTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: false,
+              getDrawingHorizontalLine: (value) {
+                return FlLine(
+                  color: colors.divider.withValues(alpha: 0.4),
+                  strokeWidth: 1,
+                );
+              },
             ),
-            rightTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
+            borderData: FlBorderData(show: false),
+            titlesData: FlTitlesData(
+              show: true,
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: 1,
+                  reservedSize: 24,
+                  getTitlesWidget: (double value, TitleMeta meta) {
+                    final index = value.toInt();
+                    if (index >= 0 && index < summaries.length) {
+                      final parts = summaries[index].month.split('-');
+                      final monthNum = int.tryParse(parts.last) ?? 1;
+                      final monthName = DateFormat(
+                        'MMM',
+                      ).format(DateTime(2026, monthNum));
+                      return SideTitleWidget(
+                        meta: meta,
+                        space: 6,
+                        child: Text(
+                          monthName,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: colors.textSecondary,
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox();
+                  },
+                ),
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 48,
+                  interval: adjustedMax / 4,
+                  getTitlesWidget: (value, meta) => SideTitleWidget(
+                    meta: meta,
+                    space: 6,
+                    child: Text(
+                      NumberFormat.compactCurrency(
+                        symbol: '\u20B9',
+                        decimalDigits: 0,
+                      ).format(value),
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
             ),
-            topTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
+            lineBarsData: [
+              LineChartBarData(
+                spots: incomeSpots,
+                isCurved: false,
+                color: colors.success,
+                barWidth: 3.0,
+                dotData: const FlDotData(show: true),
+              ),
+              LineChartBarData(
+                spots: expenseSpots,
+                isCurved: false,
+                color: colors.danger,
+                barWidth: 3.0,
+                dotData: const FlDotData(show: true),
+              ),
+            ],
           ),
-          lineBarsData: [
-            LineChartBarData(
-              spots: incomeSpots,
-              isCurved: true,
-              color: AppColors.success,
-              barWidth: 3.0,
-              dotData: const FlDotData(show: true),
-            ),
-            LineChartBarData(
-              spots: expenseSpots,
-              isCurved: true,
-              color: AppColors.danger,
-              barWidth: 3.0,
-              dotData: const FlDotData(show: true),
-            ),
-          ],
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 320),
         ),
       ),
     );
@@ -1004,7 +1033,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             TextButton.icon(
               onPressed: () => context.push('/analytics'),
-              icon: Icon(Icons.auto_awesome_rounded, size: 16, color: colors.primary),
+              icon: Icon(
+                Icons.auto_awesome_rounded,
+                size: 16,
+                color: colors.primary,
+              ),
               label: Text(
                 "Ask FIN",
                 style: TextStyle(
@@ -1022,9 +1055,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           color: colors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-            side: BorderSide(
-              color: colors.divider,
-            ),
+            side: BorderSide(color: colors.divider),
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.md),
@@ -1095,9 +1126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         decoration: BoxDecoration(
           color: colors.surface,
           borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-          border: Border.all(
-            color: colors.divider,
-          ),
+          border: Border.all(color: colors.divider),
         ),
         child: Row(
           children: [
@@ -1107,7 +1136,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: colors.primary.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
               ),
-              child: Icon(Icons.savings_rounded, color: colors.primary, size: 24),
+              child: Icon(
+                Icons.savings_rounded,
+                color: colors.primary,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -1125,16 +1158,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 3),
                   Text(
                     "Savings targets, deterministic cash-flow forecasts & what-if simulator",
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: colors.textSecondary,
-                    ),
+                    style: TextStyle(fontSize: 11, color: colors.textSecondary),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            Icon(Icons.arrow_forward_ios_rounded, size: 16, color: colors.primary),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: colors.primary,
+            ),
           ],
         ),
       ),
@@ -1183,10 +1217,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 Text(
                   "FinTrack Dashboard",
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: colors.textSecondary,
-                  ),
+                  style: TextStyle(fontSize: 11, color: colors.textSecondary),
                 ),
               ],
             ),
@@ -1203,10 +1234,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           IconButton(
             tooltip: 'Refresh',
-            icon: Icon(
-              Icons.sync_rounded,
-              color: colors.textPrimary,
-            ),
+            icon: Icon(Icons.sync_rounded, color: colors.textPrimary),
             onPressed: () => dashboardProvider.loadDashboardData(),
           ),
           const SizedBox(width: 8),
@@ -1413,7 +1441,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             height: 1,
                             indent: 72,
                             endIndent: 16,
-                              color: colors.divider,
+                            color: colors.divider,
                           ),
                           itemBuilder: (context, index) {
                             final tx =
@@ -1459,7 +1487,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 14,
-                                          color: colors.textPrimary,
+                                            color: colors.textPrimary,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -1469,7 +1497,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           "${tx.category} • $formattedDate",
                                           style: TextStyle(
                                             fontSize: 11,
-                                          color: colors.textSecondary,
+                                            color: colors.textSecondary,
                                           ),
                                         ),
                                       ],

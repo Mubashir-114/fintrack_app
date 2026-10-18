@@ -208,11 +208,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
         ),
       ),
       trailing: isSelected
-          ? Icon(
-              Icons.check_circle_rounded,
-              color: colors.primary,
-              size: 20,
-            )
+          ? Icon(Icons.check_circle_rounded, color: colors.primary, size: 20)
           : null,
       onTap: onTap,
     );
@@ -264,9 +260,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                   : colors.surface,
               borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
               border: Border.all(
-                color: hasActiveCategory
-                    ? colors.primary
-                    : colors.cardBorder,
+                color: hasActiveCategory ? colors.primary : colors.cardBorder,
                 width: 1.0,
               ),
             ),
@@ -296,7 +290,9 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
               icon: Icon(
                 Icons.arrow_drop_down_rounded,
                 size: 20,
-                color: hasActiveCategory ? colors.primary : colors.textSecondary,
+                color: hasActiveCategory
+                    ? colors.primary
+                    : colors.textSecondary,
               ),
               dropdownColor: colors.surface,
               items: [
@@ -304,10 +300,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                   value: null,
                   child: Text(
                     "All Categories",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: colors.textPrimary,
-                    ),
+                    style: TextStyle(fontSize: 13, color: colors.textPrimary),
                   ),
                 ),
                 ...CategoryModel.categories.map(
@@ -366,45 +359,51 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
     Color? indicatorColor,
   }) {
     final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-      child: AnimatedContainer(
-        duration: AppMotion.quick,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected ? colors.primary : colors.surface,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-          border: Border.all(
-            color: isSelected ? colors.primary : colors.cardBorder,
-            width: 1.0,
+    return Semantics(
+      selected: isSelected,
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+        child: AnimatedContainer(
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : AppMotion.quick,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected ? colors.primary : colors.surface,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+            border: Border.all(
+              color: isSelected ? colors.primary : colors.cardBorder,
+              width: 1.0,
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (indicatorColor != null && !isSelected) ...[
-              Container(
-                width: 6,
-                height: 6,
-                margin: const EdgeInsets.only(right: 6),
-                decoration: BoxDecoration(
-                  color: indicatorColor,
-                  shape: BoxShape.circle,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (indicatorColor != null && !isSelected) ...[
+                Container(
+                  width: 6,
+                  height: 6,
+                  margin: const EdgeInsets.only(right: 6),
+                  decoration: BoxDecoration(
+                    color: indicatorColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected
+                      ? theme.colorScheme.onPrimary
+                      : colors.textSecondary,
                 ),
               ),
             ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected
-                    ? theme.colorScheme.onPrimary
-                    : colors.textSecondary,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -452,11 +451,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                     ),
                   ),
                   child: Center(
-                    child: Icon(
-                      categoryIcon,
-                      color: categoryColor,
-                      size: 20,
-                    ),
+                    child: Icon(categoryIcon, color: categoryColor, size: 20),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -582,9 +577,19 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                       value: 'edit',
                       child: Row(
                         children: [
-                          Icon(Icons.edit_outlined, size: 18, color: colors.textPrimary),
+                          Icon(
+                            Icons.edit_outlined,
+                            size: 18,
+                            color: colors.textPrimary,
+                          ),
                           const SizedBox(width: 10),
-                          Text('Edit', style: TextStyle(fontSize: 13, color: colors.textPrimary)),
+                          Text(
+                            'Edit',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colors.textPrimary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -592,9 +597,19 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline_rounded, size: 18, color: colors.danger),
+                          Icon(
+                            Icons.delete_outline_rounded,
+                            size: 18,
+                            color: colors.danger,
+                          ),
                           const SizedBox(width: 10),
-                          Text('Delete', style: TextStyle(fontSize: 13, color: colors.danger)),
+                          Text(
+                            'Delete',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colors.danger,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -608,7 +623,11 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
     );
   }
 
-  void _confirmDelete(BuildContext context, TransactionModel tx, TransactionProvider provider) {
+  void _confirmDelete(
+    BuildContext context,
+    TransactionModel tx,
+    TransactionProvider provider,
+  ) {
     final colors = AppColors.of(context);
     showDialog(
       context: context,
@@ -617,7 +636,10 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           "Delete Transaction",
-          style: TextStyle(fontWeight: FontWeight.bold, color: colors.textPrimary),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: colors.textPrimary,
+          ),
         ),
         content: Text(
           "Are you sure you want to permanently delete \"${tx.title}\"?",
@@ -626,7 +648,10 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text("CANCEL", style: TextStyle(color: colors.textSecondary)),
+            child: Text(
+              "CANCEL",
+              style: TextStyle(color: colors.textSecondary),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -666,7 +691,8 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final colors = AppColors.of(context);
 
-    final hasFilters = provider.selectedType != null ||
+    final hasFilters =
+        provider.selectedType != null ||
         provider.selectedCategoryId != null ||
         provider.searchQuery != null ||
         provider.selectedDateRange != null;
@@ -683,7 +709,8 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
             tooltip: "Sort",
             icon: Icon(
               Icons.sort_rounded,
-              color: provider.sortBy != "transaction_date" ||
+              color:
+                  provider.sortBy != "transaction_date" ||
                       provider.sortOrder != "desc"
                   ? colors.primary
                   : colors.textSecondary,
@@ -703,10 +730,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
           if (hasFilters)
             IconButton(
               tooltip: "Clear Filters",
-              icon: Icon(
-                Icons.filter_alt_off_rounded,
-                color: colors.danger,
-              ),
+              icon: Icon(Icons.filter_alt_off_rounded, color: colors.danger),
               onPressed: () {
                 _searchController.clear();
                 provider.clearFilters();
@@ -728,10 +752,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
               controller: _searchController,
               hintText: "Search merchant, note...",
               hintStyle: WidgetStatePropertyAll(
-                TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: 13,
-                ),
+                TextStyle(color: colors.textSecondary, fontSize: 13),
               ),
               leading: Icon(
                 Icons.search,
@@ -743,10 +764,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
               shape: WidgetStatePropertyAll(
                 RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                  side: BorderSide(
-                    color: colors.cardBorder,
-                    width: 1.0,
-                  ),
+                  side: BorderSide(color: colors.cardBorder, width: 1.0),
                 ),
               ),
               onChanged: (val) => _onSearchChanged(val, provider),
@@ -780,43 +798,47 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
               onRefresh: () => provider.loadTransactions(),
               child: provider.isLoading && provider.transactions.isEmpty
                   ? ListView(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: AppDimensions.md),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: AppDimensions.md,
+                      ),
                       children: List.generate(
                         6,
                         (index) => SkeletonLoader.listTile(),
                       ),
                     )
                   : provider.transactions.isEmpty
-                      ? _buildEmptyState(provider, colors)
-                      : ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.md,
-                            vertical: AppDimensions.sm,
-                          ),
-                          itemCount: provider.transactions.length +
-                              (provider.hasMore ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index == provider.transactions.length) {
-                              return const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: CircularProgressIndicator(),
-                                ),
-                              );
-                            }
+                  ? _buildEmptyState(provider, colors)
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.md,
+                        vertical: AppDimensions.sm,
+                      ),
+                      itemCount:
+                          provider.transactions.length +
+                          (provider.hasMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == provider.transactions.length) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
 
-                            final tx = provider.transactions[index];
-                            return _buildTransactionCard(
-                              context,
-                              tx,
-                              colors,
-                              theme,
-                              isDark,
-                              provider,
-                            );
-                          },
-                        ),
+                        final tx = provider.transactions[index];
+                        return _buildTransactionCard(
+                          context,
+                          tx,
+                          colors,
+                          theme,
+                          isDark,
+                          provider,
+                        );
+                      },
+                    ),
             ),
           ),
         ],
@@ -827,16 +849,14 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
           borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
         ),
         icon: const Icon(Icons.add_rounded, size: 24),
-        label: const Text(
-          "Add",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        label: const Text("Add", style: TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
   }
 
   Widget _buildEmptyState(TransactionProvider provider, dynamic colors) {
-    final hasFilters = provider.searchQuery != null ||
+    final hasFilters =
+        provider.searchQuery != null ||
         provider.selectedCategoryId != null ||
         provider.selectedType != null ||
         provider.selectedDateRange != null;
@@ -856,7 +876,9 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                 border: Border.all(color: colors.cardBorder),
               ),
               child: Icon(
-                hasFilters ? Icons.filter_alt_off_rounded : Icons.receipt_long_rounded,
+                hasFilters
+                    ? Icons.filter_alt_off_rounded
+                    : Icons.receipt_long_rounded,
                 size: 32,
                 color: colors.textSecondary,
               ),
@@ -876,10 +898,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                   ? "Try loosening your filters or searching for something else."
                   : "Tap the Add button below to record your first transaction.",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: colors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 13, color: colors.textSecondary),
             ),
             const SizedBox(height: 20),
             if (hasFilters)
@@ -922,7 +941,8 @@ class AddEditTransactionSheet extends StatefulWidget {
   const AddEditTransactionSheet({super.key, this.transaction});
 
   @override
-  State<AddEditTransactionSheet> createState() => _AddEditTransactionSheetState();
+  State<AddEditTransactionSheet> createState() =>
+      _AddEditTransactionSheetState();
 }
 
 class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
@@ -943,7 +963,11 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
 
     _titleController = TextEditingController(text: tx?.title ?? '');
     _amountController = TextEditingController(
-      text: tx != null ? DecimalMoney.formatMinor(DecimalMoney.parseToMinor(tx.amount.toString())) : '',
+      text: tx != null
+          ? DecimalMoney.formatMinor(
+              DecimalMoney.parseToMinor(tx.amount.toString()),
+            )
+          : '',
     );
     _noteController = TextEditingController(text: tx?.note ?? '');
     _selectedDate = tx != null
@@ -967,7 +991,10 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
       if (matching == null || matching.type != _selectedType) {
         // Try resolving by name for the target type
         final byName = widget.transaction != null
-            ? CategoryModel.findByName(widget.transaction!.category, type: _selectedType)
+            ? CategoryModel.findByName(
+                widget.transaction!.category,
+                type: _selectedType,
+              )
             : null;
         if (byName != null) {
           _selectedCategoryId = byName.id;
@@ -1086,7 +1113,8 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final colors = AppColors.of(context);
-    final reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final animDuration = reduceMotion ? Duration.zero : AppMotion.quick;
 
     final isExpense = _selectedType == 'expense';
@@ -1100,9 +1128,7 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border(
-          top: BorderSide(color: colors.cardBorder, width: 1.0),
-        ),
+        border: Border(top: BorderSide(color: colors.cardBorder, width: 1.0)),
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -1145,7 +1171,10 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.close_rounded, color: colors.textSecondary),
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: colors.textSecondary,
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -1157,7 +1186,9 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: colors.elevated,
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusMD,
+                      ),
                       border: Border.all(color: colors.cardBorder),
                     ),
                     child: Row(
@@ -1166,15 +1197,21 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                         Expanded(
                           child: InkWell(
                             onTap: () => _onTypeChanged('expense'),
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusSM,
+                            ),
                             child: AnimatedContainer(
                               duration: animDuration,
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               decoration: BoxDecoration(
                                 color: isExpense
-                                    ? colors.danger.withValues(alpha: isDark ? 0.25 : 0.15)
+                                    ? colors.danger.withValues(
+                                        alpha: isDark ? 0.25 : 0.15,
+                                      )
                                     : Colors.transparent,
-                                borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusSM,
+                                ),
                                 border: Border.all(
                                   color: isExpense
                                       ? colors.danger.withValues(alpha: 0.6)
@@ -1211,15 +1248,21 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                         Expanded(
                           child: InkWell(
                             onTap: () => _onTypeChanged('income'),
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusSM,
+                            ),
                             child: AnimatedContainer(
                               duration: animDuration,
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               decoration: BoxDecoration(
                                 color: !isExpense
-                                    ? colors.success.withValues(alpha: isDark ? 0.25 : 0.15)
+                                    ? colors.success.withValues(
+                                        alpha: isDark ? 0.25 : 0.15,
+                                      )
                                     : Colors.transparent,
-                                borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusSM,
+                                ),
                                 border: Border.all(
                                   color: !isExpense
                                       ? colors.success.withValues(alpha: 0.6)
@@ -1263,14 +1306,20 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: colors.elevated,
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusLG,
+                      ),
                       border: Border.all(
-                        color: flowColor.withValues(alpha: isDark ? 0.45 : 0.35),
+                        color: flowColor.withValues(
+                          alpha: isDark ? 0.45 : 0.35,
+                        ),
                         width: 1.5,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: flowColor.withValues(alpha: isDark ? 0.08 : 0.05),
+                          color: flowColor.withValues(
+                            alpha: isDark ? 0.08 : 0.05,
+                          ),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -1295,7 +1344,10 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                               duration: animDuration,
                               child: Container(
                                 key: ValueKey('motif_$_selectedType'),
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
                                   color: flowColor.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(10),
@@ -1347,9 +1399,10 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                                   color: colors.textPrimary,
                                   letterSpacing: -0.5,
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
                                   isDense: true,
@@ -1364,7 +1417,9 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                                   if (!DecimalMoney.isValidDecimal(clean)) {
                                     return "Enter a valid positive number";
                                   }
-                                  final minor = DecimalMoney.parseToMinor(clean);
+                                  final minor = DecimalMoney.parseToMinor(
+                                    clean,
+                                  );
                                   if (minor <= BigInt.zero) {
                                     return "Amount must be greater than zero";
                                   }
@@ -1422,7 +1477,9 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                                   _selectedCategoryId = cat.id;
                                 });
                               },
-                              borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.radiusMD,
+                              ),
                               child: AnimatedContainer(
                                 duration: animDuration,
                                 padding: const EdgeInsets.symmetric(
@@ -1431,9 +1488,13 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? catColor.withValues(alpha: isDark ? 0.22 : 0.12)
+                                      ? catColor.withValues(
+                                          alpha: isDark ? 0.22 : 0.12,
+                                        )
                                       : colors.elevated,
-                                  borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                                  borderRadius: BorderRadius.circular(
+                                    AppDimensions.radiusMD,
+                                  ),
                                   border: Border.all(
                                     color: isSelected
                                         ? catColor
@@ -1447,14 +1508,18 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                                     Icon(
                                       getCategoryIcon(cat.name),
                                       size: 15,
-                                      color: isSelected ? catColor : colors.textSecondary,
+                                      color: isSelected
+                                          ? catColor
+                                          : colors.textSecondary,
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
                                       cat.name,
                                       style: TextStyle(
                                         fontSize: 12,
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.w500,
                                         color: isSelected
                                             ? colors.textPrimary
                                             : colors.textSecondary,
@@ -1476,16 +1541,25 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                     controller: _titleController,
                     decoration: InputDecoration(
                       labelText: "Title / Merchant",
-                      hintText: isExpense ? "e.g. Swiggy, Uber, Groceries" : "e.g. Salary, Consulting",
-                      prefixIcon: Icon(Icons.edit_note_rounded, color: colors.textSecondary),
+                      hintText: isExpense
+                          ? "e.g. Swiggy, Uber, Groceries"
+                          : "e.g. Salary, Consulting",
+                      prefixIcon: Icon(
+                        Icons.edit_note_rounded,
+                        color: colors.textSecondary,
+                      ),
                       filled: true,
                       fillColor: colors.elevated,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusMD,
+                        ),
                         borderSide: BorderSide(color: colors.cardBorder),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusMD,
+                        ),
                         borderSide: BorderSide(color: colors.cardBorder),
                       ),
                     ),
@@ -1508,15 +1582,22 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                       dropdownColor: colors.surface,
                       decoration: InputDecoration(
                         labelText: "Account (Optional)",
-                        prefixIcon: Icon(Icons.account_balance_rounded, color: colors.textSecondary),
+                        prefixIcon: Icon(
+                          Icons.account_balance_rounded,
+                          color: colors.textSecondary,
+                        ),
                         filled: true,
                         fillColor: colors.elevated,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMD,
+                          ),
                           borderSide: BorderSide(color: colors.cardBorder),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMD,
+                          ),
                           borderSide: BorderSide(color: colors.cardBorder),
                         ),
                       ),
@@ -1548,15 +1629,22 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                     child: InputDecorator(
                       decoration: InputDecoration(
                         labelText: "Transaction Date",
-                        prefixIcon: Icon(Icons.calendar_today_rounded, color: colors.textSecondary),
+                        prefixIcon: Icon(
+                          Icons.calendar_today_rounded,
+                          color: colors.textSecondary,
+                        ),
                         filled: true,
                         fillColor: colors.elevated,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMD,
+                          ),
                           borderSide: BorderSide(color: colors.cardBorder),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMD,
+                          ),
                           borderSide: BorderSide(color: colors.cardBorder),
                         ),
                       ),
@@ -1586,15 +1674,22 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                     controller: _noteController,
                     decoration: InputDecoration(
                       labelText: "Note (Optional)",
-                      prefixIcon: Icon(Icons.notes_rounded, color: colors.textSecondary),
+                      prefixIcon: Icon(
+                        Icons.notes_rounded,
+                        color: colors.textSecondary,
+                      ),
                       filled: true,
                       fillColor: colors.elevated,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusMD,
+                        ),
                         borderSide: BorderSide(color: colors.cardBorder),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusMD,
+                        ),
                         borderSide: BorderSide(color: colors.cardBorder),
                       ),
                     ),
@@ -1610,7 +1705,9 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                       foregroundColor: theme.colorScheme.onPrimary,
                       minimumSize: const Size.fromHeight(48),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusMD,
+                        ),
                       ),
                       elevation: 0,
                     ),
@@ -1620,7 +1717,9 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : Text(

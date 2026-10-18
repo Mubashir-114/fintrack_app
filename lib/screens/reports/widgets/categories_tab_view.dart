@@ -8,6 +8,7 @@ import '../../../core/constants/app_motion.dart';
 import '../../../core/utils/category_utils.dart';
 import '../../../core/widgets/animated_progress_bar.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/financial_chart.dart';
 import '../../../models/report_models.dart';
 import '../../../providers/currency_provider.dart';
 
@@ -47,7 +48,8 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
             EmptyState(
               icon: Icons.pie_chart_outline_rounded,
               title: "No category data",
-              description: "No categorized expenses were found for the selected reporting period.",
+              description:
+                  "No categorized expenses were found for the selected reporting period.",
             ),
           ],
         ),
@@ -71,7 +73,11 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // A. Interactive Expense Distribution Section
-            _buildExpenseDistributionSection(context, expenseCategories, colors),
+            _buildExpenseDistributionSection(
+              context,
+              expenseCategories,
+              colors,
+            ),
             const SizedBox(height: 20),
 
             // B. Category Spending List
@@ -99,7 +105,10 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
     dynamic colors,
   ) {
     final currency = context.watch<CurrencyProvider>();
-    final double totalSpent = expenseCategories.fold(0.0, (sum, item) => sum + item.spent);
+    final double totalSpent = expenseCategories.fold(
+      0.0,
+      (sum, item) => sum + item.spent,
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -138,9 +147,18 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
           if (expenseCategories.isEmpty || totalSpent <= 0)
             _buildEmptyExpensesState(colors)
           else if (expenseCategories.length == 1)
-            _buildSingleCategoryFocusView(expenseCategories.first, totalSpent, colors)
+            _buildSingleCategoryFocusView(
+              expenseCategories.first,
+              totalSpent,
+              colors,
+            )
           else
-            _buildInteractiveDonutChart(expenseCategories, totalSpent, currency, colors),
+            _buildInteractiveDonutChart(
+              expenseCategories,
+              totalSpent,
+              currency,
+              colors,
+            ),
         ],
       ),
     );
@@ -199,11 +217,12 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: catColor.withValues(alpha: isDark ? 0.2 : 0.12),
-              border: Border.all(color: catColor.withValues(alpha: 0.4), width: 2),
+              border: Border.all(
+                color: catColor.withValues(alpha: 0.4),
+                width: 2,
+              ),
             ),
-            child: Center(
-              child: Icon(catIcon, color: catColor, size: 28),
-            ),
+            child: Center(child: Icon(catIcon, color: catColor, size: 28)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -222,7 +241,10 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: catColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
@@ -251,10 +273,7 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
                 const SizedBox(height: 4),
                 Text(
                   "All expenditures in this period were concentrated solely in ${cat.category}.",
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: colors.textSecondary,
-                  ),
+                  style: TextStyle(fontSize: 11, color: colors.textSecondary),
                 ),
               ],
             ),
@@ -271,7 +290,10 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
     dynamic colors,
   ) {
     final selectedIdx = _selectedCategoryIndex;
-    final hasSelection = selectedIdx != null && selectedIdx >= 0 && selectedIdx < categories.length;
+    final hasSelection =
+        selectedIdx != null &&
+        selectedIdx >= 0 &&
+        selectedIdx < categories.length;
     final activeCategory = hasSelection ? categories[selectedIdx] : null;
 
     final sections = <PieChartSectionData>[];
@@ -284,7 +306,8 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
         PieChartSectionData(
           color: catColor,
           value: cat.spent,
-          title: '', // Titles rendered in center and coordinated legend for clarity
+          title:
+              '', // Titles rendered in center and coordinated legend for clarity
           radius: isSelected ? 30 : 22,
           badgePositionPercentageOffset: .98,
         ),
@@ -299,25 +322,35 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              PieChart(
-                PieChartData(
-                  sections: sections,
-                  centerSpaceRadius: 56,
-                  sectionsSpace: 2.5,
-                  pieTouchData: PieTouchData(
-                    touchCallback: (event, response) {
-                      if (event is FlTapUpEvent && response?.touchedSection != null) {
-                        final touchedIdx = response!.touchedSection!.touchedSectionIndex;
-                        setState(() {
-                          if (_selectedCategoryIndex == touchedIdx) {
-                            _selectedCategoryIndex = null;
-                          } else if (touchedIdx >= 0 && touchedIdx < categories.length) {
-                            _selectedCategoryIndex = touchedIdx;
-                          }
-                        });
-                      }
-                    },
+              FinancialChart(
+                description:
+                    'Category spending. ${categories.map((category) => '${category.category}: ${currency.format(category.spent)}, ${totalSpent > 0 ? (category.spent / totalSpent * 100).toStringAsFixed(1) : 0} percent').join('; ')}',
+                child: PieChart(
+                  PieChartData(
+                    sections: sections,
+                    centerSpaceRadius: 56,
+                    sectionsSpace: 2.5,
+                    pieTouchData: PieTouchData(
+                      touchCallback: (event, response) {
+                        if (event is FlTapUpEvent &&
+                            response?.touchedSection != null) {
+                          final touchedIdx =
+                              response!.touchedSection!.touchedSectionIndex;
+                          setState(() {
+                            if (_selectedCategoryIndex == touchedIdx) {
+                              _selectedCategoryIndex = null;
+                            } else if (touchedIdx >= 0 &&
+                                touchedIdx < categories.length) {
+                              _selectedCategoryIndex = touchedIdx;
+                            }
+                          });
+                        }
+                      },
+                    ),
                   ),
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : AppMotion.standard,
                 ),
               ),
               // Reactive Center Widget
@@ -424,7 +457,9 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
               },
               borderRadius: BorderRadius.circular(16),
               child: AnimatedContainer(
-                duration: AppMotion.quick,
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : AppMotion.quick,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: isSelected
@@ -452,8 +487,12 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
                       cat.category,
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                        color: isSelected ? colors.textPrimary : colors.textSecondary,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? colors.textPrimary
+                            : colors.textSecondary,
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -485,7 +524,10 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
     dynamic colors,
   ) {
     final currency = context.watch<CurrencyProvider>();
-    final double totalSpent = categories.fold(0.0, (sum, item) => sum + item.spent);
+    final double totalSpent = categories.fold(
+      0.0,
+      (sum, item) => sum + item.spent,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -543,7 +585,9 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: catColor.withValues(alpha: isDark ? 0.2 : 0.12),
+                                color: catColor.withValues(
+                                  alpha: isDark ? 0.2 : 0.12,
+                                ),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
                                   color: catColor.withValues(alpha: 0.25),
@@ -594,7 +638,9 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
                           child: LinearProgressIndicator(
                             value: shareRatio.clamp(0.0, 1.0),
                             minHeight: 4,
-                            backgroundColor: colors.divider.withValues(alpha: 0.4),
+                            backgroundColor: colors.divider.withValues(
+                              alpha: 0.4,
+                            ),
                             valueColor: AlwaysStoppedAnimation<Color>(catColor),
                           ),
                         ),
@@ -638,10 +684,7 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
             ),
             Text(
               "${reports.where((r) => r.budget > 0).length} configured",
-              style: TextStyle(
-                fontSize: 11,
-                color: colors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 11, color: colors.textSecondary),
             ),
           ],
         ),
@@ -654,7 +697,9 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
             final r = reports[index];
             final hasBudget = r.budget > 0;
             final isOver = hasBudget && r.spent > r.budget;
-            final progress = hasBudget ? (r.spent / r.budget).clamp(0.0, 1.0) : 0.0;
+            final progress = hasBudget
+                ? (r.spent / r.budget).clamp(0.0, 1.0)
+                : 0.0;
             final ratio = hasBudget ? (r.spent / r.budget) : 0.0;
             final isWarning = hasBudget && !isOver && ratio >= 0.85;
 
@@ -708,7 +753,10 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
                         ],
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),

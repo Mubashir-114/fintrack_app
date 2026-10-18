@@ -40,7 +40,9 @@ class _LivingWalletState extends State<LivingWallet>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final reduce = MediaQuery.disableAnimationsOf(context);
+    final reduce =
+        MediaQuery.disableAnimationsOf(context) ||
+        !TickerMode.valuesOf(context).enabled;
     if (_reduceMotion == reduce) return;
     _reduceMotion = reduce;
     if (reduce) {

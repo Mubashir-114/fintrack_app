@@ -88,7 +88,7 @@ class FinTrackThemeTokens extends ThemeExtension<FinTrackThemeTokens> {
   static const FinTrackThemeTokens graphiteChampagneLight = FinTrackThemeTokens(
     collection: ThemeCollection.graphiteChampagne,
     isDark: false,
-    primary: Color(0xFFB88542), // Accessible champagne gold (>4.5:1 on light)
+    primary: Color(0xFF805421), // Champagne ink for accessible light-theme text
     primaryDeep: Color(0xFF9E6E30),
     secondary: Color(0xFFD6A668),
     highlight: Color(0xFFD6A668),
@@ -98,9 +98,9 @@ class FinTrackThemeTokens extends ThemeExtension<FinTrackThemeTokens> {
     divider: Color(0xFFE3DDD2), // Accessible warm divider
     textPrimary: Color(0xFF1C1E24), // Soft graphite text
     textSecondary: Color(0xFF6B6760), // Muted graphite secondary
-    success: Color(0xFF10B981),
-    danger: Color(0xFFE11D48),
-    warning: Color(0xFFD97706),
+    success: Color(0xFF06674C),
+    danger: Color(0xFFBE123C),
+    warning: Color(0xFF805000),
     info: Color(0xFF2563EB),
     transfer: Color(0xFF64748B),
     cardBorder: Color(0xFFE3DDD2),
@@ -154,7 +154,7 @@ class FinTrackThemeTokens extends ThemeExtension<FinTrackThemeTokens> {
   static const FinTrackThemeTokens obsidianJadeLight = FinTrackThemeTokens(
     collection: ThemeCollection.obsidianJade,
     isDark: false,
-    primary: Color(0xFF159B82),
+    primary: Color(0xFF08644F),
     primaryDeep: Color(0xFF0E705E),
     secondary: Color(0xFF2DD4BF),
     highlight: Color(0xFFD97706),
@@ -164,9 +164,9 @@ class FinTrackThemeTokens extends ThemeExtension<FinTrackThemeTokens> {
     divider: Color(0xFFE2E8F0),
     textPrimary: Color(0xFF0F172A),
     textSecondary: Color(0xFF64748B),
-    success: Color(0xFF10B981),
-    danger: Color(0xFFE11D48),
-    warning: Color(0xFFD97706),
+    success: Color(0xFF06674C),
+    danger: Color(0xFFBE123C),
+    warning: Color(0xFF805000),
     info: Color(0xFF2563EB),
     transfer: Color(0xFF64748B),
     cardBorder: Color(0xFFE2E8F0),
@@ -220,7 +220,7 @@ class FinTrackThemeTokens extends ThemeExtension<FinTrackThemeTokens> {
   static const FinTrackThemeTokens arcticBlueLight = FinTrackThemeTokens(
     collection: ThemeCollection.arcticBlue,
     isDark: false,
-    primary: Color(0xFF0284C7),
+    primary: Color(0xFF025A89),
     primaryDeep: Color(0xFF0369A1),
     secondary: Color(0xFF38BDF8),
     highlight: Color(0xFF38BDF8),
@@ -230,9 +230,9 @@ class FinTrackThemeTokens extends ThemeExtension<FinTrackThemeTokens> {
     divider: Color(0xFFD3E2F0),
     textPrimary: Color(0xFF0F172A),
     textSecondary: Color(0xFF475569),
-    success: Color(0xFF10B981),
-    danger: Color(0xFFE11D48),
-    warning: Color(0xFFD97706),
+    success: Color(0xFF06674C),
+    danger: Color(0xFFBE123C),
+    warning: Color(0xFF805000),
     info: Color(0xFF0284C7),
     transfer: Color(0xFF64748B),
     cardBorder: Color(0xFFD3E2F0),
@@ -248,7 +248,10 @@ class FinTrackThemeTokens extends ThemeExtension<FinTrackThemeTokens> {
     ),
   );
 
-  static FinTrackThemeTokens resolve(ThemeCollection collection, Brightness brightness) {
+  static FinTrackThemeTokens resolve(
+    ThemeCollection collection,
+    Brightness brightness,
+  ) {
     final dark = brightness == Brightness.dark;
     switch (collection) {
       case ThemeCollection.graphiteChampagne:
@@ -325,15 +328,20 @@ class FinTrackThemeTokens extends ThemeExtension<FinTrackThemeTokens> {
       elevated: Color.lerp(elevated, other.elevated, t) ?? elevated,
       divider: Color.lerp(divider, other.divider, t) ?? divider,
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t) ?? textPrimary,
-      textSecondary: Color.lerp(textSecondary, other.textSecondary, t) ?? textSecondary,
+      textSecondary:
+          Color.lerp(textSecondary, other.textSecondary, t) ?? textSecondary,
       success: Color.lerp(success, other.success, t) ?? success,
       danger: Color.lerp(danger, other.danger, t) ?? danger,
       warning: Color.lerp(warning, other.warning, t) ?? warning,
       info: Color.lerp(info, other.info, t) ?? info,
       transfer: Color.lerp(transfer, other.transfer, t) ?? transfer,
       cardBorder: Color.lerp(cardBorder, other.cardBorder, t) ?? cardBorder,
-      midnightGradient: LinearGradient.lerp(midnightGradient, other.midnightGradient, t) ?? midnightGradient,
-      cardGradient: LinearGradient.lerp(cardGradient, other.cardGradient, t) ?? cardGradient,
+      midnightGradient:
+          LinearGradient.lerp(midnightGradient, other.midnightGradient, t) ??
+          midnightGradient,
+      cardGradient:
+          LinearGradient.lerp(cardGradient, other.cardGradient, t) ??
+          cardGradient,
     );
   }
 }

@@ -25,6 +25,7 @@ class AnimatedProgressBar extends StatelessWidget {
     return Semantics(
       label: semanticLabel,
       value: '${(target * 100).round()} percent',
+      excludeSemantics: true,
       child: TweenAnimationBuilder<double>(
         tween: Tween(end: target),
         duration: reduceMotion ? Duration.zero : AppMotion.reveal,

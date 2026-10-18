@@ -1,12 +1,15 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/constants/app_motion.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/fin_surface.dart';
+import '../../../core/widgets/financial_chart.dart';
 import '../../../models/report_models.dart';
 import '../../../providers/currency_provider.dart';
 
@@ -50,7 +53,8 @@ class _TrendsTabViewState extends State<TrendsTabView> {
             EmptyState(
               icon: Icons.analytics_outlined,
               title: "No trend data available",
-              description: "Record transactions or adjust the date range to see financial trends.",
+              description:
+                  "Record transactions or adjust the date range to see financial trends.",
             ),
           ],
         ),
@@ -104,23 +108,10 @@ class _TrendsTabViewState extends State<TrendsTabView> {
     final isNetPositive = summary.netBalance >= 0;
     final netColor = isNetPositive ? colors.success : colors.danger;
 
-    final totalFlow = summary.totalIncome + summary.totalExpense;
-    final incomeRatio = totalFlow > 0 ? (summary.totalIncome / totalFlow).clamp(0.0, 1.0) : 0.5;
-    final expenseRatio = totalFlow > 0 ? (summary.totalExpense / totalFlow).clamp(0.0, 1.0) : 0.5;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-        border: Border.all(color: colors.cardBorder, width: 1.0),
-        boxShadow: [
-          BoxShadow(
-            color: colors.background.withValues(alpha: isDark ? 0.3 : 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
+    return FinSurface(
+      padding: EdgeInsets.zero,
+      accent: colors.primary,
+      emphasized: true,
       child: Stack(
         clipBehavior: Clip.antiAlias,
         children: [
@@ -156,7 +147,10 @@ class _TrendsTabViewState extends State<TrendsTabView> {
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: netColor.withValues(alpha: isDark ? 0.18 : 0.1),
                         borderRadius: BorderRadius.circular(12),
@@ -213,10 +207,13 @@ class _TrendsTabViewState extends State<TrendsTabView> {
                 const SizedBox(height: 16),
 
                 // Income vs Expense comparison ratio bar
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  spacing: 12,
+                  runSpacing: 6,
                   children: [
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           width: 8,
@@ -263,25 +260,9 @@ class _TrendsTabViewState extends State<TrendsTabView> {
                 ),
                 const SizedBox(height: 8),
 
-                // Split ratio progress bar
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: SizedBox(
-                    height: 6,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: (incomeRatio * 100).toInt().clamp(1, 100),
-                          child: Container(color: colors.success),
-                        ),
-                        const SizedBox(width: 2),
-                        Expanded(
-                          flex: (expenseRatio * 100).toInt().clamp(1, 100),
-                          child: Container(color: colors.danger),
-                        ),
-                      ],
-                    ),
-                  ),
+                FinancialFlowBar(
+                  income: summary.totalIncome,
+                  expense: summary.totalExpense,
                 ),
               ],
             ),
@@ -296,36 +277,26 @@ class _TrendsTabViewState extends State<TrendsTabView> {
     ReportSummary summary,
     dynamic colors,
   ) {
-    final currency = context.watch<CurrencyProvider>();
-
     return Row(
       children: [
         Expanded(
           child: _buildMetricTile(
-            title: "Total Inflow",
-            value: currency.format(summary.totalIncome),
-            icon: Icons.arrow_downward_rounded,
-            accentColor: colors.success,
-            colors: colors,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _buildMetricTile(
-            title: "Total Outflow",
-            value: currency.format(summary.totalExpense),
-            icon: Icons.arrow_upward_rounded,
-            accentColor: colors.danger,
-            colors: colors,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _buildMetricTile(
-            title: "Savings Rate",
-            value: "${summary.savingsRate.toStringAsFixed(1)}%",
+            title: 'Savings Rate',
+            value: '${summary.savingsRate.toStringAsFixed(1)}%',
             icon: Icons.savings_outlined,
-            accentColor: summary.savingsRate >= 0 ? colors.primary : colors.danger,
+            accentColor: summary.savingsRate >= 0
+                ? colors.primary
+                : colors.danger,
+            colors: colors,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _buildMetricTile(
+            title: 'Transactions',
+            value: '${summary.totalTransactions}',
+            icon: Icons.receipt_long_rounded,
+            accentColor: colors.info,
             colors: colors,
           ),
         ),
@@ -361,9 +332,7 @@ class _TrendsTabViewState extends State<TrendsTabView> {
                   color: accentColor.withValues(alpha: isDark ? 0.18 : 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Center(
-                  child: Icon(icon, size: 13, color: accentColor),
-                ),
+                child: Center(child: Icon(icon, size: 13, color: accentColor)),
               ),
               const SizedBox(width: 6),
               Expanded(
@@ -404,19 +373,16 @@ class _TrendsTabViewState extends State<TrendsTabView> {
   Widget _buildChartSection(BuildContext context, dynamic colors) {
     final trends = widget.trends;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-        border: Border.all(color: colors.cardBorder, width: 1.0),
-      ),
-      padding: const EdgeInsets.all(16.0),
+    return FinSurface(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header with legend
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,14 +399,12 @@ class _TrendsTabViewState extends State<TrendsTabView> {
                   const SizedBox(height: 2),
                   Text(
                     "Monthly inflow vs outflow analysis",
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: colors.textSecondary,
-                    ),
+                    style: TextStyle(fontSize: 11, color: colors.textSecondary),
                   ),
                 ],
               ),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildLegendItem("Inflow", colors.success, colors),
                   const SizedBox(width: 10),
@@ -452,7 +416,8 @@ class _TrendsTabViewState extends State<TrendsTabView> {
           const SizedBox(height: 16),
 
           // Chart Body depending on data availability
-          if (trends.isEmpty)
+          if (trends.isEmpty ||
+              trends.every((item) => item.income == 0 && item.expense == 0))
             _buildEmptyChartState(colors)
           else if (trends.length == 1)
             _buildSinglePeriodView(trends.first, colors)
@@ -502,7 +467,7 @@ class _TrendsTabViewState extends State<TrendsTabView> {
           ),
           const SizedBox(height: 10),
           Text(
-            "No monthly periods recorded in this range",
+            "No recorded cash flow in this range",
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -511,7 +476,7 @@ class _TrendsTabViewState extends State<TrendsTabView> {
           ),
           const SizedBox(height: 4),
           Text(
-            "Widen your date filter to view trends across months",
+            "Record transactions or widen your date filter to see monthly trends",
             style: TextStyle(
               fontSize: 11,
               color: colors.textSecondary.withValues(alpha: 0.8),
@@ -531,8 +496,8 @@ class _TrendsTabViewState extends State<TrendsTabView> {
     final isNetPositive = net >= 0;
     final netColor = isNetPositive ? colors.success : colors.danger;
     final totalFlow = report.income + report.expense;
-    final incomePct = totalFlow > 0 ? (report.income / totalFlow * 100) : 50.0;
-    final expensePct = totalFlow > 0 ? (report.expense / totalFlow * 100) : 50.0;
+    final incomePct = totalFlow > 0 ? (report.income / totalFlow * 100) : 0.0;
+    final expensePct = totalFlow > 0 ? (report.expense / totalFlow * 100) : 0.0;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -544,8 +509,11 @@ class _TrendsTabViewState extends State<TrendsTabView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
             children: [
               Text(
                 "${report.monthName} ${report.year}",
@@ -575,89 +543,18 @@ class _TrendsTabViewState extends State<TrendsTabView> {
           ),
           const SizedBox(height: 16),
 
-          // Inflow row
-          Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: Text(
-                  "Monthly Inflow",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: colors.textSecondary,
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 5,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: incomePct / 100,
-                    minHeight: 10,
-                    backgroundColor: colors.surface,
-                    valueColor: AlwaysStoppedAnimation<Color>(colors.success),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 70,
-                child: Text(
-                  currency.format(report.income),
-                  textAlign: TextAlign.end,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: colors.success,
-                  ),
-                ),
-              ),
-            ],
+          FinancialComparisonRow(
+            label: 'Monthly Inflow',
+            amount: currency.format(report.income),
+            share: incomePct / 100,
+            color: colors.success,
           ),
-          const SizedBox(height: 12),
-
-          // Outflow row
-          Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: Text(
-                  "Monthly Outflow",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: colors.textSecondary,
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 5,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: expensePct / 100,
-                    minHeight: 10,
-                    backgroundColor: colors.surface,
-                    valueColor: AlwaysStoppedAnimation<Color>(colors.danger),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 70,
-                child: Text(
-                  currency.format(report.expense),
-                  textAlign: TextAlign.end,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: colors.danger,
-                  ),
-                ),
-              ),
-            ],
+          const SizedBox(height: 14),
+          FinancialComparisonRow(
+            label: 'Monthly Outflow',
+            amount: currency.format(report.expense),
+            share: expensePct / 100,
+            color: colors.danger,
           ),
           const SizedBox(height: 12),
           Text(
@@ -683,7 +580,8 @@ class _TrendsTabViewState extends State<TrendsTabView> {
     }
     final adjustedMax = maxVal <= 0 ? 100.0 : maxVal * 1.25;
 
-    final selectedIdx = _selectedTrendIndex != null &&
+    final selectedIdx =
+        _selectedTrendIndex != null &&
             _selectedTrendIndex! >= 0 &&
             _selectedTrendIndex! < trends.length
         ? _selectedTrendIndex!
@@ -694,116 +592,162 @@ class _TrendsTabViewState extends State<TrendsTabView> {
 
     return Column(
       children: [
-        SizedBox(
-          height: 210,
-          child: BarChart(
-            BarChartData(
-              maxY: adjustedMax,
-              alignment: BarChartAlignment.spaceAround,
-              barTouchData: BarTouchData(
-                enabled: true,
-                handleBuiltInTouches: true,
-                touchCallback: (event, response) {
-                  if (event is FlTapUpEvent && response?.spot != null) {
-                    final index = response!.spot!.touchedBarGroupIndex;
-                    if (index >= 0 && index < trends.length) {
-                      setState(() {
-                        _selectedTrendIndex = index;
-                      });
-                    }
-                  }
-                },
-                touchTooltipData: BarTouchTooltipData(
-                  getTooltipColor: (_) => colors.elevated,
-                  tooltipBorder: BorderSide(color: colors.cardBorder),
-                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                    final String type = rodIndex == 0 ? "Inflow" : "Outflow";
-                    final Color valColor =
-                        rodIndex == 0 ? colors.success : colors.danger;
-                    return BarTooltipItem(
-                      "$type\n${currency.format(rod.toY)}",
-                      TextStyle(
-                        color: valColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 11,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              titlesData: FlTitlesData(
-                show: true,
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 26,
-                    getTitlesWidget: (val, meta) {
-                      final idx = val.toInt();
-                      if (idx >= 0 && idx < trends.length) {
-                        final isSelected = idx == selectedIdx;
-                        final name = trends[idx].monthName;
-                        final label = name.length >= 3 ? name.substring(0, 3) : name;
-                        return SideTitleWidget(
-                          meta: meta,
-                          child: Text(
-                            label,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                              color: isSelected ? colors.primary : colors.textSecondary,
-                            ),
-                          ),
-                        );
+        FinancialChart(
+          description:
+              'Monthly cash flow. ${trends.map((item) => '${item.monthName} ${item.year}: income ${currency.format(item.income)}, expense ${currency.format(item.expense)}').join('; ')}',
+          child: SizedBox(
+            height: 210,
+            child: BarChart(
+              BarChartData(
+                minY: 0,
+                maxY: adjustedMax,
+                alignment: BarChartAlignment.spaceAround,
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  handleBuiltInTouches: true,
+                  touchCallback: (event, response) {
+                    if (event is FlTapUpEvent && response?.spot != null) {
+                      final index = response!.spot!.touchedBarGroupIndex;
+                      if (index >= 0 && index < trends.length) {
+                        setState(() {
+                          _selectedTrendIndex = index;
+                        });
                       }
-                      return const SizedBox.shrink();
+                    }
+                  },
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (_) => colors.elevated,
+                    tooltipBorder: BorderSide(color: colors.cardBorder),
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final String type = rodIndex == 0 ? "Inflow" : "Outflow";
+                      final Color valColor = rodIndex == 0
+                          ? colors.success
+                          : colors.danger;
+                      return BarTooltipItem(
+                        "$type\n${currency.format(rod.toY)}",
+                        TextStyle(
+                          color: valColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                      );
                     },
                   ),
                 ),
-              ),
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: false,
-                horizontalInterval: adjustedMax / 4,
-                getDrawingHorizontalLine: (val) {
-                  return FlLine(
-                    color: colors.divider.withValues(alpha: 0.35),
-                    strokeWidth: 1,
-                    dashArray: [4, 4],
+                titlesData: FlTitlesData(
+                  show: true,
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 48,
+                      interval: adjustedMax / 4,
+                      getTitlesWidget: (value, meta) => SideTitleWidget(
+                        meta: meta,
+                        space: 6,
+                        child: Text(
+                          NumberFormat.compactCurrency(
+                            symbol: currency.currencySymbol,
+                            decimalDigits: 0,
+                          ).format(value),
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: colors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 26,
+                      getTitlesWidget: (val, meta) {
+                        final idx = val.toInt();
+                        if (idx >= 0 && idx < trends.length) {
+                          final isSelected = idx == selectedIdx;
+                          final name = trends[idx].monthName;
+                          final label = name.length >= 3
+                              ? name.substring(0, 3)
+                              : name;
+                          return SideTitleWidget(
+                            meta: meta,
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? colors.primary
+                                    : colors.textSecondary,
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: adjustedMax / 4,
+                  getDrawingHorizontalLine: (val) {
+                    return FlLine(
+                      color: colors.divider.withValues(alpha: 0.35),
+                      strokeWidth: 1,
+                      dashArray: [4, 4],
+                    );
+                  },
+                ),
+                borderData: FlBorderData(show: false),
+                barGroups: List.generate(trends.length, (index) {
+                  final item = trends[index];
+                  final isSelected = index == selectedIdx;
+                  final barWidth = math.max(
+                    6.0,
+                    math.min(12.0, 160.0 / (trends.length * 2)),
                   );
-                },
-              ),
-              borderData: FlBorderData(show: false),
-              barGroups: List.generate(trends.length, (index) {
-                final item = trends[index];
-                final isSelected = index == selectedIdx;
-                final barWidth = math.max(6.0, math.min(12.0, 160.0 / (trends.length * 2)));
 
-                return BarChartGroupData(
-                  x: index,
-                  barsSpace: 3,
-                  barRods: [
-                    BarChartRodData(
-                      toY: item.income,
-                      color: isSelected
-                          ? colors.success
-                          : colors.success.withValues(alpha: 0.75),
-                      width: barWidth,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                    ),
-                    BarChartRodData(
-                      toY: item.expense,
-                      color: isSelected
-                          ? colors.danger
-                          : colors.danger.withValues(alpha: 0.75),
-                      width: barWidth,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                    ),
-                  ],
-                );
-              }),
+                  return BarChartGroupData(
+                    x: index,
+                    barsSpace: 3,
+                    barRods: [
+                      BarChartRodData(
+                        toY: item.income,
+                        color: isSelected
+                            ? colors.success
+                            : colors.success.withValues(alpha: 0.75),
+                        width: barWidth,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(4),
+                        ),
+                      ),
+                      BarChartRodData(
+                        toY: item.expense,
+                        color: isSelected
+                            ? colors.danger
+                            : colors.danger.withValues(alpha: 0.75),
+                        width: barWidth,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(4),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : AppMotion.standard,
             ),
           ),
         ),
@@ -811,7 +755,9 @@ class _TrendsTabViewState extends State<TrendsTabView> {
 
         // Interactive Inspection Banner for selected month
         AnimatedContainer(
-          duration: AppMotion.quick,
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : AppMotion.quick,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: colors.elevated,
@@ -902,7 +848,7 @@ class _TrendsTabViewState extends State<TrendsTabView> {
           colors: colors,
         ),
       );
-    } else {
+    } else if (summary.totalExpense > summary.totalIncome) {
       final deficit = (summary.totalExpense - summary.totalIncome).abs();
       observations.add(
         _buildObservationRow(
@@ -911,6 +857,19 @@ class _TrendsTabViewState extends State<TrendsTabView> {
           title: "Spending Exceeded Income",
           detail:
               "Outflows surpassed inflows by ${currency.format(deficit)} over this reporting period.",
+          colors: colors,
+        ),
+      );
+    } else {
+      final empty = summary.totalIncome == 0 && summary.totalExpense == 0;
+      observations.add(
+        _buildObservationRow(
+          icon: Icons.info_outline_rounded,
+          iconColor: colors.info,
+          title: empty ? 'No Recorded Cash Flow' : 'Balanced Cash Flow',
+          detail: empty
+              ? 'Record transactions or choose another period to see observations.'
+              : 'Recorded income and outflow are equal for this period.',
           colors: colors,
         ),
       );
@@ -941,9 +900,15 @@ class _TrendsTabViewState extends State<TrendsTabView> {
         final isIncrease = change > 0;
         observations.add(
           _buildObservationRow(
-            icon: isIncrease ? Icons.arrow_outward_rounded : Icons.south_east_rounded,
+            icon: isIncrease
+                ? Icons.arrow_outward_rounded
+                : Icons.south_east_rounded,
             iconColor: isIncrease ? colors.danger : colors.success,
-            title: isIncrease ? "Monthly Spending Increased" : "Monthly Spending Reduced",
+            title: change == 0
+                ? 'Monthly Spending Unchanged'
+                : (isIncrease
+                      ? "Monthly Spending Increased"
+                      : "Monthly Spending Reduced"),
             detail:
                 "Outflow shifted by ${change.abs().toStringAsFixed(1)}% from ${prior.monthName} to ${latest.monthName}.",
             colors: colors,
@@ -964,13 +929,7 @@ class _TrendsTabViewState extends State<TrendsTabView> {
       ),
     );
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-        border: Border.all(color: colors.cardBorder, width: 1.0),
-      ),
-      padding: const EdgeInsets.all(16.0),
+    return FinSurface(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -982,13 +941,15 @@ class _TrendsTabViewState extends State<TrendsTabView> {
                 color: colors.primary,
               ),
               const SizedBox(width: 6),
-              Text(
-                "Financial Observations",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: colors.textPrimary,
-                  letterSpacing: -0.2,
+              Expanded(
+                child: Text(
+                  "Financial Observations",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: colors.textPrimary,
+                    letterSpacing: -0.2,
+                  ),
                 ),
               ),
             ],

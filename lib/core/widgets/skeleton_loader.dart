@@ -39,7 +39,8 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (MediaQuery.disableAnimationsOf(context)) {
+    if (MediaQuery.disableAnimationsOf(context) ||
+        !TickerMode.valuesOf(context).enabled) {
       _controller.stop();
       _controller.value = .5;
     } else if (!_controller.isAnimating) {
@@ -90,9 +91,7 @@ class SkeletonLoader extends StatelessWidget {
           color: colors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-            side: BorderSide(
-              color: colors.divider,
-            ),
+            side: BorderSide(color: colors.divider),
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.md),
@@ -150,9 +149,7 @@ class SkeletonLoader extends StatelessWidget {
           color: colors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-            side: BorderSide(
-              color: colors.divider,
-            ),
+            side: BorderSide(color: colors.divider),
           ),
           child: const Padding(
             padding: EdgeInsets.all(16.0),
@@ -166,16 +163,10 @@ class SkeletonLoader extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    ShimmerLoading(width: 12, height: 80, borderRadius: 6),
-                    ShimmerLoading(width: 12, height: 120, borderRadius: 6),
-                    ShimmerLoading(width: 12, height: 60, borderRadius: 6),
-                    ShimmerLoading(width: 12, height: 140, borderRadius: 6),
-                    ShimmerLoading(width: 12, height: 90, borderRadius: 6),
-                  ],
+                ShimmerLoading(
+                  width: double.infinity,
+                  height: 110,
+                  borderRadius: 10,
                 ),
                 SizedBox(height: 12),
               ],

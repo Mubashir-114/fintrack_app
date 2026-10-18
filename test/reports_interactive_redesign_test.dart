@@ -165,8 +165,8 @@ void main() {
           .ancestor(of: find.text("Net Surplus"), matching: find.byType(Stack))
           .first;
       expect(tester.widget<Stack>(performanceCardStack).children, hasLength(1));
-      expect(find.text("Total Inflow"), findsOneWidget);
-      expect(find.text("Total Outflow"), findsOneWidget);
+      expect(find.text("Total Inflow"), findsNothing);
+      expect(find.text("Transactions"), findsOneWidget);
       expect(find.text("Savings Rate"), findsOneWidget);
       expect(find.text("44.0%"), findsOneWidget);
       expect(find.text("Cash-Flow Trends"), findsOneWidget);
@@ -199,6 +199,44 @@ void main() {
       },
     );
 
+    testWidgets('single-month large amounts remain readable at 320 pixels', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        createTestApp(
+          child: TrendsTabView(
+            summary: const ReportSummary(
+              totalIncome: 210000,
+              totalExpense: 450,
+              netBalance: 209550,
+              savingsRate: 99.8,
+              totalTransactions: 2,
+            ),
+            trends: const [
+              TrendsReport(
+                year: 2026,
+                month: 10,
+                monthName: 'October',
+                income: 210000,
+                expense: 450,
+              ),
+            ],
+            periodLabel: 'October 2026',
+            onRefresh: () async {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final amount = find.text(r'$210,000.00');
+      expect(amount, findsOneWidget);
+      expect(tester.getSize(amount).height, lessThan(24));
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('handles empty trends data with informative empty state', (
       tester,
     ) async {
@@ -214,10 +252,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(
-        find.text("No monthly periods recorded in this range"),
-        findsOneWidget,
-      );
+      expect(find.text("No recorded cash flow in this range"), findsOneWidget);
     });
   });
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
+import '../../../core/widgets/fin_surface.dart';
 import '../../../models/account_model.dart';
 import 'account_icon.dart';
 import 'money_text.dart';
@@ -17,119 +18,95 @@ class AccountCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = AppColors.of(context);
     final isCredit = account.type == 'credit_card';
     final accentColor = switch (account.type) {
-      'credit_card' => AppColors.danger,
-      'cash' => AppColors.gold,
-      'wallet' => AppColors.info,
-      _ => AppColors.primary,
+      'credit_card' => colors.danger,
+      'cash' => colors.highlight,
+      'wallet' => colors.info,
+      _ => colors.primary,
     };
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                accentColor.withValues(alpha: isDark ? .13 : .07),
-                isDark ? AppColors.cardDark : AppColors.cardLight,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-            border: Border.all(
-              color: isDark ? AppColors.dividerDark : AppColors.dividerLight,
-            ),
-            boxShadow: isDark
-                ? null
-                : [
-                    BoxShadow(
-                      color: accentColor.withValues(alpha: 0.10),
-                      blurRadius: 18,
-                      offset: const Offset(0, 7),
-                    ),
-                  ],
+    final amount = Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        MoneyText(
+          decimalString: isCredit && account.creditLimit != null
+              ? account.creditLimit!
+              : account.openingAmount,
+          currencyCode: account.currencyCode,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: isCredit ? colors.danger : colors.textPrimary,
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Icon
-                AccountIcon(
-                  type: account.type,
-                  subtype: account.subtype,
-                  size: 44,
-                  accentColor: accentColor,
-                ),
-                const SizedBox(width: 14),
-                // Details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
+        ),
+        const SizedBox(height: 2),
+        Text(
+          isCredit ? 'Credit limit' : 'Opening amount',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colors.textSecondary,
+          ),
+        ),
+      ],
+    );
+    return FinSurface(
+      accent: accentColor,
+      emphasized: true,
+      onTap: onTap,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact =
+              constraints.maxWidth < 340 ||
+              MediaQuery.textScalerOf(context).scale(14) > 18;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  AccountIcon(
+                    type: account.type,
+                    subtype: account.subtype,
+                    size: 40,
+                    accentColor: accentColor,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          children: [
+                            Text(
                               account.displayName,
                               style: theme.textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          if (account.isDefault) _DefaultBadge(),
-                        ],
-                      ),
-                      const SizedBox(height: 3),
-                      _SubtitleRow(account: account, isDark: isDark),
-                    ],
+                            if (account.isDefault) _DefaultBadge(),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        _SubtitleRow(account: account, isDark: colors.isDark),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                // Amount + chevron
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    MoneyText(
-                      decimalString: (isCredit && account.creditLimit != null)
-                          ? account.creditLimit!
-                          : account.openingAmount,
-                      currencyCode: account.currencyCode,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: isCredit ? AppColors.danger : null,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      isCredit ? 'Credit limit' : 'Opening amount',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontSize: 10,
-                        color: isDark
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondaryLight,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: isDark
-                      ? AppColors.textSecondaryDark
-                      : AppColors.textSecondaryLight,
-                  size: 18,
-                ),
+                  if (!compact) ...[const SizedBox(width: 12), amount],
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: colors.textSecondary,
+                    size: 18,
+                  ),
+                ],
+              ),
+              if (compact) ...[
+                const SizedBox(height: 12),
+                Align(alignment: AlignmentDirectional.centerEnd, child: amount),
               ],
-            ),
-          ),
-        ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -142,15 +119,15 @@ class _DefaultBadge extends StatelessWidget {
       margin: const EdgeInsets.only(left: 6),
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.12),
+        color: AppColors.of(context).primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
       ),
-      child: const Text(
+      child: Text(
         'Default',
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: AppColors.primary,
+          color: AppColors.of(context).primary,
         ),
       ),
     );
@@ -199,8 +176,8 @@ class _SubtitleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isDark
-        ? AppColors.textSecondaryDark
-        : AppColors.textSecondaryLight;
+        ? AppColors.of(context).textSecondary
+        : AppColors.of(context).textSecondary;
     return Text(
       _subtitle,
       style: TextStyle(fontSize: 12, color: color),

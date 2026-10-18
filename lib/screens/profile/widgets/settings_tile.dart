@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/fin_surface.dart';
 
 class SettingsTile extends StatelessWidget {
   final IconData icon;
@@ -38,14 +39,13 @@ class SettingsTile extends StatelessWidget {
         ? colors.danger
         : (iconColor ?? colors.primary);
 
-    final effectiveIconBg = iconBackgroundColor ??
+    final effectiveIconBg =
+        iconBackgroundColor ??
         (isDestructive
             ? colors.danger.withValues(alpha: 0.12)
             : colors.primary.withValues(alpha: isDark ? 0.14 : 0.10));
 
-    final titleColor = isDestructive
-        ? colors.danger
-        : colors.textPrimary;
+    final titleColor = isDestructive ? colors.danger : colors.textPrimary;
 
     final subtitleColor = colors.textSecondary;
 
@@ -64,18 +64,11 @@ class SettingsTile extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
               child: Row(
                 children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: effectiveIconBg,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      icon,
-                      size: 20,
-                      color: effectiveIconColor,
-                    ),
+                  FinIconTile(
+                    icon: icon,
+                    color: effectiveIconColor,
+                    backgroundColor: effectiveIconBg,
+                    size: 38,
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -94,7 +87,8 @@ class SettingsTile extends StatelessWidget {
                         if (subtitleWidget != null) ...[
                           const SizedBox(height: 3),
                           subtitleWidget!,
-                        ] else if (subtitle != null && subtitle!.isNotEmpty) ...[
+                        ] else if (subtitle != null &&
+                            subtitle!.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(
                             subtitle!,
@@ -126,11 +120,7 @@ class SettingsTile extends StatelessWidget {
         if (showDivider)
           Padding(
             padding: const EdgeInsets.only(left: 68),
-            child: Divider(
-              height: 1,
-              thickness: 1,
-              color: dividerColor,
-            ),
+            child: Divider(height: 1, thickness: 1, color: dividerColor),
           ),
       ],
     );

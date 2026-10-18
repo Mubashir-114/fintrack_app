@@ -34,9 +34,11 @@ class CreditCardSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hasDebt = DecimalMoney.isValidDecimal(outstandingDebt) &&
+    final hasDebt =
+        DecimalMoney.isValidDecimal(outstandingDebt) &&
         DecimalMoney.isPositive(outstandingDebt);
-    final hasCreditBalance = DecimalMoney.isValidDecimal(creditBalance) &&
+    final hasCreditBalance =
+        DecimalMoney.isValidDecimal(creditBalance) &&
         DecimalMoney.isPositive(creditBalance);
 
     // Compute progress bar fill between 0.0 and 1.0 solely for UI bar rendering
@@ -49,22 +51,25 @@ class CreditCardSummaryCard extends StatelessWidget {
 
     final utilColor = progress > 0.7
         ? AppColors.of(context).danger
-        : (progress > 0.3 ? AppColors.of(context).warning : AppColors.of(context).success);
+        : (progress > 0.3
+              ? AppColors.of(context).warning
+              : AppColors.of(context).success);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-        border: Border.all(
-          color: Theme.of(context).dividerColor,
-        ),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            spacing: 12,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
                 'Credit Card Status',
@@ -106,7 +111,9 @@ class CreditCardSummaryCard extends StatelessWidget {
             currencyCode: currencyCode,
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w800,
-              color: hasDebt ? AppColors.of(context).danger : AppColors.of(context).success,
+              color: hasDebt
+                  ? AppColors.of(context).danger
+                  : AppColors.of(context).success,
             ),
           ),
 
@@ -114,8 +121,11 @@ class CreditCardSummaryCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.check_circle_outline,
-                    size: 14, color: AppColors.of(context).success),
+                Icon(
+                  Icons.check_circle_outline,
+                  size: 14,
+                  color: AppColors.of(context).success,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   'Credit balance (overpayment): ',
@@ -138,10 +148,12 @@ class CreditCardSummaryCard extends StatelessWidget {
           AnimatedProgressBar(
             value: progress,
             height: 7,
-            backgroundColor:
-                isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.08),
+            backgroundColor: isDark
+                ? Colors.white12
+                : Colors.black.withValues(alpha: 0.08),
             color: utilColor,
-            semanticLabel: 'Credit utilization',
+            semanticLabel:
+                'Credit utilization: $utilizationPercentage of limit',
           ),
           const SizedBox(height: 16),
 
@@ -217,7 +229,8 @@ class CreditCardBillingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isConfigured = billing.status != 'unconfigured' &&
+    final isConfigured =
+        billing.status != 'unconfigured' &&
         billing.statementClosingDay != null &&
         billing.paymentDueDay != null;
 
@@ -250,9 +263,7 @@ class CreditCardBillingCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-        border: Border.all(
-          color: Theme.of(context).dividerColor,
-        ),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,12 +280,15 @@ class CreditCardBillingCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.15),
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.radiusSM),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusSM,
+                      ),
                     ),
                     child: Text(
                       statusLabel,
@@ -337,21 +351,24 @@ class CreditCardBillingCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            if (billing.daysUntilDue != null && billing.status != 'paid_in_full')
+            if (billing.daysUntilDue != null &&
+                billing.status != 'paid_in_full')
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
                   billing.isOverdue
                       ? 'Payment is overdue by ${billing.daysUntilDue!.abs()} days.'
                       : (billing.daysUntilDue == 0
-                          ? 'Payment is due today!'
-                          : 'Payment due in ${billing.daysUntilDue} days.'),
+                            ? 'Payment is due today!'
+                            : 'Payment due in ${billing.daysUntilDue} days.'),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: billing.isOverdue
                         ? AppColors.of(context).danger
-                        : (billing.isDue ? AppColors.of(context).warning : statusColor),
+                        : (billing.isDue
+                              ? AppColors.of(context).warning
+                              : statusColor),
                   ),
                 ),
               ),
@@ -360,8 +377,9 @@ class CreditCardBillingCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: (isDark ? Colors.white : Colors.black)
-                    .withValues(alpha: 0.04),
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: 0.04,
+                ),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
               ),
               child: Row(
@@ -471,9 +489,7 @@ class CreditCardRepaymentHistoryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-        border: Border.all(
-          color: Theme.of(context).dividerColor,
-        ),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -552,9 +568,12 @@ class CreditCardRepaymentHistoryCard extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.of(context).success.withValues(alpha: 0.12),
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.radiusSM),
+                        color: AppColors.of(
+                          context,
+                        ).success.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusSM,
+                        ),
                       ),
                       child: Icon(
                         Icons.arrow_downward_rounded,
@@ -794,15 +813,20 @@ class _CreditCardRepaymentDialogState extends State<CreditCardRepaymentDialog> {
               if (eligibleAccounts.isEmpty)
                 Text(
                   'No active bank or wallet accounts available for repayment.',
-                  style: TextStyle(color: AppColors.of(context).danger, fontSize: 12),
+                  style: TextStyle(
+                    color: AppColors.of(context).danger,
+                    fontSize: 12,
+                  ),
                 )
               else
                 DropdownButtonFormField<int>(
                   initialValue: _selectedSourceId,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                   items: eligibleAccounts.map((a) {
                     final sub = a.institutionName != null
@@ -835,16 +859,19 @@ class _CreditCardRepaymentDialogState extends State<CreditCardRepaymentDialog> {
                       onPressed: () {
                         _amountController.text = widget.outstandingDebt;
                       },
-                      child: const Text('Pay Full Debt',
-                          style: TextStyle(fontSize: 12)),
+                      child: const Text(
+                        'Pay Full Debt',
+                        style: TextStyle(fontSize: 12),
+                      ),
                     ),
                 ],
               ),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _amountController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
                   prefixText: '${widget.currencyCode} ',
                   hintText: '0.00',
@@ -903,8 +930,10 @@ class _CreditCardRepaymentDialogState extends State<CreditCardRepaymentDialog> {
                   labelText: 'Note (Optional)',
                   hintText: 'e.g. October statement bill payment',
                   border: OutlineInputBorder(),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                 ),
               ),
             ],
