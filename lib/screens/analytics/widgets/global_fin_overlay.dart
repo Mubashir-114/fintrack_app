@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show DisplayFeatureType;
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:go_router/go_router.dart';
@@ -42,7 +44,9 @@ class FinOverlayObserver extends NavigatorObserver {
 /// Restricted to browsing surfaces; forms, import and security stay unobstructed.
 class GlobalFinOverlay extends StatefulWidget {
   const GlobalFinOverlay({super.key});
-  static const peekWidth = 44.0;
+  /// Transparent hit target at the edge. The painted portrait is wider but
+  /// allocates no page space.
+  static const peekWidth = 56.0;
   static bool supportsLocation(String location) => const {
     '/dashboard',
     '/transactions',
@@ -58,14 +62,41 @@ class GlobalFinOverlay extends StatefulWidget {
 
 class _GlobalFinOverlayState extends State<GlobalFinOverlay>
     with WidgetsBindingObserver {
+  /// Height of the peeking character as rendered (the lower body is clipped).
+  static const double _peekVisualHeight = 196;
+  static const double _peekHitWidth = GlobalFinOverlay.peekWidth;
+  static const double _peekHitHeight = 124;
+  static const double _peekPanelCharacterSize = 68;
+
   double _vertical = .42;
   String? _location;
   bool _foreground = true;
+  Timer? _greetingTimer;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// A short one-off wave while FIN leans in, never a permanent raised arm.
+  void _greetThenRelax(AnalyticsProvider provider) {
+    final controller = provider.visualController;
+    controller.setPeekExpanded(true);
+    controller.onGreeting();
+    _greetingTimer?.cancel();
+    _greetingTimer = Timer(const Duration(milliseconds: 1700), () {
+      if (mounted && controller.state == FinCharacterState.greeting) {
+        controller.onIdle();
+      }
+    });
+  }
+
+  void _minimize(AnalyticsProvider provider) {
+    _greetingTimer?.cancel();
+    provider.visualController
+      ..setPeekExpanded(false)
+      ..onIdle();
   }
 
   @override
@@ -84,6 +115,7 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
 
   @override
   void dispose() {
+    _greetingTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -136,40 +168,66 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
               constraints.maxWidth - media.padding.right,
               constraints.maxHeight - media.padding.bottom - 16,
             );
+            // Only a real fold/hinge may divide the usable area. Cutouts and
+            // notches are already covered by safe-area padding; treating one
+            // as a fold collapsed this region to zero and hid FIN entirely on
+            // normal phones.
             for (final feature in media.displayFeatures) {
-              if (feature.bounds.height > feature.bounds.width &&
-                  feature.bounds.height > 0) {
-                region = isLeft
-                    ? Rect.fromLTRB(
-                        region.left,
-                        region.top,
-                        math.min(region.right, feature.bounds.left),
-                        region.bottom,
-                      )
-                    : Rect.fromLTRB(
-                        math.max(region.left, feature.bounds.right),
-                        region.top,
-                        region.right,
-                        region.bottom,
-                      );
-              } else if (feature.bounds.width > 0) {
-                region = Rect.fromLTRB(
-                  region.left,
-                  region.top,
-                  region.right,
-                  math.min(region.bottom, feature.bounds.top),
-                );
+              if (feature.type != DisplayFeatureType.fold &&
+                  feature.type != DisplayFeatureType.hinge) {
+                continue;
               }
+              final bounds = feature.bounds;
+              if (bounds.width <= 0 ||
+                  bounds.height <= 0 ||
+                  !region.overlaps(bounds)) {
+                continue;
+              }
+              final vertical = bounds.height > bounds.width;
+              final candidate = vertical
+                  ? (isLeft
+                        ? Rect.fromLTRB(
+                            region.left,
+                            region.top,
+                            math.min(region.right, bounds.left),
+                            region.bottom,
+                          )
+                        : Rect.fromLTRB(
+                            math.max(region.left, bounds.right),
+                            region.top,
+                            region.right,
+                            region.bottom,
+                          ))
+                  : Rect.fromLTRB(
+                      region.left,
+                      region.top,
+                      region.right,
+                      math.min(region.bottom, bounds.top),
+                    );
+              if (candidate.width < 180 || candidate.height < 120) continue;
+              region = candidate;
             }
             if (region.width < 180 || region.height < 120) {
               return const SizedBox.shrink();
             }
-            const handleHeight = 104.0;
-            final y = (region.top + (region.height - handleHeight) * _vertical)
-                .clamp(region.top, region.bottom - handleHeight);
+            // FIN's visible sliver: enough for head, shoulder, torso and a
+            // gripping hand on every supported width. This is painted above
+            // content, it never reserves page width.
+            final peekWindow = math.min(
+              math.min(96.0, region.width),
+              math.max(80.0, region.width * .22),
+            );
+            final y =
+                (region.top +
+                        (region.height - _peekVisualHeight) * _vertical)
+                    .clamp(
+                      region.top,
+                      math.max(region.top, region.bottom - _peekVisualHeight),
+                    )
+                    .toDouble();
             final panelWidth = math.min(320.0, region.width - 16);
             final panelHeight = math.min(360.0, region.height);
-            final panelTop = (y - 36).clamp(
+            final panelTop = (y - 24).clamp(
               region.top,
               math.max(region.top, region.bottom - panelHeight),
             );
@@ -218,7 +276,10 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
                                   Row(
                                     children: [
                                       FinCharacter(
-                                        size: 56,
+                                        key: const ValueKey(
+                                          'global_fin_panel_character',
+                                        ),
+                                        size: _peekPanelCharacterSize,
                                         controller: controller,
                                       ),
                                       const SizedBox(width: 6),
@@ -254,8 +315,7 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
                                           'global_fin_action_close',
                                         ),
                                         tooltip: 'Minimize FIN',
-                                        onPressed: () =>
-                                            controller.setPeekExpanded(false),
+                                        onPressed: () => _minimize(provider),
                                         icon: const Icon(Icons.close_rounded),
                                       ),
                                     ],
@@ -302,7 +362,7 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
                                     context,
                                     'global_fin_action_spending',
                                     Icons.pie_chart_outline_rounded,
-                                    'My spending',
+                                    'Spending Overview',
                                     () {
                                       controller.setPeekExpanded(false);
                                       context.push(
@@ -320,7 +380,7 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
                                     context,
                                     'global_fin_action_budget',
                                     Icons.account_balance_wallet_outlined,
-                                    'Budget check',
+                                    'Budget Check',
                                     () {
                                       controller.setPeekExpanded(false);
                                       context.go('/budgets');
@@ -351,8 +411,11 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
                                         key: const ValueKey(
                                           'global_fin_dismiss',
                                         ),
-                                        tooltip: 'Dismiss FIN for this session',
-                                        onPressed: controller.dismissFloating,
+                                        tooltip: 'Hide FIN for this session',
+                                        onPressed: () {
+                                          _greetingTimer?.cancel();
+                                          controller.dismissFloating();
+                                        },
                                         icon: const Icon(
                                           Icons.visibility_off_outlined,
                                         ),
@@ -367,14 +430,53 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
                       ),
                     ),
                   ),
-                if (!expanded)
+                if (!expanded) ...[
+                  // Painted portrait layer. The character is wider than the
+                  // window; its far side is clipped by the screen edge so FIN
+                  // reads as leaning out from it.
                   Positioned(
-                    left: isLeft
-                        ? region.left
-                        : region.right - GlobalFinOverlay.peekWidth,
+                    left: isLeft ? region.left : null,
+                    right: isLeft
+                        ? null
+                        : math.max(0.0, constraints.maxWidth - region.right),
                     top: y,
-                    width: GlobalFinOverlay.peekWidth,
-                    height: handleHeight,
+                    width: peekWindow,
+                    height: _peekVisualHeight,
+                    child: IgnorePointer(
+                      child: ClipRect(
+                        key: const ValueKey('global_fin_peeking_visual'),
+                        child: OverflowBox(
+                          alignment: isLeft
+                              ? Alignment.topRight
+                              : Alignment.topLeft,
+                          minWidth: _peekVisualHeight * .72,
+                          maxWidth: _peekVisualHeight * .72,
+                          minHeight: _peekVisualHeight,
+                          maxHeight: _peekVisualHeight,
+                          child: FinCharacter(
+                            size: _peekVisualHeight,
+                            controller: controller,
+                            isPeeking: true,
+                            peekingOnLeft: isLeft,
+                            peekReveal: (peekWindow /
+                                    (_peekVisualHeight * .72))
+                                .clamp(.5, 1)
+                                .toDouble(),
+                            animationsEnabled: prefs.animationsEnabled,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Tight hit region over the visible head/hand only.
+                  Positioned(
+                    left: isLeft ? region.left : null,
+                    right: isLeft
+                        ? null
+                        : math.max(0.0, constraints.maxWidth - region.right),
+                    top: y + 24,
+                    width: _peekHitWidth,
+                    height: _peekHitHeight,
                     child: Semantics(
                       button: true,
                       label: 'Open FIN mini companion',
@@ -392,47 +494,26 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
                       },
                       child: GestureDetector(
                         key: const ValueKey('global_fin_peeking_character'),
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          controller.setPeekExpanded(true);
-                          if (!provider.isLoading &&
-                              !provider.isExecutingAction &&
-                              controller.state == FinCharacterState.idle) {
-                            controller.onGreeting();
-                          }
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () => _greetThenRelax(provider),
+                        onLongPress: () {
+                          _greetingTimer?.cancel();
+                          controller.dismissFloating();
                         },
-                        onLongPress: controller.dismissFloating,
                         onVerticalDragUpdate: (details) => setState(
                           () => _vertical =
                               (_vertical +
                                       details.delta.dy /
                                           math.max(
                                             1,
-                                            region.height - handleHeight,
+                                            region.height - _peekVisualHeight,
                                           ))
                                   .clamp(0, 1),
-                        ),
-                        child: ClipRect(
-                          child: OverflowBox(
-                            alignment: isLeft
-                                ? Alignment.topRight
-                                : Alignment.topLeft,
-                            minWidth: 106,
-                            maxWidth: 106,
-                            minHeight: 148,
-                            maxHeight: 148,
-                            child: FinCharacter(
-                              size: 148,
-                              controller: controller,
-                              isPeeking: true,
-                              peekingOnLeft: isLeft,
-                              animationsEnabled: prefs.animationsEnabled,
-                            ),
-                          ),
                         ),
                       ),
                     ),
                   ),
+                ],
               ],
             );
           },

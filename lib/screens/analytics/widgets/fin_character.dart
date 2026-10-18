@@ -14,6 +14,9 @@ class FinCharacter extends StatefulWidget {
   final FinVisualController? controller;
   final bool isPeeking, peekingOnLeft;
   final double peekProgress;
+  /// Fraction of the character's width that is inside the visible window.
+  /// Used so the gripping hand lands on the clipped edge at every width.
+  final double peekReveal;
   const FinCharacter({
     super.key,
     this.state = FinCharacterState.idle,
@@ -26,6 +29,7 @@ class FinCharacter extends StatefulWidget {
     this.isPeeking = false,
     this.peekingOnLeft = false,
     this.peekProgress = 0,
+    this.peekReveal = .8,
   });
   @override
   State<FinCharacter> createState() => _FinCharacterState();
@@ -41,6 +45,11 @@ class _FinCharacterState extends State<FinCharacter>
     vsync: this,
     value: 1,
     duration: const Duration(milliseconds: 1800),
+  );
+  /// Very slow weight shift: one small posture adjustment per cycle.
+  late final AnimationController _posture = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 17000),
   );
   FinCharacterState? _observedState;
   FinCharacterState get _state => widget.controller?.state ?? widget.state;
@@ -75,10 +84,13 @@ class _FinCharacterState extends State<FinCharacter>
     }
     if (_motionAllowed) {
       if (!_idle.isAnimating) _idle.repeat();
+      if (!_posture.isAnimating) _posture.repeat();
     } else {
       _idle.stop();
       _gesture.stop();
+      _posture.stop();
       _gesture.value = 1;
+      _posture.value = 0;
     }
   }
 
@@ -103,6 +115,7 @@ class _FinCharacterState extends State<FinCharacter>
     widget.controller?.removeListener(_changed);
     _idle.dispose();
     _gesture.dispose();
+    _posture.dispose();
     super.dispose();
   }
 
@@ -124,16 +137,18 @@ class _FinCharacterState extends State<FinCharacter>
                 : Duration.zero,
             curve: Curves.easeInOutCubic,
             builder: (context, posture, _) => AnimatedBuilder(
-              animation: Listenable.merge([_idle, _gesture]),
+              animation: Listenable.merge([_idle, _gesture, _posture]),
               builder: (context, _) => CustomPaint(
                 painter: _FinPainter(
                   pose: posture,
                   state: _state,
                   phase: _motionAllowed ? _idle.value : 0,
                   gesture: _gesture.value,
+                  adjust: _motionAllowed ? _postureAdjustment(_posture.value) : 0,
                   dark: Theme.of(context).brightness == Brightness.dark,
                   peeking: widget.isPeeking && widget.peekProgress < .5,
                   left: widget.peekingOnLeft,
+                  reveal: widget.peekReveal.clamp(.5, 1),
                 ),
               ),
             ),
@@ -142,6 +157,12 @@ class _FinCharacterState extends State<FinCharacter>
       ),
     ),
   );
+}
+
+/// A single calm weight shift per cycle, flat for the rest of it.
+double _postureAdjustment(double t) {
+  if (t < .58 || t > .80) return 0;
+  return math.sin(((t - .58) / .22) * math.pi);
 }
 
 /// Angles start with the arm pointing down. Feet never move with breathing.
@@ -240,15 +261,19 @@ class _FinPainter extends CustomPainter {
   final FinCharacterState state;
   final double phase;
   final double gesture;
+  final double adjust;
   final bool dark, peeking, left;
+  final double reveal;
   const _FinPainter({
     required this.pose,
     required this.state,
     required this.phase,
     required this.gesture,
+    required this.adjust,
     required this.dark,
     required this.peeking,
     required this.left,
+    required this.reveal,
   });
   static const navy = Color(0xFF07172B),
       cyan = Color(0xFF41E5F2),
@@ -284,7 +309,12 @@ class _FinPainter extends CustomPainter {
     _metal(c, const Rect.fromLTWH(86, 204, 58, 7), 3);
     c.save();
     c.translate(115, 208);
-    c.rotate(pose.torso + breath * .004);
+    c.rotate(
+      pose.torso +
+          breath * .004 +
+          adjust * .012 +
+          (peeking ? (left ? -.018 : .018) : 0),
+    );
     c.translate(-115, -208);
     c.save();
     c.translate(115, 202);
@@ -435,7 +465,12 @@ class _FinPainter extends CustomPainter {
     final wave = state == FinCharacterState.greeting
         ? math.sin(gesture * math.pi * 4) * .12 * (1 - gesture)
         : 0;
-    c.rotate(shoulder + breath * .008 + (side < 0 ? wave : 0));
+    c.rotate(
+      shoulder +
+          breath * .008 +
+          (side < 0 ? wave : 0) +
+          (side > 0 ? adjust * .045 : 0),
+    );
     _joint(c, Offset.zero, 10);
     _shell(c, const Rect.fromLTWH(-11, -8, 22, 23), 10);
     _shell(c, const Rect.fromLTWH(-8, 10, 16, 32), 8);
@@ -481,7 +516,12 @@ class _FinPainter extends CustomPainter {
   void _head(Canvas c) {
     c.save();
     c.translate(115, 111);
-    c.rotate(pose.head + breath * .012 + (peeking ? (left ? .12 : -.12) : 0));
+    c.rotate(
+      pose.head +
+          breath * .012 +
+          adjust * .02 +
+          (peeking ? (left ? .12 : -.12) : 0),
+    );
     c.translate(-115, -111);
     _joint(c, const Offset(57, 76), 11);
     _joint(c, const Offset(173, 76), 11);
@@ -611,17 +651,17 @@ class _FinPainter extends CustomPainter {
     );
   }
 
+  /// The far arm enters from beyond the clipped edge, fingers curling over it
+  /// as if holding on while FIN leans into the page.
   void _peekingArm(Canvas c) {
-    final shoulder = Offset(left ? 159 : 71, 134);
-    final elbow = Offset(left ? 183 : 47, 151);
-    final hand = Offset(left ? 150 : 80, 131);
-    _joint(c, shoulder, 10);
-    _segment(c, shoulder, elbow, 17, 14);
-    _joint(c, elbow, 7);
-    _segment(c, elbow, hand, 16, 14);
+    // The clipped edge in model space, e.g. x≈130 when 57% is revealed.
+    final edge = left ? 230 * (1 - reveal) : 230 * reveal;
+    final wrist = Offset(left ? edge - 26 : edge + 26, 158);
+    final hand = Offset(left ? edge + 6 : edge - 6, 129);
+    _segment(c, wrist, hand, 16, 13);
     c.save();
     c.translate(hand.dx, hand.dy);
-    c.rotate(left ? -.18 : .18);
+    c.rotate(left ? -.2 : .2);
     _hand(c);
     c.restore();
   }
@@ -632,7 +672,9 @@ class _FinPainter extends CustomPainter {
       old.state != state ||
       old.phase != phase ||
       old.gesture != gesture ||
+      old.adjust != adjust ||
       old.dark != dark ||
       old.peeking != peeking ||
-      old.left != left;
+      old.left != left ||
+      old.reveal != reveal;
 }

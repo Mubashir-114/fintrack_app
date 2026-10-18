@@ -26,15 +26,16 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   StreamSubscription<bool>? _connectivitySubscription;
   bool _wasOffline = false;
-  bool _finReady = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    // FIN is mounted immediately with the default (visible) preferences so a
+    // slow or failed preference request can never hide the companion entirely.
+    // Saved preferences are applied as soon as they arrive.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      await context.read<AnalyticsProvider>().loadCompanionPreferences();
-      if (mounted) setState(() => _finReady = true);
+      context.read<AnalyticsProvider>().loadCompanionPreferences();
     });
     _connectivitySubscription = ConnectivityService.connectionStream.listen((
       isOnline,
@@ -243,7 +244,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ],
             ),
           ),
-          if (_finReady) const Positioned.fill(child: GlobalFinOverlay()),
+          const Positioned.fill(child: GlobalFinOverlay()),
         ],
       ),
       bottomNavigationBar: !isTablet
