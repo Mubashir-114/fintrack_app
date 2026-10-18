@@ -1,530 +1,459 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
 import '../../../core/constants/app_colors.dart';
 import '../../../providers/analytics_provider.dart';
+import '../../../models/companion_model.dart';
 import 'fin_character.dart';
-import 'fin_visual_controller.dart';
 
-/// FinTrack 2.0 — Global Persistent FIN Peeking Character Overlay
-///
-/// Implemented at the authenticated shell layer (`MainNavigationScreen`).
-/// - Peeks out from the screen edge (right or left) with bezel-gripping gesture
-/// - Eyes observant of current screen content, gentle breathing and leaf motion
-/// - Smoothly emerges when tapped, offering warm greeting and functional actions
-/// - Keyboard-aware: gracefully hides when typing
-/// - Suppressed when full conversation screen (/analytics) is open to avoid duplicates
-/// - Reduced-motion compliant, 60 FPS targeted
+/// Both navigators report popups so FIN cannot sit above a dialog or sheet.
+class FinOverlayObserver extends NavigatorObserver {
+  static final obscured = ValueNotifier<bool>(false);
+  static final Set<Route<dynamic>> _popups = {};
+  void _update() => obscured.value = _popups.isNotEmpty;
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    if (route is PopupRoute) _popups.add(route);
+    _update();
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _popups.remove(route);
+    _update();
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _popups.remove(route);
+    _update();
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    _popups.remove(oldRoute);
+    if (newRoute is PopupRoute) _popups.add(newRoute);
+    _update();
+  }
+}
+
+/// Restricted to browsing surfaces; forms, import and security stay unobstructed.
 class GlobalFinOverlay extends StatefulWidget {
   const GlobalFinOverlay({super.key});
-
+  static const peekWidth = 44.0;
+  static bool supportsLocation(String location) => const {
+    '/dashboard',
+    '/transactions',
+    '/budgets',
+    '/reports',
+    '/planning',
+    '/profile',
+    '/accounts',
+  }.contains(location);
   @override
   State<GlobalFinOverlay> createState() => _GlobalFinOverlayState();
 }
 
 class _GlobalFinOverlayState extends State<GlobalFinOverlay>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _emergenceController;
-  late final Animation<double> _emergenceAnimation;
-  bool _isExpanded = false;
+    with WidgetsBindingObserver {
+  double _vertical = .42;
+  String? _location;
+  bool _foreground = true;
 
   @override
   void initState() {
     super.initState();
-    _emergenceController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 360),
-    );
-    _emergenceAnimation = CurvedAnimation(
-      parent: _emergenceController,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    );
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeMetrics() {
+    // Scaffold may consume the keyboard inset without changing MediaQuery
+    // below it. Rebuild from the view metrics even in that case.
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (mounted) {
+      setState(() => _foreground = state == AppLifecycleState.resumed);
+    }
   }
 
   @override
   void dispose() {
-    _emergenceController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  void _toggleEmergence(FinVisualController controller) {
-    final media = MediaQuery.maybeOf(context);
-    final disableAnimations = media?.disableAnimations ?? false;
-
-    if (_isExpanded) {
-      if (disableAnimations) {
-        _emergenceController.value = 0.0;
-      } else {
-        _emergenceController.reverse();
-      }
-      controller.onIdle();
-      setState(() => _isExpanded = false);
-    } else {
-      controller.onGreeting();
-      if (disableAnimations) {
-        _emergenceController.value = 1.0;
-      } else {
-        _emergenceController.forward();
-      }
-      setState(() => _isExpanded = true);
-    }
-  }
-
-  void _collapse(FinVisualController controller) {
-    if (!_isExpanded) return;
-    final media = MediaQuery.maybeOf(context);
-    final disableAnimations = media?.disableAnimations ?? false;
-    if (disableAnimations) {
-      _emergenceController.value = 0.0;
-    } else {
-      _emergenceController.reverse();
-    }
-    controller.onIdle();
-    setState(() => _isExpanded = false);
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AnalyticsProvider>();
-    final prefs = provider.companionPreferences;
-    final visualController = provider.visualController;
-    final colors = AppColors.of(context);
-    final media = MediaQuery.of(context);
-
-    // 1. Hide if disabled by user settings
-    if (!prefs.showAcrossApp) {
-      return const SizedBox.shrink();
-    }
-
-    // 2. Hide when on full companion conversation screen (/analytics) to avoid duplicate FIN
-    final location = GoRouterState.of(context).matchedLocation;
-    if (visualController.isFullCompanionOpen ||
-        location.contains('analytics') ||
-        location.startsWith('/analytics')) {
-      return const SizedBox.shrink();
-    }
-
-    // 3. Keyboard awareness: if keyboard is open, collapse and hide out of sight
-    final isKeyboardVisible = media.viewInsets.bottom > 50;
-    if (isKeyboardVisible && _isExpanded) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _collapse(visualController);
-      });
-    }
-
-    final isLeftEdge = prefs.edgePosition.toLowerCase().trim() == 'left';
-    final screenHeight = media.size.height;
-    final topPosition = screenHeight * 0.40;
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Dismiss backdrop when expanded
-        if (_isExpanded)
-          GestureDetector(
-            key: const ValueKey('global_fin_backdrop'),
-            onTap: () => _collapse(visualController),
-            behavior: HitTestBehavior.translucent,
-            child: Container(
-              color: Colors.black.withValues(alpha: 0.15),
-            ),
-          ),
-
-        // Animated Peeking Character & Emergence Panel
-        AnimatedBuilder(
-          animation: _emergenceAnimation,
-          builder: (context, _) {
-            final progress = _emergenceAnimation.value;
-            // When keyboard is visible, slide character off-screen behind the edge
-            final keyboardSlide = isKeyboardVisible ? 100.0 : 0.0;
-
-            final characterWidth = 98.0;
-            final characterHeight = 106.0;
-
-            // Character positioning
-            // Idle peeking: sits partially behind bezel, visible footprint ~54px
-            // Fully emerged: steps out into the screen
-            final peekingTuck = (1.0 - progress) * (characterWidth * 0.44);
-
-            final rightPos = isLeftEdge
-                ? null
-                : (keyboardSlide - peekingTuck);
-            final leftPos = isLeftEdge
-                ? (keyboardSlide - peekingTuck)
-                : null;
-
-            return Positioned(
-              top: topPosition,
-              right: rightPos,
-              left: leftPos,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 200),
-                opacity: isKeyboardVisible ? 0.0 : 1.0,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    if (!isLeftEdge && progress > 0.05)
-                      _buildEmergencePanel(
-                        context,
-                        colors,
-                        provider,
-                        visualController,
-                        progress,
-                        isLeftEdge,
-                      ),
-
-                    // Peeking FIN Character Widget
-                    Semantics(
-                      button: true,
-                      label: _isExpanded ? 'Dismiss FIN companion' : 'Meet FIN companion',
-                      child: GestureDetector(
-                        key: const ValueKey('global_fin_peeking_character'),
-                        onTap: () => _toggleEmergence(visualController),
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(
-                          width: characterWidth,
-                          height: characterHeight,
-                          alignment: isLeftEdge ? Alignment.centerLeft : Alignment.centerRight,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              // Character Aura Glow when emerging
-                              if (progress > 0.1)
-                                Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF41E5F2)
-                                            .withValues(alpha: 0.28 * progress),
-                                        blurRadius: 22,
-                                        spreadRadius: 2,
+    final controller = provider.visualController;
+    return ListenableBuilder(
+      listenable: Listenable.merge([controller, FinOverlayObserver.obscured]),
+      builder: (context, _) {
+        final location = GoRouterState.of(context).matchedLocation;
+        if (_location != location) {
+          _location = location;
+          // Route changes never reopen a mini panel.
+          if (controller.isPeekExpanded) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) controller.setPeekExpanded(false);
+            });
+          }
+        }
+        final prefs = provider.companionPreferences;
+        final media = MediaQuery.of(context);
+        final hidden =
+            !_foreground ||
+            !prefs.showAcrossApp ||
+            controller.isFloatingDismissed ||
+            controller.isFullCompanionOpen ||
+            !GlobalFinOverlay.supportsLocation(location) ||
+            (media.viewInsets.bottom > 0 ||
+                View.of(context).viewInsets.bottom > 0) ||
+            FinOverlayObserver.obscured.value;
+        if (hidden) {
+          if (controller.isPeekExpanded) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) controller.setPeekExpanded(false);
+            });
+          }
+          return const SizedBox.shrink();
+        }
+        final isLeft = prefs.edgePosition == 'left';
+        final expanded = controller.isPeekExpanded;
+        final colors = AppColors.of(context);
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            // Work inside one unoccluded display region on a hinged device.
+            var region = Rect.fromLTRB(
+              media.padding.left,
+              media.padding.top + 64,
+              constraints.maxWidth - media.padding.right,
+              constraints.maxHeight - media.padding.bottom - 16,
+            );
+            for (final feature in media.displayFeatures) {
+              if (feature.bounds.height > feature.bounds.width &&
+                  feature.bounds.height > 0) {
+                region = isLeft
+                    ? Rect.fromLTRB(
+                        region.left,
+                        region.top,
+                        math.min(region.right, feature.bounds.left),
+                        region.bottom,
+                      )
+                    : Rect.fromLTRB(
+                        math.max(region.left, feature.bounds.right),
+                        region.top,
+                        region.right,
+                        region.bottom,
+                      );
+              } else if (feature.bounds.width > 0) {
+                region = Rect.fromLTRB(
+                  region.left,
+                  region.top,
+                  region.right,
+                  math.min(region.bottom, feature.bounds.top),
+                );
+              }
+            }
+            if (region.width < 180 || region.height < 120) {
+              return const SizedBox.shrink();
+            }
+            const handleHeight = 104.0;
+            final y = (region.top + (region.height - handleHeight) * _vertical)
+                .clamp(region.top, region.bottom - handleHeight);
+            final panelWidth = math.min(320.0, region.width - 16);
+            final panelHeight = math.min(360.0, region.height);
+            final panelTop = (y - 36).clamp(
+              region.top,
+              math.max(region.top, region.bottom - panelHeight),
+            );
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                if (expanded)
+                  Positioned(
+                    left: isLeft
+                        ? region.left + 8
+                        : region.right - panelWidth - 8,
+                    top: panelTop.toDouble(),
+                    width: panelWidth,
+                    child: TapRegion(
+                      onTapOutside: (_) => controller.setPeekExpanded(false),
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: 1),
+                        duration: media.disableAnimations
+                            ? Duration.zero
+                            : const Duration(milliseconds: 220),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, child) => Opacity(
+                          opacity: value,
+                          child: Transform.translate(
+                            offset: Offset((isLeft ? -8 : 8) * (1 - value), 0),
+                            child: child,
+                          ),
+                        ),
+                        child: Material(
+                          key: const ValueKey('global_fin_action_panel'),
+                          elevation: 12,
+                          shadowColor: colors.textPrimary.withValues(
+                            alpha: .18,
+                          ),
+                          color: colors.surface,
+                          borderRadius: BorderRadius.circular(22),
+                          clipBehavior: Clip.antiAlias,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxHeight: panelHeight),
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      FinCharacter(
+                                        size: 56,
+                                        controller: controller,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          'FIN is here',
+                                          style: TextStyle(
+                                            color: colors.textPrimary,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        key: const ValueKey(
+                                          'global_fin_edge_switch',
+                                        ),
+                                        tooltip:
+                                            'Move FIN to the ${isLeft ? "right" : "left"} edge',
+                                        onPressed: () =>
+                                            provider.updateCompanionPreferences(
+                                              prefs.copyWith(
+                                                edgePosition: isLeft
+                                                    ? 'right'
+                                                    : 'left',
+                                              ),
+                                            ),
+                                        icon: const Icon(
+                                          Icons.swap_horiz_rounded,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        key: const ValueKey(
+                                          'global_fin_action_close',
+                                        ),
+                                        tooltip: 'Minimize FIN',
+                                        onPressed: () =>
+                                            controller.setPeekExpanded(false),
+                                        icon: const Icon(Icons.close_rounded),
                                       ),
                                     ],
                                   ),
-                                ),
-
-                              FinCharacter(
-                                size: 96,
-                                state: visualController.state,
-                                controller: visualController,
-                                isPeeking: true,
-                                peekingOnLeft: isLeftEdge,
-                                peekProgress: progress,
-                                animationsEnabled: prefs.animationsEnabled,
-                              ),
-
-                              // Quick status pill when peeking with speech bubble
-                              if (visualController.speechBubbleText != null &&
-                                  visualController.speechBubbleText!.isNotEmpty &&
-                                  progress < 0.2)
-                                Positioned(
-                                  top: 0,
-                                  right: isLeftEdge ? null : 40,
-                                  left: isLeftEdge ? 40 : null,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF07142D),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: const Color(0xFF41E5F2).withValues(alpha: 0.6),
-                                        width: 1,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.3),
-                                          blurRadius: 8,
-                                        ),
-                                      ],
-                                    ),
-                                    child: Text(
-                                      visualController.speechBubbleText!,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                  Text(
+                                    prefs.enablePersonalizedGreetings &&
+                                            (prefs.preferredName
+                                                    ?.trim()
+                                                    .isNotEmpty ??
+                                                false)
+                                        ? 'Hi, ${prefs.preferredName!.trim()}.'
+                                        : 'Your money, a little clearer.',
+                                    style: TextStyle(
+                                      color: colors.textPrimary,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                ),
-                            ],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    provider.isLoading
+                                        ? 'Reviewing your saved records…'
+                                        : provider.activeAlerts.isNotEmpty
+                                        ? provider.activeAlerts.first.title
+                                        : 'Explore the records you have approved in FinTrack.',
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: colors.textSecondary,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _action(
+                                    context,
+                                    'global_fin_action_talk',
+                                    Icons.chat_bubble_outline_rounded,
+                                    'Talk to FIN',
+                                    () {
+                                      controller.setPeekExpanded(false);
+                                      context.push('/analytics');
+                                    },
+                                  ),
+                                  _action(
+                                    context,
+                                    'global_fin_action_spending',
+                                    Icons.pie_chart_outline_rounded,
+                                    'My spending',
+                                    () {
+                                      controller.setPeekExpanded(false);
+                                      context.push(
+                                        Uri(
+                                          path: '/analytics',
+                                          queryParameters: {
+                                            'q':
+                                                'How much did I spend this month?',
+                                          },
+                                        ).toString(),
+                                      );
+                                    },
+                                  ),
+                                  _action(
+                                    context,
+                                    'global_fin_action_budget',
+                                    Icons.account_balance_wallet_outlined,
+                                    'Budget check',
+                                    () {
+                                      controller.setPeekExpanded(false);
+                                      context.go('/budgets');
+                                    },
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextButton.icon(
+                                          key: const ValueKey(
+                                            'global_fin_vertical_switch',
+                                          ),
+                                          onPressed: () {
+                                            controller.setPeekExpanded(false);
+                                            setState(
+                                              () => _vertical = _vertical < .5
+                                                  ? .85
+                                                  : .15,
+                                            );
+                                          },
+                                          icon: const Icon(
+                                            Icons.height_rounded,
+                                          ),
+                                          label: const Text('Move up / down'),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        key: const ValueKey(
+                                          'global_fin_dismiss',
+                                        ),
+                                        tooltip: 'Dismiss FIN for this session',
+                                        onPressed: controller.dismissFloating,
+                                        icon: const Icon(
+                                          Icons.visibility_off_outlined,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-
-                    if (isLeftEdge && progress > 0.05)
-                      _buildEmergencePanel(
-                        context,
-                        colors,
-                        provider,
-                        visualController,
-                        progress,
-                        isLeftEdge,
+                  ),
+                if (!expanded)
+                  Positioned(
+                    left: isLeft
+                        ? region.left
+                        : region.right - GlobalFinOverlay.peekWidth,
+                    top: y,
+                    width: GlobalFinOverlay.peekWidth,
+                    height: handleHeight,
+                    child: Semantics(
+                      button: true,
+                      label: 'Open FIN mini companion',
+                      hint:
+                          'Drag up or down to reposition. Long press to dismiss.',
+                      customSemanticsActions: {
+                        CustomSemanticsAction(
+                          label: 'Dismiss FIN for this session',
+                        ): controller.dismissFloating,
+                        CustomSemanticsAction(
+                          label: 'Move FIN up or down',
+                        ): () => setState(
+                          () => _vertical = _vertical < .5 ? .85 : .15,
+                        ),
+                      },
+                      child: GestureDetector(
+                        key: const ValueKey('global_fin_peeking_character'),
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          controller.setPeekExpanded(true);
+                          if (!provider.isLoading &&
+                              !provider.isExecutingAction &&
+                              controller.state == FinCharacterState.idle) {
+                            controller.onGreeting();
+                          }
+                        },
+                        onLongPress: controller.dismissFloating,
+                        onVerticalDragUpdate: (details) => setState(
+                          () => _vertical =
+                              (_vertical +
+                                      details.delta.dy /
+                                          math.max(
+                                            1,
+                                            region.height - handleHeight,
+                                          ))
+                                  .clamp(0, 1),
+                        ),
+                        child: ClipRect(
+                          child: OverflowBox(
+                            alignment: isLeft
+                                ? Alignment.topRight
+                                : Alignment.topLeft,
+                            minWidth: 106,
+                            maxWidth: 106,
+                            minHeight: 148,
+                            maxHeight: 148,
+                            child: FinCharacter(
+                              size: 148,
+                              controller: controller,
+                              isPeeking: true,
+                              peekingOnLeft: isLeft,
+                              animationsEnabled: prefs.animationsEnabled,
+                            ),
+                          ),
+                        ),
                       ),
-                  ],
-                ),
-              ),
+                    ),
+                  ),
+              ],
             );
           },
-        ),
-      ],
+        );
+      },
     );
   }
 
-  Widget _buildEmergencePanel(
+  Widget _action(
     BuildContext context,
-    dynamic colors,
-    AnalyticsProvider provider,
-    FinVisualController visualController,
-    double progress,
-    bool isLeftEdge,
-  ) {
-    final prefs = provider.companionPreferences;
-    final preferredName = prefs.preferredName?.trim();
-    final greetingText = (preferredName != null && preferredName.isNotEmpty)
-        ? "Hi, $preferredName! I'm FIN."
-        : "Hi! I'm FIN, your companion.";
-
-    // Active alert hint if present
-    String? alertHint;
-    if (provider.activeAlerts.isNotEmpty) {
-      alertHint = provider.activeAlerts.first.title;
-    }
-
-    return FadeTransition(
-      opacity: _emergenceAnimation,
-      child: Transform.scale(
-        scale: 0.85 + (progress * 0.15),
-        alignment: isLeftEdge ? Alignment.centerLeft : Alignment.centerRight,
-        child: Container(
-          key: const ValueKey('global_fin_action_panel'),
-          width: 245,
-          margin: const EdgeInsets.symmetric(horizontal: 6),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0A1329),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: const Color(0xFF41E5F2).withValues(alpha: 0.35),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.45),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-              BoxShadow(
-                color: const Color(0xFF41E5F2).withValues(alpha: 0.12),
-                blurRadius: 15,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header: Identity & Status Pill & Close
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF41E5F2).withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: const Color(0xFF41E5F2).withValues(alpha: 0.4),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Color(0xFF06D6A0),
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        const Text(
-                          "FIN is here",
-                          style: TextStyle(
-                            color: Color(0xFF41E5F2),
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  // Switch edge toggle button
-                  InkWell(
-                    key: const ValueKey('global_fin_edge_switch'),
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      final newEdge = isLeftEdge ? 'right' : 'left';
-                      provider.updateCompanionPreferences(
-                        prefs.copyWith(edgePosition: newEdge),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(
-                        isLeftEdge
-                            ? Icons.arrow_forward_ios_rounded
-                            : Icons.arrow_back_ios_new_rounded,
-                        size: 13,
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  // Close button
-                  InkWell(
-                    key: const ValueKey('global_fin_action_close'),
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => _collapse(visualController),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(
-                        Icons.close_rounded,
-                        size: 16,
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 10),
-
-              // Warm Greeting & Contextual Prompt
-              Text(
-                greetingText,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                alertHint != null
-                    ? "Alert: $alertHint"
-                    : "Ready to explore your money story or check budgets?",
-                style: TextStyle(
-                  color: alertHint != null
-                      ? const Color(0xFFF4B942)
-                      : Colors.white.withValues(alpha: 0.7),
-                  fontSize: 11,
-                  height: 1.3,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: Color(0xFF1E2D4D)),
-              const SizedBox(height: 10),
-
-              // Action Buttons
-              _buildActionButton(
-                key: const ValueKey('global_fin_action_talk'),
-                icon: Icons.chat_bubble_outline_rounded,
-                label: "Talk to FIN",
-                accentColor: const Color(0xFF41E5F2),
-                onTap: () {
-                  _collapse(visualController);
-                  context.push('/analytics');
-                },
-              ),
-              const SizedBox(height: 6),
-              _buildActionButton(
-                key: const ValueKey('global_fin_action_spending'),
-                icon: Icons.pie_chart_outline_rounded,
-                label: "My spending",
-                accentColor: const Color(0xFFF4B942),
-                onTap: () {
-                  _collapse(visualController);
-                  context.push('/analytics?q=How much did I spend this month?');
-                },
-              ),
-              const SizedBox(height: 6),
-              _buildActionButton(
-                key: const ValueKey('global_fin_action_budget'),
-                icon: Icons.account_balance_wallet_outlined,
-                label: "Budget check",
-                accentColor: const Color(0xFF06D6A0),
-                onTap: () {
-                  _collapse(visualController);
-                  context.go('/budgets');
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required Key key,
-    required IconData icon,
-    required String label,
-    required Color accentColor,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      key: key,
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          decoration: BoxDecoration(
-            color: const Color(0xFF13203C),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: accentColor.withValues(alpha: 0.25),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 14, color: accentColor),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 11,
-                color: Colors.white.withValues(alpha: 0.5),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+    String key,
+    IconData icon,
+    String label,
+    VoidCallback onTap,
+  ) => ListTile(
+    key: ValueKey(key),
+    minTileHeight: 48,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+    leading: Icon(icon, color: AppColors.of(context).primary),
+    title: Text(label),
+    trailing: const Icon(Icons.chevron_right_rounded, size: 18),
+    onTap: onTap,
+  );
 }

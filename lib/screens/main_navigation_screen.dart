@@ -17,10 +17,7 @@ import 'analytics/widgets/global_fin_overlay.dart';
 class MainNavigationScreen extends StatefulWidget {
   final Widget child;
 
-  const MainNavigationScreen({
-    super.key,
-    required this.child,
-  });
+  const MainNavigationScreen({super.key, required this.child});
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
@@ -29,11 +26,19 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   StreamSubscription<bool>? _connectivitySubscription;
   bool _wasOffline = false;
+  bool _finReady = false;
 
   @override
   void initState() {
     super.initState();
-    _connectivitySubscription = ConnectivityService.connectionStream.listen((isOnline) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await context.read<AnalyticsProvider>().loadCompanionPreferences();
+      if (mounted) setState(() => _finReady = true);
+    });
+    _connectivitySubscription = ConnectivityService.connectionStream.listen((
+      isOnline,
+    ) {
       if (isOnline && _wasOffline) {
         _syncData();
       }
@@ -49,7 +54,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _syncData() {
     if (!mounted) return;
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Row(
@@ -127,7 +132,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             labelType: NavigationRailLabelType.all,
             backgroundColor: theme.colorScheme.surface,
             indicatorColor: theme.colorScheme.primary.withValues(alpha: 0.14),
-            selectedLabelTextStyle: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 11),
+            selectedLabelTextStyle: TextStyle(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
             unselectedLabelTextStyle: TextStyle(
               color: colors.textSecondary,
               fontSize: 11,
@@ -135,27 +144,42 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             destinations: [
               NavigationRailDestination(
                 icon: const Icon(Icons.grid_view_rounded),
-                selectedIcon: Icon(Icons.grid_view_rounded, color: theme.colorScheme.primary),
+                selectedIcon: Icon(
+                  Icons.grid_view_rounded,
+                  color: theme.colorScheme.primary,
+                ),
                 label: const Text('Dashboard'),
               ),
               NavigationRailDestination(
                 icon: const Icon(Icons.receipt_long_rounded),
-                selectedIcon: Icon(Icons.receipt_long_rounded, color: theme.colorScheme.primary),
+                selectedIcon: Icon(
+                  Icons.receipt_long_rounded,
+                  color: theme.colorScheme.primary,
+                ),
                 label: const Text('Transactions'),
               ),
               NavigationRailDestination(
                 icon: const Icon(Icons.account_balance_wallet_rounded),
-                selectedIcon: Icon(Icons.account_balance_wallet_rounded, color: theme.colorScheme.primary),
+                selectedIcon: Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: theme.colorScheme.primary,
+                ),
                 label: const Text('Budgets'),
               ),
               NavigationRailDestination(
                 icon: const Icon(Icons.bar_chart_rounded),
-                selectedIcon: Icon(Icons.bar_chart_rounded, color: theme.colorScheme.primary),
+                selectedIcon: Icon(
+                  Icons.bar_chart_rounded,
+                  color: theme.colorScheme.primary,
+                ),
                 label: const Text('Reports'),
               ),
               NavigationRailDestination(
                 icon: const Icon(Icons.person_rounded),
-                selectedIcon: Icon(Icons.person_rounded, color: theme.colorScheme.primary),
+                selectedIcon: Icon(
+                  Icons.person_rounded,
+                  color: theme.colorScheme.primary,
+                ),
                 label: const Text('Profile'),
               ),
             ],
@@ -171,44 +195,55 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     return Scaffold(
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          Column(
-            children: [
-              StreamBuilder<bool>(
-                stream: ConnectivityService.connectionStream,
-                initialData: ConnectivityService.isOnline,
-                builder: (context, snapshot) {
-                  final isOnline = snapshot.data ?? true;
-                  if (isOnline) return const SizedBox.shrink();
-                  return Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 12),
-                    color: AppColors.danger.withValues(alpha: .94),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.wifi_off_rounded, color: Colors.white, size: 14),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            "Offline · Showing saved data. Changes need a connection.",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
+          Positioned.fill(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                StreamBuilder<bool>(
+                  stream: ConnectivityService.connectionStream,
+                  initialData: ConnectivityService.isOnline,
+                  builder: (context, snapshot) {
+                    final isOnline = snapshot.data ?? true;
+                    if (isOnline) return const SizedBox.shrink();
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 7,
+                        horizontal: 12,
+                      ),
+                      color: AppColors.danger.withValues(alpha: .94),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.wifi_off_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "Offline · Showing saved data. Changes need a connection.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              Expanded(child: mainLayout),
-            ],
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                Expanded(child: mainLayout),
+              ],
+            ),
           ),
-          const GlobalFinOverlay(),
+          if (_finReady) const Positioned.fill(child: GlobalFinOverlay()),
         ],
       ),
       bottomNavigationBar: !isTablet
@@ -216,7 +251,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.04),
+                    color: isDark
+                        ? Colors.black.withValues(alpha: 0.2)
+                        : Colors.black.withValues(alpha: 0.04),
                     blurRadius: 15,
                     offset: const Offset(0, -6),
                   ),
@@ -228,7 +265,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 backgroundColor: theme.colorScheme.surface,
                 selectedIndex: selectedIndex,
                 onDestinationSelected: (index) => _onItemTapped(index, context),
-                indicatorColor: theme.colorScheme.primary.withValues(alpha: 0.14),
+                indicatorColor: theme.colorScheme.primary.withValues(
+                  alpha: 0.14,
+                ),
                 labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
                 destinations: [
                   NavigationDestination(

@@ -21,18 +21,22 @@ import '../screens/accounts/account_detail_screen.dart';
 import '../screens/accounts/edit_account_screen.dart';
 import '../screens/transfers/transfer_screen.dart';
 import '../screens/analytics/analytics_screen.dart';
+import '../screens/analytics/widgets/global_fin_overlay.dart';
 import '../screens/planning/planning_screen.dart';
 import '../screens/planning/goal_detail_screen.dart';
 
 final GoRouter appRouter = GoRouter(
+  observers: [FinOverlayObserver()],
   initialLocation: '/splash',
-  
+
   redirect: (context, state) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final isLoggedIn = authProvider.isLoggedIn;
-    
+
     final isGoingToSplash = state.matchedLocation == '/splash';
-    final isGoingToAuth = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+    final isGoingToAuth =
+        state.matchedLocation == '/login' ||
+        state.matchedLocation == '/register';
 
     if (isGoingToSplash) {
       return null;
@@ -50,14 +54,8 @@ final GoRouter appRouter = GoRouter(
   },
 
   routes: [
-    GoRoute(
-      path: '/splash',
-      builder: (context, state) => const SplashScreen(),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
+    GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
+    GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
     GoRoute(
       path: '/register',
       builder: (context, state) => const RegisterScreen(),
@@ -75,6 +73,7 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     ShellRoute(
+      observers: [FinOverlayObserver()],
       builder: (context, state, child) => MainNavigationScreen(child: child),
       routes: [
         GoRoute(
@@ -138,7 +137,9 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/accounts/transfer',
           builder: (context, state) {
-            final sourceId = int.tryParse(state.uri.queryParameters['sourceId'] ?? '');
+            final sourceId = int.tryParse(
+              state.uri.queryParameters['sourceId'] ?? '',
+            );
             return TransferScreen(initialSourceAccountId: sourceId);
           },
         ),

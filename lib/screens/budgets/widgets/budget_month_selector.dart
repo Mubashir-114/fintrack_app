@@ -37,7 +37,9 @@ class BudgetMonthSelector extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
-    final monthName = DateFormat('MMMM').format(DateTime(selectedYear, selectedMonth)).toUpperCase();
+    final monthName = DateFormat(
+      'MMMM',
+    ).format(DateTime(selectedYear, selectedMonth)).toUpperCase();
     final dateKey = ValueKey('$selectedMonth-$selectedYear');
 
     return Container(
@@ -45,10 +47,7 @@ class BudgetMonthSelector extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-        border: Border.all(
-          color: colors.cardBorder,
-          width: 1.0,
-        ),
+        border: Border.all(color: colors.cardBorder, width: 1.0),
         boxShadow: [
           BoxShadow(
             color: colors.primary.withValues(alpha: isDark ? 0.04 : 0.03),
@@ -83,20 +82,29 @@ class BudgetMonthSelector extends StatelessWidget {
                   Expanded(
                     child: InkWell(
                       onTap: onTapMonth,
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusMD,
+                      ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
+                        ),
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 8,
+                          runSpacing: 4,
                           children: [
                             Icon(
                               Icons.calendar_month_rounded,
                               size: 16,
                               color: colors.primary,
                             ),
-                            const SizedBox(width: 8),
                             AnimatedSwitcher(
-                              duration: reduceMotion ? Duration.zero : AppMotion.quick,
+                              duration: reduceMotion
+                                  ? Duration.zero
+                                  : AppMotion.quick,
                               transitionBuilder: (child, animation) {
                                 return FadeTransition(
                                   opacity: animation,
@@ -121,9 +129,11 @@ class BudgetMonthSelector extends StatelessWidget {
                               ),
                             ),
                             if (_isCurrentMonth) ...[
-                              const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: colors.primary.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(4),
