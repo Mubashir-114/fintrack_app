@@ -103,6 +103,7 @@ class AnalyticsProvider extends ChangeNotifier {
 
     // Phase 5E Companion Reset
     _companionPreferences = const CompanionPreferences();
+    visualController.resetPresence();
     _characterState = FinCharacterState.idle;
     _pendingAction = null;
     _isExecutingAction = false;
@@ -118,6 +119,8 @@ class AnalyticsProvider extends ChangeNotifier {
   }
 
   void clearConversation() {
+    if (_isLoading || _isExecutingAction) return;
+    visualController.onIdle();
     _messages = [];
     _conversationContext = null;
     _latestResult = null;
@@ -135,7 +138,7 @@ class AnalyticsProvider extends ChangeNotifier {
   /// operation pose over from the app-scoped provider's previous route visit.
   /// Conversation/results remain intact; only presentation/error flags reset.
   void prepareForScreenEntry() {
-    if (_isLoading || _isExecutingAction) return;
+    if (_isLoading || _isExecutingAction || _messages.isNotEmpty) return;
     _characterState = FinCharacterState.idle;
     visualController.onIdle();
     _errorMessage = null;
@@ -161,30 +164,28 @@ class AnalyticsProvider extends ChangeNotifier {
   }
 
   Future<void> loadCompanionPreferences() async {
+    var prefs = _companionPreferences;
     try {
       final res = await _repository.getCompanionPreferences();
-      var prefs = res.success ? res.data : _companionPreferences;
-
-      try {
-        final local = await CacheService.get('fin_companion_local_prefs').timeout(
-          const Duration(milliseconds: 150),
-          onTimeout: () => null,
-        );
-        if (local is Map<String, dynamic>) {
-          prefs = prefs.copyWith(
-            showAcrossApp: local['showAcrossApp'] as bool?,
-            edgePosition: local['edgePosition'] as String?,
-            proactiveHints: local['proactiveHints'] as bool?,
-          );
-        }
-      } catch (_) {}
-
-      _companionPreferences = prefs;
-      visualController.setAnimationsEnabled(prefs.animationsEnabled);
-      notifyListeners();
+      if (res.success) prefs = res.data;
     } catch (_) {
-      // Non-critical background fetch failure
+      // Local presence preferences still apply when the server is unavailable.
     }
+    try {
+      final local = await CacheService.get(
+        'fin_companion_local_prefs',
+      ).timeout(const Duration(milliseconds: 150), onTimeout: () => null);
+      if (local is Map<String, dynamic>) {
+        prefs = prefs.copyWith(
+          showAcrossApp: local['showAcrossApp'] as bool?,
+          edgePosition: local['edgePosition'] as String?,
+          proactiveHints: local['proactiveHints'] as bool?,
+        );
+      }
+    } catch (_) {}
+    _companionPreferences = prefs;
+    visualController.setAnimationsEnabled(prefs.animationsEnabled);
+    notifyListeners();
   }
 
   Future<bool> updateCompanionPreferences(CompanionPreferences prefs) async {
@@ -207,12 +208,16 @@ class AnalyticsProvider extends ChangeNotifier {
       } else {
         _companionPreferences = prefs;
       }
-      visualController.setAnimationsEnabled(_companionPreferences.animationsEnabled);
+      visualController.setAnimationsEnabled(
+        _companionPreferences.animationsEnabled,
+      );
       notifyListeners();
       return true;
     } catch (_) {
       _companionPreferences = prefs;
-      visualController.setAnimationsEnabled(_companionPreferences.animationsEnabled);
+      visualController.setAnimationsEnabled(
+        _companionPreferences.animationsEnabled,
+      );
       notifyListeners();
       return true;
     }
@@ -221,9 +226,9 @@ class AnalyticsProvider extends ChangeNotifier {
   Future<bool> resetCompanionPreferences() async {
     try {
       try {
-        await CacheService.remove('fin_companion_local_prefs').timeout(
-          const Duration(milliseconds: 150),
-        );
+        await CacheService.remove(
+          'fin_companion_local_prefs',
+        ).timeout(const Duration(milliseconds: 150));
       } catch (_) {}
       final res = await _repository.resetCompanionPreferences();
       if (res.success) {
@@ -231,7 +236,9 @@ class AnalyticsProvider extends ChangeNotifier {
       } else {
         _companionPreferences = const CompanionPreferences();
       }
-      visualController.setAnimationsEnabled(_companionPreferences.animationsEnabled);
+      visualController.setAnimationsEnabled(
+        _companionPreferences.animationsEnabled,
+      );
       notifyListeners();
       return true;
     } catch (_) {}
@@ -242,8 +249,10 @@ class AnalyticsProvider extends ChangeNotifier {
   }
 
   Future<bool> confirmPendingAction(FinActionPreview action) async {
+    if (_isLoading || _isExecutingAction) return false;
     _isExecutingAction = true;
     _characterState = FinCharacterState.thinking;
+    visualController.onQuerySubmitted();
     _errorMessage = null;
     _actionSuccessMessage = null;
     notifyListeners();
@@ -282,6 +291,7 @@ class AnalyticsProvider extends ChangeNotifier {
       _errorMessage = "Failed to execute action. Please try again.";
       return false;
     } finally {
+      visualController.setState(_characterState);
       _isExecutingAction = false;
       notifyListeners();
     }
@@ -306,7 +316,7 @@ class AnalyticsProvider extends ChangeNotifier {
     String? category,
   }) async {
     final trimmed = question.trim();
-    if (trimmed.isEmpty) return;
+    if (trimmed.isEmpty || _isLoading || _isExecutingAction) return;
 
     _lastQuestion = trimmed;
 
@@ -348,7 +358,11 @@ class AnalyticsProvider extends ChangeNotifier {
           _pendingAction = res.data.actionPreview;
         }
 
-        _characterState = FinCharacterState.fromString(res.data.characterState);
+        _characterState = res.data.isRefusal
+            ? FinCharacterState.emptyData
+            : res.data.actionPreview != null
+            ? FinCharacterState.explaining
+            : FinCharacterState.fromString(res.data.characterState);
         visualController.setState(_characterState);
 
         // Add assistant response to conversation list
@@ -361,7 +375,7 @@ class AnalyticsProvider extends ChangeNotifier {
           isRefusal: res.data.isRefusal,
           clarificationOptions: res.data.clarificationOptions,
           followUpSuggestions: res.data.followUpSuggestions,
-          characterState: res.data.characterState,
+          characterState: _characterState.key,
           actionPreview: res.data.actionPreview,
           navigationAction: res.data.navigationAction,
         );
@@ -380,6 +394,7 @@ class AnalyticsProvider extends ChangeNotifier {
       _errorMessage = "Unable to process query. Please try again.";
       visualController.onError(_errorMessage);
     } finally {
+      visualController.setState(_characterState);
       _isLoading = false;
       _isTyping = false;
       notifyListeners();
@@ -403,9 +418,11 @@ class AnalyticsProvider extends ChangeNotifier {
     String? period,
     String? category,
   }) async {
+    if (_isLoading || _isExecutingAction) return;
     _isLoading = true;
     _isTyping = true;
     _characterState = FinCharacterState.thinking;
+    visualController.onQuerySubmitted();
     _errorMessage = null;
     _isRateLimited = false;
     _isOffline = false;
@@ -431,7 +448,11 @@ class AnalyticsProvider extends ChangeNotifier {
           _pendingAction = res.data.actionPreview;
         }
 
-        _characterState = FinCharacterState.fromString(res.data.characterState);
+        _characterState = res.data.isRefusal
+            ? FinCharacterState.emptyData
+            : res.data.actionPreview != null
+            ? FinCharacterState.explaining
+            : FinCharacterState.fromString(res.data.characterState);
 
         final assistantMsg = ChatMessage(
           id: "a_${DateTime.now().millisecondsSinceEpoch}",
@@ -442,7 +463,7 @@ class AnalyticsProvider extends ChangeNotifier {
           isRefusal: res.data.isRefusal,
           clarificationOptions: res.data.clarificationOptions,
           followUpSuggestions: res.data.followUpSuggestions,
-          characterState: res.data.characterState,
+          characterState: _characterState.key,
           actionPreview: res.data.actionPreview,
           navigationAction: res.data.navigationAction,
         );
@@ -458,6 +479,7 @@ class AnalyticsProvider extends ChangeNotifier {
       _characterState = FinCharacterState.error;
       _errorMessage = "Unable to process intent. Please try again.";
     } finally {
+      visualController.setState(_characterState);
       _isLoading = false;
       _isTyping = false;
       notifyListeners();
@@ -514,14 +536,16 @@ class AnalyticsProvider extends ChangeNotifier {
         error.type == DioExceptionType.sendTimeout ||
         error.type == DioExceptionType.receiveTimeout) {
       _isOffline = true;
-      _errorMessage = "Request timed out. Please check your connection and retry.";
+      _errorMessage =
+          "Request timed out. Please check your connection and retry.";
     } else if (error.type == DioExceptionType.connectionError) {
       _isOffline = true;
       _errorMessage = "Offline Mode: Unable to connect to local server";
     } else if (error.response?.statusCode == 401) {
       _errorMessage = "Your session has expired. Please sign in again.";
     } else if (error.response?.statusCode == 403) {
-      _errorMessage = "This question couldn't be processed due to privacy limits.";
+      _errorMessage =
+          "This question couldn't be processed due to privacy limits.";
     } else if (error.response?.statusCode == 400) {
       final data = error.response?.data;
       if (data is Map && data['message'] != null) {
@@ -621,6 +645,12 @@ class AnalyticsProvider extends ChangeNotifier {
       _isLoadingAlerts = false;
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    visualController.dispose();
+    super.dispose();
   }
 
   Future<void> askAlertQuestion(SmartAlertItem alert, String question) async {

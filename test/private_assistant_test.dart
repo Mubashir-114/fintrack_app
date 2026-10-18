@@ -45,7 +45,8 @@ class MockAssistantRepository extends AnalyticsRepository {
         maxDateRangeDays: 365,
         maxQuestionLength: 200,
         readOnly: true,
-        privacyNotice: "Phase 5B assistant analyzed only saved FinTrack records.",
+        privacyNotice:
+            "Phase 5B assistant analyzed only saved FinTrack records.",
       ),
     );
   }
@@ -64,7 +65,8 @@ class MockAssistantRepository extends AnalyticsRepository {
     lastCapturedQuestion = question;
     lastCapturedContext = conversationContext;
 
-    final result = mockQueryResult ??
+    final result =
+        mockQueryResult ??
         AnalyticsQueryResult(
           intent: intent ?? "total_spending",
           isRefusal: false,
@@ -85,11 +87,7 @@ class MockAssistantRepository extends AnalyticsRepository {
           ),
         );
 
-    return ApiResponse(
-      success: true,
-      message: "Query processed",
-      data: result,
-    );
+    return ApiResponse(success: true, message: "Query processed", data: result);
   }
 
   @override
@@ -202,39 +200,45 @@ void main() {
       provider = AnalyticsProvider(repository: mockRepo);
     });
 
-    test('askQuestion appends user and assistant chat messages and maintains context', () async {
-      expect(provider.messages.isEmpty, true);
+    test(
+      'askQuestion appends user and assistant chat messages and maintains context',
+      () async {
+        expect(provider.messages.isEmpty, true);
 
-      await provider.askQuestion("How much did I spend this month?");
+        await provider.askQuestion("How much did I spend this month?");
 
-      expect(provider.messages.length, 2);
-      expect(provider.messages[0].sender, MessageSender.user);
-      expect(provider.messages[0].text, "How much did I spend this month?");
+        expect(provider.messages.length, 2);
+        expect(provider.messages[0].sender, MessageSender.user);
+        expect(provider.messages[0].text, "How much did I spend this month?");
 
-      expect(provider.messages[1].sender, MessageSender.assistant);
-      expect(provider.messages[1].text, contains("Your spending was"));
+        expect(provider.messages[1].sender, MessageSender.assistant);
+        expect(provider.messages[1].text, contains("Your spending was"));
 
-      expect(provider.conversationContext?.previousIntent, "total_spending");
-      expect(provider.conversationContext?.turnCount, 1);
+        expect(provider.conversationContext?.previousIntent, "total_spending");
+        expect(provider.conversationContext?.turnCount, 1);
 
-      // Multi-turn turn 2
-      await provider.askQuestion("What about last month?");
-      expect(provider.messages.length, 4);
-      expect(mockRepo.lastCapturedContext?.turnCount, 1);
-      expect(provider.conversationContext?.turnCount, 2);
-    });
+        // Multi-turn turn 2
+        await provider.askQuestion("What about last month?");
+        expect(provider.messages.length, 4);
+        expect(mockRepo.lastCapturedContext?.turnCount, 1);
+        expect(provider.conversationContext?.turnCount, 2);
+      },
+    );
 
-    test('clearConversation resets chat messages and context cleanly', () async {
-      await provider.askQuestion("Initial question");
-      expect(provider.messages.length, 2);
-      expect(provider.conversationContext != null, true);
+    test(
+      'clearConversation resets chat messages and context cleanly',
+      () async {
+        await provider.askQuestion("Initial question");
+        expect(provider.messages.length, 2);
+        expect(provider.conversationContext != null, true);
 
-      provider.clearConversation();
+        provider.clearConversation();
 
-      expect(provider.messages.isEmpty, true);
-      expect(provider.conversationContext, null);
-      expect(provider.latestResult, null);
-    });
+        expect(provider.messages.isEmpty, true);
+        expect(provider.conversationContext, null);
+        expect(provider.latestResult, null);
+      },
+    );
   });
 
   group('Phase 5B AnalyticsScreen Conversational UI', () {
@@ -248,9 +252,7 @@ void main() {
 
     Widget createTestWidget() {
       return MaterialApp(
-        theme: ThemeData(
-          splashFactory: NoSplash.splashFactory,
-        ),
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
         home: ChangeNotifierProvider<AnalyticsProvider>.value(
           value: provider,
           child: const AnalyticsScreen(),
@@ -258,11 +260,17 @@ void main() {
       );
     }
 
-    testWidgets('renders category comparison card with delta and percentages', (tester) async {
+    testWidgets('renders category comparison card with delta and percentages', (
+      tester,
+    ) async {
       mockRepo.mockQueryResult = const AnalyticsQueryResult(
         intent: "category_comparison",
         isRefusal: false,
-        period: AnalyticsPeriod(startDate: "2026-10-01", endDate: "2026-10-31", label: "October 2026"),
+        period: AnalyticsPeriod(
+          startDate: "2026-10-01",
+          endDate: "2026-10-31",
+          label: "October 2026",
+        ),
         metrics: {
           "categories": [
             {
@@ -289,7 +297,8 @@ void main() {
             "previousCount": 6,
           },
         },
-        answer: "Calculated Fact: Food & Dining had the largest spending increase.",
+        answer:
+            "Calculated Fact: Food & Dining had the largest spending increase.",
         privacyNotice: "Saved records only.",
         suggestions: [],
       );
@@ -306,11 +315,17 @@ void main() {
       expect(find.text("+50.0%"), findsOneWidget);
     });
 
-    testWidgets('renders category budget card with gauge and status', (tester) async {
+    testWidgets('renders category budget card with gauge and status', (
+      tester,
+    ) async {
       mockRepo.mockQueryResult = const AnalyticsQueryResult(
         intent: "budget_status",
         isRefusal: false,
-        period: AnalyticsPeriod(startDate: "2026-10-01", endDate: "2026-10-31", label: "October 2026"),
+        period: AnalyticsPeriod(
+          startDate: "2026-10-01",
+          endDate: "2026-10-31",
+          label: "October 2026",
+        ),
         metrics: {
           "categoryBudget": {
             "categoryName": "Food",
@@ -338,11 +353,17 @@ void main() {
       expect(find.text("Limit: ₹5000.00"), findsOneWidget);
     });
 
-    testWidgets('renders unusual spending and savings opportunities cards', (tester) async {
+    testWidgets('renders unusual spending and savings opportunities cards', (
+      tester,
+    ) async {
       mockRepo.mockQueryResult = const AnalyticsQueryResult(
         intent: "unusual_spending",
         isRefusal: false,
-        period: AnalyticsPeriod(startDate: "2026-10-01", endDate: "2026-10-31", label: "October 2026"),
+        period: AnalyticsPeriod(
+          startDate: "2026-10-01",
+          endDate: "2026-10-31",
+          label: "October 2026",
+        ),
         metrics: {
           "indicators": [
             {
@@ -376,21 +397,31 @@ void main() {
       expect(find.text("UNUSUAL SPENDING INDICATORS"), findsOneWidget);
       expect(find.text("• Dining spending increased by 65%"), findsOneWidget);
       expect(find.text("DETERMINISTIC SAVINGS OPPORTUNITIES"), findsOneWidget);
-      expect(find.text("• Aligning Food to budget saves ₹1,500.00"), findsOneWidget);
+      expect(
+        find.text("• Aligning Food to budget saves ₹1,500.00"),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('submitting question via text field triggers query and clears field', (tester) async {
-      await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+    testWidgets(
+      'submitting question via text field triggers query and clears field',
+      (tester) async {
+        await tester.pumpWidget(createTestWidget());
+        await tester.pumpAndSettle();
 
-      final inputFinder = find.byType(TextField);
-      expect(inputFinder, findsOneWidget);
+        final inputFinder = find.byType(TextField);
+        expect(inputFinder, findsOneWidget);
 
-      await tester.enterText(inputFinder, "How much did I spend this month?");
-      await tester.tap(find.byTooltip("Ask Question"));
-      await tester.pumpAndSettle();
+        await tester.enterText(inputFinder, "How much did I spend this month?");
+        await tester.pump(); // Rebuild the enabled send control after typing.
+        await tester.tap(find.byTooltip("Ask Question"));
+        await tester.pumpAndSettle();
 
-      expect(mockRepo.lastCapturedQuestion, "How much did I spend this month?");
-    });
+        expect(
+          mockRepo.lastCapturedQuestion,
+          "How much did I spend this month?",
+        );
+      },
+    );
   });
 }

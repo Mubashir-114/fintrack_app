@@ -8,12 +8,12 @@ import '../../../models/companion_model.dart';
 /// based on genuine UI and assistant lifecycle events.
 ///
 /// Covered behavioral states:
-/// - [FinCharacterState.idle]: Restrained natural breathing and calm floating
+/// - [FinCharacterState.idle]: Restrained upper-body breathing, planted feet
 /// - [FinCharacterState.greeting]: Joyful welcoming posture with arm wave
 /// - [FinCharacterState.attentive]: Focused leaning posture when composer is active
 /// - [FinCharacterState.thinking]: Upward inquisitive gaze while query is processing
 /// - [FinCharacterState.explaining]: Communicative open gesture presenting numbers
-/// - [FinCharacterState.encouraging]: Celebratory celebratory raise for savings/goals
+/// - [FinCharacterState.encouraging]: Confirmed progress and savings gestures
 /// - [FinCharacterState.caution]: Protective caring posture when limits/anomalies found
 /// - [FinCharacterState.emptyData]: Inquisitive searching posture when records are sparse
 /// - [FinCharacterState.error]: Empathetic calming posture on connection or input failure
@@ -23,6 +23,24 @@ class FinVisualController extends ChangeNotifier {
   String? _speechBubbleText;
   bool _isDisposed = false;
   bool _isPeekExpanded = false;
+  bool _isFloatingDismissed = false;
+  bool get isFloatingDismissed => _isFloatingDismissed;
+
+  void dismissFloating() {
+    if (_isDisposed) return;
+    _isFloatingDismissed = true;
+    _isPeekExpanded = false;
+    notifyListeners();
+  }
+
+  void resetPresence() {
+    if (_isDisposed) return;
+    _isFloatingDismissed = false;
+    _isPeekExpanded = false;
+    _speechBubbleText = null;
+    _state = FinCharacterState.idle;
+    notifyListeners();
+  }
 
   FinVisualController({
     FinCharacterState initialState = FinCharacterState.idle,
@@ -91,7 +109,11 @@ class FinVisualController extends ChangeNotifier {
   }
 
   /// Triggered when the user focuses the text composer or starts typing.
-  void onComposerFocused() => setState(FinCharacterState.attentive);
+  void onComposerFocused() {
+    if (_state != FinCharacterState.thinking) {
+      setState(FinCharacterState.attentive);
+    }
+  }
 
   /// Triggered when composer loses focus and no active work is pending.
   void onComposerUnfocused() {
@@ -101,7 +123,8 @@ class FinVisualController extends ChangeNotifier {
   }
 
   /// Triggered immediately upon query submission (genuine query in flight).
-  void onQuerySubmitted([String? query]) => setState(FinCharacterState.thinking);
+  void onQuerySubmitted([String? query]) =>
+      setState(FinCharacterState.thinking);
 
   /// Triggered when financial results or breakdowns are delivered.
   void onExplaining([String? speech]) {
@@ -136,7 +159,8 @@ class FinVisualController extends ChangeNotifier {
   /// Triggered on navigation between major app screens.
   void onNavigation(String route) {
     if (_isDisposed) return;
-    setState(FinCharacterState.attentive);
+    setPeekExpanded(false);
+    if (_state != FinCharacterState.thinking) onIdle();
   }
 
   /// Triggered after a transaction is successfully recorded.
