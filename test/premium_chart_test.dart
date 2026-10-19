@@ -42,6 +42,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Cash-flow trend'));
+      await tester.tap(find.text('Cash-flow trend'));
+      await tester.pumpAndSettle();
       expect(find.text('\u20B90', skipOffstage: false), findsOneWidget);
       expect(find.text('?0', skipOffstage: false), findsNothing);
       final description = find.bySemanticsLabel(
