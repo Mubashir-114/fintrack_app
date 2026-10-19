@@ -21,10 +21,9 @@ class SmsService {
   Future<List<ParsedSmsTransaction>> readAndParseSms() async {
     final status = await getPermissionStatus();
     if (!status.isGranted) {
-      final requestStatus = await requestPermission();
-      if (!requestStatus.isGranted) {
-        throw Exception('SMS permission denied');
-      }
+      throw Exception(
+        'SMS access is unavailable. Enable SMS permission in Android Settings, then tap Scan again.',
+      );
     }
 
     // Query messages from the inbox
