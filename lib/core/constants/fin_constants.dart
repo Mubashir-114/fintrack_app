@@ -6,7 +6,8 @@ class FinIdentity {
   static const String name = 'FIN';
 
   /// Official expanded acronym identity.
-  static const String fullExpansion = 'F.I.N. — Financial Intelligence Navigator';
+  static const String fullExpansion =
+      'F.I.N. — Financial Intelligence Navigator';
 
   /// Plain title expansion.
   static const String expansion = 'Financial Intelligence Navigator';
@@ -20,7 +21,7 @@ class FinIdentity {
   /// Standard screen title for the companion interface.
   static const String screenTitle = 'FIN Companion';
 
-  /// Privacy guarantee statement.
+  /// Technical privacy notice.
   static const String privacyNotice =
-      'FinTrack Privacy Guarantee: FIN operates locally within your protected device boundary. Conversations and preferences are never transmitted to third-party model APIs or external banking networks.';
+      'FIN uses your authorized saved records on the FinTrack backend. Financial records and questions are blocked from external model providers. FIN cannot connect to your bank or independently read your SMS inbox.';
 }

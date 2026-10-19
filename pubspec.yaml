@@ -1,5 +1,5 @@
 name: frontend
-description: "A new Flutter project."
+description: "FinTrack 2.0 - Personal finance management, budgeting, and financial companion Flutter application."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -44,7 +44,6 @@ dependencies:
   shared_preferences: ^2.5.3
   intl: ^0.20.2
   fl_chart: ^1.1.1
-  image_picker: ^1.2.0
   connectivity_plus: ^6.0.3
   pdf: ^3.11.1
   path_provider: ^2.1.3

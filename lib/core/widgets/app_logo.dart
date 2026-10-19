@@ -13,6 +13,7 @@ class FinTrackLogo extends StatelessWidget {
   final ThemeCollection? collection;
   final bool showBorder;
   final bool showShadow;
+  final VoidCallback? onTap;
 
   const FinTrackLogo({
     super.key,
@@ -21,6 +22,7 @@ class FinTrackLogo extends StatelessWidget {
     this.collection,
     this.showBorder = false,
     this.showShadow = false,
+    this.onTap,
   });
 
   @override
@@ -28,12 +30,13 @@ class FinTrackLogo extends StatelessWidget {
     final activeCollection =
         collection ?? context.watch<ThemeProvider>().collection;
     final theme = Theme.of(context);
-    final tokens = theme.extension<FinTrackThemeTokens>() ??
+    final tokens =
+        theme.extension<FinTrackThemeTokens>() ??
         FinTrackThemeTokens.resolve(activeCollection, theme.brightness);
 
     final radius = borderRadius ?? (size * 0.28);
 
-    return Container(
+    final artwork = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
@@ -62,6 +65,8 @@ class FinTrackLogo extends StatelessWidget {
           width: size,
           height: size,
           fit: BoxFit.cover,
+          excludeFromSemantics: true,
+          cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
           errorBuilder: (context, error, stackTrace) {
             return Container(
               color: tokens.primary.withValues(alpha: 0.14),
@@ -73,6 +78,16 @@ class FinTrackLogo extends StatelessWidget {
             );
           },
         ),
+      ),
+    );
+    if (onTap == null) return ExcludeSemantics(child: artwork);
+    return Semantics(
+      label: 'FinTrack home',
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(radius),
+        child: artwork,
       ),
     );
   }
@@ -96,7 +111,8 @@ class AppLogo extends StatelessWidget {
     final theme = Theme.of(context);
     final activeCollection =
         collection ?? context.watch<ThemeProvider>().collection;
-    final tokens = theme.extension<FinTrackThemeTokens>() ??
+    final tokens =
+        theme.extension<FinTrackThemeTokens>() ??
         FinTrackThemeTokens.resolve(activeCollection, theme.brightness);
 
     return Column(
@@ -116,10 +132,10 @@ class AppLogo extends StatelessWidget {
             Text(
               "FinTrack",
               style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                    color: tokens.textPrimary,
-                  ),
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+                color: tokens.textPrimary,
+              ),
             ),
             const SizedBox(width: 8),
             Container(
@@ -148,9 +164,9 @@ class AppLogo extends StatelessWidget {
           Text(
             "Manage your money smarter",
             style: theme.textTheme.bodyMedium?.copyWith(
-                  color: tokens.textSecondary,
-                  fontWeight: FontWeight.w500,
-                ),
+              color: tokens.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
             textAlign: TextAlign.center,
           ),
         ],

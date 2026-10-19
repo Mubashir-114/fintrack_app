@@ -1,12 +1,12 @@
 {
-    "name": "BudgetBee",
-    "short_name": "BudgetBee",
+    "name": "FinTrack 2.0",
+    "short_name": "FinTrack",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#0F1117",
+    "theme_color": "#0F1117",
+    "description": "FinTrack 2.0 - Personal Finance Manager & Financial Intelligence Companion",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {
