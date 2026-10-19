@@ -1,7 +1,6 @@
-import 'dart:io';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:path_provider/path_provider.dart';
+import 'report_storage.dart';
 import '../../models/report_models.dart';
 
 class PdfExporter {
@@ -38,14 +37,26 @@ class PdfExporter {
                       ),
                     ),
                     pw.SizedBox(height: 4),
-                    pw.Text("Period: $dateRangeStr", style: const pw.TextStyle(fontSize: 9)),
+                    pw.Text(
+                      "Period: $dateRangeStr",
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
                   ],
                 ),
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
-                    pw.Text("Personal Finance Manager", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
-                    pw.Text("Generated on: ${DateTime.now().toString().split(' ')[0]}", style: const pw.TextStyle(fontSize: 8)),
+                    pw.Text(
+                      "FinTrack 2.0",
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                    ),
+                    pw.Text(
+                      "Generated on: ${DateTime.now().toString().split(' ')[0]}",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
                   ],
                 ),
               ],
@@ -55,35 +66,82 @@ class PdfExporter {
             pw.SizedBox(height: 16),
 
             // Summary Section
-            pw.Text("Financial Summary", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              "Financial Summary",
+              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+            ),
             pw.SizedBox(height: 8),
             pw.GridView(
               crossAxisCount: 2,
               childAspectRatio: 0.28,
               children: [
-                _buildSummaryBox("Total Income", "$currencySymbol${summary.totalIncome.toStringAsFixed(2)}", PdfColor.fromHex("#10B981")),
-                _buildSummaryBox("Total Expense", "$currencySymbol${summary.totalExpense.toStringAsFixed(2)}", PdfColor.fromHex("#F43F5E")),
-                _buildSummaryBox("Net Savings", "$currencySymbol${summary.netBalance.toStringAsFixed(2)}", PdfColor.fromHex("#3B82F6")),
-                _buildSummaryBox("Savings Rate", "${summary.savingsRate.toStringAsFixed(1)}%", PdfColor.fromHex("#F59E0B")),
+                _buildSummaryBox(
+                  "Total Income",
+                  "$currencySymbol${summary.totalIncome.toStringAsFixed(2)}",
+                  PdfColor.fromHex("#10B981"),
+                ),
+                _buildSummaryBox(
+                  "Total Expense",
+                  "$currencySymbol${summary.totalExpense.toStringAsFixed(2)}",
+                  PdfColor.fromHex("#F43F5E"),
+                ),
+                _buildSummaryBox(
+                  "Net Savings",
+                  "$currencySymbol${summary.netBalance.toStringAsFixed(2)}",
+                  PdfColor.fromHex("#3B82F6"),
+                ),
+                _buildSummaryBox(
+                  "Savings Rate",
+                  "${summary.savingsRate.toStringAsFixed(1)}%",
+                  PdfColor.fromHex("#F59E0B"),
+                ),
               ],
             ),
             pw.SizedBox(height: 24),
 
             // Category Breakdown Table
-            pw.Text("Category-wise Breakdown", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              "Category-wise Breakdown",
+              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+            ),
             pw.SizedBox(height: 8),
             pw.TableHelper.fromTextArray(
-              headers: ["Category", "Budget Limit", "Spent Amount", "Remaining", "Usage %"],
-              data: categoryReports.map((c) => [
-                c.category,
-                c.budget == 0 ? "No Limit" : "$currencySymbol${c.budget.toStringAsFixed(2)}",
-                "$currencySymbol${c.spent.toStringAsFixed(2)}",
-                c.budget == 0 ? "-" : "$currencySymbol${c.remaining.toStringAsFixed(2)}",
-                c.budget == 0 ? "-" : "${c.percentage.toStringAsFixed(1)}%",
-              ]).toList(),
-              border: pw.TableBorder.all(color: PdfColor.fromHex("#E2E8F0"), width: 0.5),
-              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white, fontSize: 9),
-              headerDecoration: pw.BoxDecoration(color: PdfColor.fromHex("#4F46E5")),
+              headers: [
+                "Category",
+                "Budget Limit",
+                "Spent Amount",
+                "Remaining",
+                "Usage %",
+              ],
+              data: categoryReports
+                  .map(
+                    (c) => [
+                      c.category,
+                      c.budget == 0
+                          ? "No Limit"
+                          : "$currencySymbol${c.budget.toStringAsFixed(2)}",
+                      "$currencySymbol${c.spent.toStringAsFixed(2)}",
+                      c.budget == 0
+                          ? "-"
+                          : "$currencySymbol${c.remaining.toStringAsFixed(2)}",
+                      c.budget == 0
+                          ? "-"
+                          : "${c.percentage.toStringAsFixed(1)}%",
+                    ],
+                  )
+                  .toList(),
+              border: pw.TableBorder.all(
+                color: PdfColor.fromHex("#E2E8F0"),
+                width: 0.5,
+              ),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.white,
+                fontSize: 9,
+              ),
+              headerDecoration: pw.BoxDecoration(
+                color: PdfColor.fromHex("#4F46E5"),
+              ),
               cellStyle: const pw.TextStyle(fontSize: 8),
               cellAlignment: pw.Alignment.centerLeft,
               cellAlignments: {
@@ -96,21 +154,45 @@ class PdfExporter {
             pw.SizedBox(height: 24),
 
             // Cashflow Ledger Table
-            pw.Text("Recent Transactions Ledger", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              "Recent Transactions Ledger",
+              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+            ),
             pw.SizedBox(height: 8),
             pw.TableHelper.fromTextArray(
-              headers: ["Date", "Title", "Category", "Type", "Amount", "Balance"],
-              data: cashflowReports.take(15).map((c) => [
-                c.date,
-                c.title,
-                c.category,
-                c.type.toUpperCase(),
-                "${c.type == 'expense' ? '-' : '+'}$currencySymbol${c.amount.toStringAsFixed(2)}",
-                "$currencySymbol${c.runningBalance.toStringAsFixed(2)}",
-              ]).toList(),
-              border: pw.TableBorder.all(color: PdfColor.fromHex("#E2E8F0"), width: 0.5),
-              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white, fontSize: 9),
-              headerDecoration: pw.BoxDecoration(color: PdfColor.fromHex("#1E293B")),
+              headers: [
+                "Date",
+                "Title",
+                "Category",
+                "Type",
+                "Amount",
+                "Balance",
+              ],
+              data: cashflowReports
+                  .take(15)
+                  .map(
+                    (c) => [
+                      c.date,
+                      c.title,
+                      c.category,
+                      c.type.toUpperCase(),
+                      "${c.type == 'expense' ? '-' : '+'}$currencySymbol${c.amount.toStringAsFixed(2)}",
+                      "$currencySymbol${c.runningBalance.toStringAsFixed(2)}",
+                    ],
+                  )
+                  .toList(),
+              border: pw.TableBorder.all(
+                color: PdfColor.fromHex("#E2E8F0"),
+                width: 0.5,
+              ),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.white,
+                fontSize: 9,
+              ),
+              headerDecoration: pw.BoxDecoration(
+                color: PdfColor.fromHex("#1E293B"),
+              ),
               cellStyle: const pw.TextStyle(fontSize: 8),
               cellAlignment: pw.Alignment.centerLeft,
               cellAlignments: {
@@ -124,13 +206,18 @@ class PdfExporter {
     );
 
     // Save PDF file locally
-    final outputDir = await getApplicationDocumentsDirectory();
-    final file = File("${outputDir.path}/finance_report_${DateTime.now().millisecondsSinceEpoch}.pdf");
-    await file.writeAsBytes(await pdf.save());
-    return file.path;
+    return saveReport(
+      await pdf.save(),
+      'finance_report_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      'application/pdf',
+    );
   }
 
-  static pw.Widget _buildSummaryBox(String label, String value, PdfColor valueColor) {
+  static pw.Widget _buildSummaryBox(
+    String label,
+    String value,
+    PdfColor valueColor,
+  ) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(10),
       margin: const pw.EdgeInsets.all(3),
@@ -142,9 +229,19 @@ class PdfExporter {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         mainAxisAlignment: pw.MainAxisAlignment.center,
         children: [
-          pw.Text(label, style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
+          pw.Text(
+            label,
+            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
+          ),
           pw.SizedBox(height: 2),
-          pw.Text(value, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: valueColor)),
+          pw.Text(
+            value,
+            style: pw.TextStyle(
+              fontSize: 12,
+              fontWeight: pw.FontWeight.bold,
+              color: valueColor,
+            ),
+          ),
         ],
       ),
     );

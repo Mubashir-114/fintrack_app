@@ -11,6 +11,7 @@ class AppTextField extends StatefulWidget {
   final TextInputAction? textInputAction;
   final Iterable<String>? autofillHints;
   final ValueChanged<String>? onFieldSubmitted;
+  final bool readOnly;
 
   const AppTextField({
     super.key,
@@ -23,6 +24,7 @@ class AppTextField extends StatefulWidget {
     this.textInputAction,
     this.autofillHints,
     this.onFieldSubmitted,
+    this.readOnly = false,
   });
 
   @override
@@ -51,6 +53,9 @@ class _AppTextFieldState extends State<AppTextField> {
       },
       child: TextFormField(
         controller: widget.controller,
+        readOnly: widget.readOnly,
+        autocorrect: !widget.isPassword,
+        enableSuggestions: !widget.isPassword,
         keyboardType: widget.keyboardType,
         textInputAction: widget.textInputAction,
         autofillHints: widget.autofillHints,
@@ -64,11 +69,10 @@ class _AppTextFieldState extends State<AppTextField> {
         ),
         decoration: InputDecoration(
           labelText: widget.label,
+          errorMaxLines: 3,
           prefixIcon: Icon(
             widget.prefixIcon,
-            color: _isFocused
-                ? colors.primary
-                : colors.textSecondary,
+            color: _isFocused ? colors.primary : colors.textSecondary,
             size: 22,
           ),
           suffixIcon: widget.isPassword

@@ -18,7 +18,8 @@ class DashboardProvider extends ChangeNotifier {
   List<CategorySummary> _categorySummaries = [];
   List<TransactionModel> _recentTransactions = [];
 
-  String _selectedPeriod = 'current_month'; // 'current_month', 'previous_month', 'custom'
+  String _selectedPeriod =
+      'current_month'; // 'current_month', 'previous_month', 'custom'
   String? _selectedMonth;
   String? _startDate;
   String? _endDate;
@@ -33,7 +34,9 @@ class DashboardProvider extends ChangeNotifier {
   List<DashboardAccountItem> get accounts => _summary?.accounts ?? [];
   List<MonthlySummary> get monthlySummaries => _monthlySummaries;
   List<CategorySummary> get categorySummaries =>
-      _summary?.categories.isNotEmpty == true ? _summary!.categories : _categorySummaries;
+      _summary?.categories.isNotEmpty == true
+      ? _summary!.categories
+      : _categorySummaries;
   List<CategorySummary> get topCategories => _summary?.topCategories ?? [];
   List<SpendingMerchant> get topMerchants => _summary?.topMerchants ?? [];
   List<DailyTrend> get dailyTrends => _summary?.dailyTrends ?? [];
@@ -65,7 +68,11 @@ class DashboardProvider extends ChangeNotifier {
   }
 
   Future<void> setPeriod(String period) async {
-    if (_selectedPeriod == period && _selectedMonth == null && _startDate == null) return;
+    if (_selectedPeriod == period &&
+        _selectedMonth == null &&
+        _startDate == null) {
+      return;
+    }
     _selectedPeriod = period;
     _selectedMonth = null;
     _startDate = null;
@@ -98,15 +105,23 @@ class DashboardProvider extends ChangeNotifier {
       notifyListeners();
 
       // Load cached data if available and in default view
-      if (_selectedPeriod == 'current_month' && _selectedMonth == null && _startDate == null) {
+      if (_selectedPeriod == 'current_month' &&
+          _selectedMonth == null &&
+          _startDate == null) {
         final cached = await CacheService.get('dashboard_cache');
         if (generation != _sessionGeneration) return;
         if (cached != null) {
           try {
             _summary = DashboardSummary.fromJson(cached["summary"]);
-            _monthlySummaries = (cached["monthly"] as List).map((i) => MonthlySummary.fromJson(i)).toList();
-            _categorySummaries = (cached["categories"] as List).map((i) => CategorySummary.fromJson(i)).toList();
-            _recentTransactions = (cached["recent"] as List).map((i) => TransactionModel.fromJson(i)).toList();
+            _monthlySummaries = (cached["monthly"] as List)
+                .map((i) => MonthlySummary.fromJson(i))
+                .toList();
+            _categorySummaries = (cached["categories"] as List)
+                .map((i) => CategorySummary.fromJson(i))
+                .toList();
+            _recentTransactions = (cached["recent"] as List)
+                .map((i) => TransactionModel.fromJson(i))
+                .toList();
             notifyListeners();
           } catch (_) {
             await CacheService.remove('dashboard_cache');
@@ -129,13 +144,15 @@ class DashboardProvider extends ChangeNotifier {
         if (generation != _sessionGeneration) return;
         // Auth/session errors are global - propagate immediately
         if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-          _errorMessage = e.response?.data["message"] ?? "Authentication failed";
+          _errorMessage =
+              e.response?.data["message"] ?? "Authentication failed";
           _isLoading = false;
           notifyListeners();
           return;
         }
         // Non-auth errors: log but continue with cached/partial data
-        _errorMessage = "Overview failed: ${e.response?.data["message"] ?? e.message}";
+        _errorMessage =
+            "Overview failed: ${e.response?.data["message"] ?? e.message}";
       } catch (e) {
         if (generation != _sessionGeneration) return;
         _errorMessage = "Overview failed: $e";
@@ -154,16 +171,17 @@ class DashboardProvider extends ChangeNotifier {
         } on DioException catch (e) {
           if (generation != _sessionGeneration) return;
           if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-            _errorMessage = e.response?.data["message"] ?? "Authentication failed";
+            _errorMessage =
+                e.response?.data["message"] ?? "Authentication failed";
             _isLoading = false;
             notifyListeners();
             return;
           }
           // Log optional section failure but don't block UI
-          debugPrint("$sectionName failed: ${e.response?.data["message"] ?? e.message}");
+          debugPrint("$sectionName request failed");
         } catch (e) {
           if (generation != _sessionGeneration) return;
-          debugPrint("$sectionName failed: $e");
+          debugPrint("$sectionName request failed");
         }
       }
 
@@ -191,7 +209,10 @@ class DashboardProvider extends ChangeNotifier {
       if (generation != _sessionGeneration) return;
 
       // Save to local cache for default view
-      if (_selectedPeriod == 'current_month' && _selectedMonth == null && _startDate == null && _summary != null) {
+      if (_selectedPeriod == 'current_month' &&
+          _selectedMonth == null &&
+          _startDate == null &&
+          _summary != null) {
         await CacheService.save("dashboard_cache", {
           "summary": _summary?.toJson(),
           "monthly": _monthlySummaries.map((m) => m.toJson()).toList(),

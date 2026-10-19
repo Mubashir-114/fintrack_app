@@ -316,7 +316,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Privacy & Isolation Guarantee",
+                            "Privacy & Data Boundaries",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -324,7 +324,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             ),
                           ),
                           Text(
-                            "FinTrack 2.0 — Phase 5F FIN Companion",
+                            "FinTrack 2.0 — FIN Companion",
                             style: TextStyle(
                               fontSize: 12,
                               color: colors.textSecondary,
@@ -360,7 +360,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 _buildPrivacyPoint(
                   colors,
                   Icons.lock_outline,
-                  "Deterministic local calculations",
+                  "Deterministic backend calculations",
                   "Calculations use exact mathematical formulas and verified templates. External services never receive financial data.",
                 ),
                 const SizedBox(height: 24),
@@ -711,7 +711,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               ],
             ),
             IconButton(
-              tooltip: "Privacy Guarantee",
+              tooltip: "Privacy & data boundaries",
               icon: Icon(Icons.shield_outlined, color: colors.primary),
               onPressed: _showPrivacyDialog,
             ),

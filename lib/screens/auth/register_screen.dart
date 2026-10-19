@@ -89,7 +89,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       extendBodyBehindAppBar: true,
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [tokens.surface, tokens.background], begin: Alignment.topCenter, end: Alignment.bottomCenter,),
+          gradient: LinearGradient(
+            colors: [tokens.surface, tokens.background],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
         child: SafeArea(
           child: Center(
@@ -101,10 +105,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Center(
+                    Center(
                       child: Padding(
-                        padding: EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.only(bottom: 16),
                         child: FinTrackLogo(
+                          onTap: () => context.go('/login'),
                           size: 52,
                           borderRadius: 15,
                           showShadow: true,
@@ -139,10 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         borderRadius: BorderRadius.circular(
                           AppDimensions.radiusXL,
                         ),
-                        side: BorderSide(
-                          color: tokens.divider,
-                          width: 1.0,
-                        ),
+                        side: BorderSide(color: tokens.divider, width: 1.0),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(AppDimensions.lg),
@@ -220,9 +222,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       isLoading: _isLoading,
                       onPressed: _register,
                     ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'FinTrack stores your profile and financial records to provide tracking, reports and FIN. Optional SMS import requires a separate choice. No bank access is required.',
+                      textAlign: TextAlign.center,
+                    ),
+                    TextButton(
+                      onPressed: () => context.push('/privacy'),
+                      child: const Text('How your data is used'),
+                    ),
                     AppDimensions.hMD,
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           "Already have an account?",
@@ -233,7 +245,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         TextButton(
                           onPressed: () {
-                            context.pop();
+                            context.go('/login');
                           },
                           child: const Text("Sign In"),
                         ),

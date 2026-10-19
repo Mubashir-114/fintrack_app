@@ -62,7 +62,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           children: [
             Icon(Icons.sync_rounded, color: Colors.white, size: 16),
             SizedBox(width: 8),
-            Text("Connection restored. Syncing latest data..."),
+            Expanded(
+              child: Text("Connection restored. Syncing latest data..."),
+            ),
           ],
         ),
         backgroundColor: AppColors.success,
@@ -119,7 +121,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final colors = AppColors.of(context);
-    final isTablet = MediaQuery.of(context).size.width >= 600;
+    final media = MediaQuery.of(context);
+    final isTablet = media.size.width >= 600 && media.size.height >= 520;
 
     Widget mainLayout;
 
@@ -194,142 +197,164 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       mainLayout = widget.child;
     }
 
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                StreamBuilder<bool>(
-                  stream: ConnectivityService.connectionStream,
-                  initialData: ConnectivityService.isOnline,
-                  builder: (context, snapshot) {
-                    final isOnline = snapshot.data ?? true;
-                    if (isOnline) return const SizedBox.shrink();
-                    return Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 7,
-                        horizontal: 12,
-                      ),
-                      color: AppColors.danger.withValues(alpha: .94),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.wifi_off_rounded,
-                            color: Colors.white,
-                            size: 14,
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              "Offline · Showing saved data. Changes need a connection.",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
+    final location = GoRouterState.of(context).matchedLocation;
+    final screenTitle = switch (location) {
+      '/dashboard' => 'Dashboard',
+      '/transactions' => 'Transactions',
+      '/sms-import' => 'SMS import',
+      '/budgets' => 'Budgets',
+      '/reports' => 'Reports',
+      '/analytics' => 'FIN',
+      '/planning' => 'Planning',
+      '/profile' => 'Profile',
+      '/profile/edit' => 'Edit profile',
+      '/profile/security' => 'Security',
+      '/profile/privacy' => 'Privacy & data controls',
+      '/profile/delete' => 'Delete account',
+      '/profile/appearance' => 'Appearance',
+      _ => location.startsWith('/accounts') ? 'Accounts' : 'FinTrack',
+    };
+    return Title(
+      title: '$screenTitle | FinTrack',
+      color: colors.primary,
+      child: Scaffold(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  StreamBuilder<bool>(
+                    stream: ConnectivityService.connectionStream,
+                    initialData: ConnectivityService.isOnline,
+                    builder: (context, snapshot) {
+                      final isOnline = snapshot.data ?? true;
+                      if (isOnline) return const SizedBox.shrink();
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 7,
+                          horizontal: 12,
+                        ),
+                        color: AppColors.danger.withValues(alpha: .94),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.wifi_off_rounded,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                "Offline · Showing saved data. Changes need a connection.",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                Expanded(child: mainLayout),
-              ],
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  Expanded(child: mainLayout),
+                ],
+              ),
             ),
-          ),
-          const Positioned.fill(child: GlobalFinOverlay()),
-        ],
-      ),
-      bottomNavigationBar: !isTablet
-          ? Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark
-                        ? Colors.black.withValues(alpha: 0.2)
-                        : Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 15,
-                    offset: const Offset(0, -6),
-                  ),
-                ],
-              ),
-              child: NavigationBar(
-                height: 68,
-                elevation: 0,
-                backgroundColor: theme.colorScheme.surface,
-                selectedIndex: selectedIndex,
-                onDestinationSelected: (index) => _onItemTapped(index, context),
-                indicatorColor: theme.colorScheme.primary.withValues(
-                  alpha: 0.14,
+            const Positioned.fill(child: GlobalFinOverlay()),
+          ],
+        ),
+        bottomNavigationBar: !isTablet
+            ? Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.2)
+                          : Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 15,
+                      offset: const Offset(0, -6),
+                    ),
+                  ],
                 ),
-                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-                destinations: [
-                  NavigationDestination(
-                    icon: Icon(
-                      Icons.grid_view_rounded,
-                      color: colors.textSecondary,
-                    ),
-                    selectedIcon: Icon(
-                      Icons.grid_view_rounded,
-                      color: theme.colorScheme.primary,
-                    ),
-                    label: 'Home',
+                child: NavigationBar(
+                  height: 68,
+                  elevation: 0,
+                  backgroundColor: theme.colorScheme.surface,
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: (index) =>
+                      _onItemTapped(index, context),
+                  indicatorColor: theme.colorScheme.primary.withValues(
+                    alpha: 0.14,
                   ),
-                  NavigationDestination(
-                    icon: Icon(
-                      Icons.receipt_long_rounded,
-                      color: colors.textSecondary,
+                  labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+                  destinations: [
+                    NavigationDestination(
+                      icon: Icon(
+                        Icons.grid_view_rounded,
+                        color: colors.textSecondary,
+                      ),
+                      selectedIcon: Icon(
+                        Icons.grid_view_rounded,
+                        color: theme.colorScheme.primary,
+                      ),
+                      label: 'Home',
                     ),
-                    selectedIcon: Icon(
-                      Icons.receipt_long_rounded,
-                      color: theme.colorScheme.primary,
+                    NavigationDestination(
+                      icon: Icon(
+                        Icons.receipt_long_rounded,
+                        color: colors.textSecondary,
+                      ),
+                      selectedIcon: Icon(
+                        Icons.receipt_long_rounded,
+                        color: theme.colorScheme.primary,
+                      ),
+                      label: 'Activity',
                     ),
-                    label: 'Activity',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(
-                      Icons.account_balance_wallet_rounded,
-                      color: colors.textSecondary,
+                    NavigationDestination(
+                      icon: Icon(
+                        Icons.account_balance_wallet_rounded,
+                        color: colors.textSecondary,
+                      ),
+                      selectedIcon: Icon(
+                        Icons.account_balance_wallet_rounded,
+                        color: theme.colorScheme.primary,
+                      ),
+                      label: 'Budgets',
                     ),
-                    selectedIcon: Icon(
-                      Icons.account_balance_wallet_rounded,
-                      color: theme.colorScheme.primary,
+                    NavigationDestination(
+                      icon: Icon(
+                        Icons.bar_chart_rounded,
+                        color: colors.textSecondary,
+                      ),
+                      selectedIcon: Icon(
+                        Icons.bar_chart_rounded,
+                        color: theme.colorScheme.primary,
+                      ),
+                      label: 'Reports',
                     ),
-                    label: 'Budgets',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(
-                      Icons.bar_chart_rounded,
-                      color: colors.textSecondary,
+                    NavigationDestination(
+                      icon: Icon(
+                        Icons.person_rounded,
+                        color: colors.textSecondary,
+                      ),
+                      selectedIcon: Icon(
+                        Icons.person_rounded,
+                        color: theme.colorScheme.primary,
+                      ),
+                      label: 'Profile',
                     ),
-                    selectedIcon: Icon(
-                      Icons.bar_chart_rounded,
-                      color: theme.colorScheme.primary,
-                    ),
-                    label: 'Reports',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(
-                      Icons.person_rounded,
-                      color: colors.textSecondary,
-                    ),
-                    selectedIcon: Icon(
-                      Icons.person_rounded,
-                      color: theme.colorScheme.primary,
-                    ),
-                    label: 'Profile',
-                  ),
-                ],
-              ),
-            )
-          : null,
+                  ],
+                ),
+              )
+            : null,
+      ),
     );
   }
 }

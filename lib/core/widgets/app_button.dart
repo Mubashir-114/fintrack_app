@@ -12,7 +12,7 @@ class AppButton extends StatelessWidget {
     this.isLoading = false,
   });
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isLoading;
 
   @override

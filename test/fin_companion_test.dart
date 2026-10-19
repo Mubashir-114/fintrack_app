@@ -585,9 +585,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
-      await tester.tap(find.byTooltip('Privacy Guarantee'));
+      await tester.tap(find.byTooltip('Privacy & data boundaries'));
       await tester.pumpAndSettle();
-      expect(find.text('Privacy & Isolation Guarantee'), findsOneWidget);
+      expect(find.text('Privacy & Data Boundaries'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

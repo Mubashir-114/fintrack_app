@@ -1,8 +1,10 @@
-import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import '../../core/utils/report_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
+
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_colors.dart';
@@ -57,9 +59,9 @@ class _ReportsScreenState extends State<ReportsScreen>
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: colors.primary,
-                  onPrimary: colors.background,
-                ),
+              primary: colors.primary,
+              onPrimary: colors.background,
+            ),
           ),
           child: child!,
         );
@@ -80,24 +82,26 @@ class _ReportsScreenState extends State<ReportsScreen>
 
     if (csv != null && mounted) {
       try {
-        final outputDir = await getApplicationDocumentsDirectory();
-        if (!mounted) return;
-        final file = File(
-          "${outputDir.path}/finance_report_${DateTime.now().millisecondsSinceEpoch}.csv",
+        final path = await saveReport(
+          Uint8List.fromList(utf8.encode(csv)),
+          'finance_report_${DateTime.now().millisecondsSinceEpoch}.csv',
+          'text/csv;charset=utf-8',
         );
-        await file.writeAsString(csv);
         if (!mounted) return;
-        await Clipboard.setData(ClipboardData(text: file.path));
+        if (!kIsWeb) await Clipboard.setData(ClipboardData(text: path));
         if (!mounted) return;
         CustomToast.showSuccess(
           context,
-          "CSV Report saved to:\n${file.path}\n(Path copied to clipboard!)",
+          kIsWeb
+              ? "CSV download started. Check browser downloads."
+              : "CSV Report saved to:\n$path\n(Path copied to clipboard!)",
         );
       } catch (_) {
         if (!mounted) return;
-        await Clipboard.setData(ClipboardData(text: csv));
-        if (!mounted) return;
-        CustomToast.showSuccess(context, "CSV report copied to clipboard!");
+        CustomToast.showError(
+          context,
+          "Unable to save the CSV report. Check storage access and try again.",
+        );
       }
     } else if (mounted) {
       CustomToast.showError(
@@ -119,11 +123,13 @@ class _ReportsScreenState extends State<ReportsScreen>
     );
 
     if (path != null && mounted) {
-      await Clipboard.setData(ClipboardData(text: path));
+      if (!kIsWeb) await Clipboard.setData(ClipboardData(text: path));
       if (!mounted) return;
       CustomToast.showSuccess(
         context,
-        "PDF Report generated at:\n$path\n(Path copied to clipboard!)",
+        kIsWeb
+            ? "PDF download started. Check browser downloads."
+            : "PDF Report generated at:\n$path\n(Path copied to clipboard!)",
       );
     } else if (mounted) {
       CustomToast.showError(
@@ -172,11 +178,7 @@ class _ReportsScreenState extends State<ReportsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-              color: colors.danger,
-            ),
+            Icon(Icons.error_outline_rounded, size: 48, color: colors.danger),
             const SizedBox(height: 14),
             Text(
               "Unable to load reports",
@@ -190,10 +192,7 @@ class _ReportsScreenState extends State<ReportsScreen>
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: colors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 12, color: colors.textSecondary),
             ),
             const SizedBox(height: 18),
             ElevatedButton.icon(
@@ -243,10 +242,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                       color: colors.primary,
                     ),
                   )
-                : Icon(
-                    Icons.download_rounded,
-                    color: colors.textPrimary,
-                  ),
+                : Icon(Icons.download_rounded, color: colors.textPrimary),
             tooltip: "Export report",
             color: colors.surface,
             shape: RoundedRectangleBorder(
@@ -362,26 +358,26 @@ class _ReportsScreenState extends State<ReportsScreen>
       body: provider.isLoading && provider.summary == null
           ? _buildLoadingSkeleton(colors)
           : provider.errorMessage != null && provider.summary == null
-              ? _buildErrorState(provider.errorMessage!, colors)
-              : TabBarView(
-                  controller: _tabController,
-                  children: [
-                    TrendsTabView(
-                      summary: provider.summary,
-                      trends: provider.trendsReports,
-                      periodLabel: _getPeriodLabel(provider.selectedDateRange),
-                      onRefresh: provider.loadAllReports,
-                    ),
-                    CategoriesTabView(
-                      categoryReports: provider.categoryReports,
-                      onRefresh: provider.loadAllReports,
-                    ),
-                    CashflowTabView(
-                      cashflowReports: provider.cashflowReports,
-                      onRefresh: provider.loadAllReports,
-                    ),
-                  ],
+          ? _buildErrorState(provider.errorMessage!, colors)
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                TrendsTabView(
+                  summary: provider.summary,
+                  trends: provider.trendsReports,
+                  periodLabel: _getPeriodLabel(provider.selectedDateRange),
+                  onRefresh: provider.loadAllReports,
                 ),
+                CategoriesTabView(
+                  categoryReports: provider.categoryReports,
+                  onRefresh: provider.loadAllReports,
+                ),
+                CashflowTabView(
+                  cashflowReports: provider.cashflowReports,
+                  onRefresh: provider.loadAllReports,
+                ),
+              ],
+            ),
     );
   }
 }

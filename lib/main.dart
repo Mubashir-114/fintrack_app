@@ -79,7 +79,7 @@ class PersonalFinanceApp extends StatelessWidget {
       builder: (context, themeProvider, child) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
-          title: 'Personal Finance Manager',
+          title: 'FinTrack',
           theme: themeProvider.lightTheme,
           darkTheme: themeProvider.darkTheme,
           themeMode: themeProvider.themeMode,

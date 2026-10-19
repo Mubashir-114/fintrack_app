@@ -1,3 +1,5 @@
+import '../screens/profile/privacy_screen.dart';
+import '../screens/profile/delete_account_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import '../core/constants/app_motion.dart';
@@ -30,6 +32,35 @@ import '../screens/planning/goal_detail_screen.dart';
 final GoRouter appRouter = GoRouter(
   observers: [FinOverlayObserver()],
   initialLocation: '/splash',
+  errorBuilder: (context, state) => Scaffold(
+    appBar: AppBar(title: const Text('FinTrack ? Page not found')),
+    body: SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.account_balance_wallet_outlined, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                'This page is unavailable. Return to FinTrack to continue.',
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => context.go(
+                  context.read<AuthProvider>().isLoggedIn
+                      ? '/dashboard'
+                      : '/login',
+                ),
+                child: const Text('Return to FinTrack'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  ),
 
   redirect: (context, state) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -44,6 +75,8 @@ final GoRouter appRouter = GoRouter(
       return null;
     }
 
+    if (state.matchedLocation == '/privacy') return null;
+
     if (!isLoggedIn && !isGoingToAuth) {
       return '/login';
     }
@@ -56,6 +89,10 @@ final GoRouter appRouter = GoRouter(
   },
 
   routes: [
+    GoRoute(
+      path: '/privacy',
+      builder: (context, state) => const PrivacyScreen(),
+    ),
     GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
     GoRoute(
@@ -111,7 +148,9 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/analytics',
           builder: (context, state) {
-            final q = state.uri.queryParameters['q'];
+            final q = state.extra is String
+                ? state.extra as String
+                : state.uri.queryParameters['q'];
             return AnalyticsScreen(initialQuestion: q);
           },
         ),
@@ -129,6 +168,14 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/profile',
           builder: (context, state) => const ProfileScreen(),
+        ),
+        GoRoute(
+          path: '/profile/privacy',
+          builder: (context, state) => const PrivacyScreen(),
+        ),
+        GoRoute(
+          path: '/profile/delete',
+          builder: (context, state) => const DeleteAccountScreen(),
         ),
         GoRoute(
           path: '/profile/edit',

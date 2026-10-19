@@ -1,3 +1,5 @@
+import 'package:frontend/screens/profile/privacy_screen.dart';
+import 'package:frontend/screens/profile/delete_account_screen.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -119,6 +121,8 @@ const _screens = <String, Widget>{
   '/profile/appearance': AppearanceScreen(),
   '/profile/security': SecurityScreen(),
   '/profile/edit': EditProfileScreen(),
+  '/profile/privacy': PrivacyScreen(),
+  '/profile/delete': DeleteAccountScreen(),
 };
 final _captureKey = GlobalKey();
 
@@ -163,7 +167,7 @@ void main() {
     await CacheService.initialize();
     CacheService.setUserId(9302);
   });
-  for (final width in [320.0, 360.0, 393.0, 600.0, 1024.0]) {
+  for (final width in [320.0, 360.0, 393.0, 430.0, 600.0, 768.0, 1024.0]) {
     for (final dark in [true, false]) {
       testWidgets(
         'full-width screen matrix at $width, ${dark ? "dark" : "light"}',

@@ -599,7 +599,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                   TextButton(
                     onPressed: () {
                       final prompt = 'When can I reach my ${goal.name} goal?';
-                      context.push('/analytics?q=${Uri.encodeComponent(prompt)}');
+                      context.push('/analytics', extra: prompt);
                     },
                     style: TextButton.styleFrom(
                       foregroundColor: colors.primary,

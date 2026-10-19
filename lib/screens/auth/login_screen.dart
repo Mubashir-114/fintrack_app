@@ -254,7 +254,8 @@ class _Wordmark extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const FinTrackLogo(
+          FinTrackLogo(
+            onTap: () => context.go('/login'),
             size: 34,
             borderRadius: 10,
           ),
