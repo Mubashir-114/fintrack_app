@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/app_button.dart';
@@ -54,8 +55,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
       _currentPasswordController.clear();
       _newPasswordController.clear();
       _confirmPasswordController.clear();
-      CustomToast.showSuccess(context, "Password updated successfully");
-      Navigator.of(context).pop();
+      CustomToast.showSuccess(context, "Password updated. Sign in again.");
+      final router = GoRouter.maybeOf(context);
+      if (router != null) {
+        router.go('/login');
+      } else {
+        Navigator.of(context).pop();
+      }
     } else {
       CustomToast.showError(
         context,

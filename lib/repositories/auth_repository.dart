@@ -9,16 +9,44 @@ class AuthRepository {
 
   final Dio _dio;
 
+  Future<ApiResponse<ProfileResponse>> updateProfile({
+    required String name,
+    required String email,
+  }) async {
+    final response = await _dio.put(
+      'auth/me',
+      data: {'name': name, 'email': email},
+    );
+    return ApiResponse.fromJson(
+      response.data,
+      (json) => ProfileResponse.fromJson(json),
+    );
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _dio.put(
+      'auth/password',
+      data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+    );
+  }
+
+  Future<void> deleteAccount({required String password}) async {
+    await _dio.delete(
+      'auth/me',
+      data: {'password': password, 'confirmation': 'DELETE'},
+    );
+  }
+
   Future<ApiResponse<AuthResponse>> login({
     required String email,
     required String password,
   }) async {
     final response = await _dio.post(
       "auth/login",
-      data: {
-        "email": email,
-        "password": password,
-      },
+      data: {"email": email, "password": password},
       options: Options(extra: const {'skipAuth': true}),
     );
 
@@ -35,11 +63,7 @@ class AuthRepository {
   }) async {
     final response = await _dio.post(
       "auth/register",
-      data: {
-        "name": name,
-        "email": email,
-        "password": password,
-      },
+      data: {"name": name, "email": email, "password": password},
       options: Options(extra: const {'skipAuth': true}),
     );
 

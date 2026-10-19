@@ -13,6 +13,15 @@ class ApiConstants {
     // 1. Explicit override via --dart-define=BASE_URL=... takes top priority
     const overrideUrl = String.fromEnvironment('BASE_URL');
     if (overrideUrl.isNotEmpty) {
+      final uri = Uri.tryParse(overrideUrl);
+      if (uri == null ||
+          !uri.hasAuthority ||
+          uri.userInfo.isNotEmpty ||
+          (kReleaseMode && uri.scheme != 'https')) {
+        throw StateError(
+          'BASE_URL must be a valid HTTPS URL in release builds.',
+        );
+      }
       return overrideUrl.endsWith('/') ? overrideUrl : '$overrideUrl/';
     }
 

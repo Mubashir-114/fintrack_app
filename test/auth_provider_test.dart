@@ -21,6 +21,22 @@ class _FakeAuthRepository extends AuthRepository {
 
   Future<ApiResponse<AuthResponse>> Function()? loginHandler;
   Future<ApiResponse<ProfileResponse>> Function()? profileHandler;
+  Future<void> Function()? passwordHandler;
+  Future<void> Function()? deletionHandler;
+  Future<ApiResponse<ProfileResponse>> Function()? updateHandler;
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) => passwordHandler!();
+  @override
+  Future<void> deleteAccount({required String password}) => deletionHandler!();
+  @override
+  Future<ApiResponse<ProfileResponse>> updateProfile({
+    required String name,
+    required String email,
+  }) => updateHandler!();
 
   @override
   Future<ApiResponse<AuthResponse>> login({
@@ -75,6 +91,91 @@ void main() {
     await CacheService.initialize();
   });
 
+  test(
+    'password success clears session, tokens and financial caches; failure preserves them',
+    () async {
+      final token = _TokenState()..value = 'synthetic-session';
+      final repository = _FakeAuthRepository(
+        profileHandler: () async => _profileResponse(_user(41)),
+      );
+      var resets = 0;
+      final auth = _provider(
+        repository: repository,
+        token: token,
+        onSessionReset: () => resets++,
+      );
+      await auth.loadCurrentUser();
+      await CacheService.save('dashboard_cache', {'balance': 45});
+      repository.passwordHandler = () async {
+        throw StateError('synthetic failure');
+      };
+      expect(
+        await auth.changePassword(currentPassword: 'old', newPassword: 'new'),
+        isFalse,
+      );
+      expect(auth.isLoggedIn, isTrue);
+      expect(token.removals, 0);
+      repository.passwordHandler = () async {};
+      expect(
+        await auth.changePassword(currentPassword: 'old', newPassword: 'new'),
+        isTrue,
+      );
+      expect(auth.isLoggedIn, isFalse);
+      expect(token.value, isNull);
+      expect(resets, 1);
+      CacheService.setUserId(41);
+      expect(await CacheService.get('dashboard_cache'), isNull);
+    },
+  );
+
+  test(
+    'profile update success is applied; a response from an old session is ignored',
+    () async {
+      final token = _TokenState()..value = 'synthetic-session';
+      final repository = _FakeAuthRepository(
+        profileHandler: () async => _profileResponse(_user(41)),
+      );
+      final auth = _provider(repository: repository, token: token);
+      await auth.loadCurrentUser();
+      repository.updateHandler = () async =>
+          _profileResponse(_user(41, name: 'Updated name'));
+      expect(
+        await auth.updateProfile(
+          name: 'Updated name',
+          email: 'user41@example.test',
+        ),
+        isTrue,
+      );
+      expect(auth.currentUser?.name, 'Updated name');
+      final response = Completer<ApiResponse<ProfileResponse>>();
+      repository.updateHandler = () => response.future;
+      final updating = auth.updateProfile(
+        name: 'Stale name',
+        email: 'user41@example.test',
+      );
+      await auth.logout();
+      response.complete(_profileResponse(_user(41, name: 'Stale name')));
+      expect(await updating, isFalse);
+      expect(auth.currentUser, isNull);
+    },
+  );
+
+  test(
+    'confirmed deletion is not reported as a server failure when local token erasure fails',
+    () async {
+      final repository = _FakeAuthRepository()..deletionHandler = () async {};
+      final auth = AuthProvider(
+        repository: repository,
+        tokenRemover: () async {
+          throw StateError('synthetic storage failure');
+        },
+      );
+      expect(await auth.deleteAccount(password: 'synthetic-password'), isTrue);
+      expect(auth.isLoggedIn, isFalse);
+      expect(auth.errorMessage, contains('local credential removal'));
+    },
+  );
+
   test('restores a profile without receiving or replacing a token', () async {
     final token = _TokenState()..value = 'stored-test-token';
     final repository = _FakeAuthRepository(
@@ -113,40 +214,43 @@ void main() {
     expect(provider.isLoggedIn, isFalse);
   });
 
-  test('a stale profile 401 preserves a replacement token and current user', () async {
-    final token = _TokenState();
-    final repository = _FakeAuthRepository(
-      loginHandler: () async => _authResponse(_user(41), 'old-test-token'),
-    );
-    final provider = _provider(repository: repository, token: token);
-    expect(
-      await provider.login(
-        email: 'user41@example.test',
-        password: 'test-password',
-      ),
-      isTrue,
-    );
-    final currentUser = provider.currentUser;
-    repository.profileHandler = () async {
-      token.value = 'replacement-test-token';
-      final request = RequestOptions(path: '/api/auth/me');
-      throw DioException(
-        requestOptions: request,
-        response: Response(
-          requestOptions: request,
-          statusCode: 401,
-          data: {'message': 'Unauthorized'},
-        ),
+  test(
+    'a stale profile 401 preserves a replacement token and current user',
+    () async {
+      final token = _TokenState();
+      final repository = _FakeAuthRepository(
+        loginHandler: () async => _authResponse(_user(41), 'old-test-token'),
       );
-    };
+      final provider = _provider(repository: repository, token: token);
+      expect(
+        await provider.login(
+          email: 'user41@example.test',
+          password: 'test-password',
+        ),
+        isTrue,
+      );
+      final currentUser = provider.currentUser;
+      repository.profileHandler = () async {
+        token.value = 'replacement-test-token';
+        final request = RequestOptions(path: '/api/auth/me');
+        throw DioException(
+          requestOptions: request,
+          response: Response(
+            requestOptions: request,
+            statusCode: 401,
+            data: {'message': 'Unauthorized'},
+          ),
+        );
+      };
 
-    expect(await provider.loadCurrentUser(), isFalse);
+      expect(await provider.loadCurrentUser(), isFalse);
 
-    expect(token.value, 'replacement-test-token');
-    expect(token.removals, 0);
-    expect(provider.currentUser, currentUser);
-    expect(provider.isLoggedIn, isTrue);
-  });
+      expect(token.value, 'replacement-test-token');
+      expect(token.removals, 0);
+      expect(provider.currentUser, currentUser);
+      expect(provider.isLoggedIn, isTrue);
+    },
+  );
 
   test(
     'preserves recoverable sessions on offline, timeout, and server errors',

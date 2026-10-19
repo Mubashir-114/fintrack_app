@@ -59,7 +59,8 @@ class _FakeAuthProvider extends ChangeNotifier implements AuthProvider {
   }
 
   @override
-  Future<bool> login({required String email, required String password}) async => true;
+  Future<bool> login({required String email, required String password}) async =>
+      true;
 
   @override
   Future<bool> register({
@@ -76,6 +77,9 @@ class _FakeAuthProvider extends ChangeNotifier implements AuthProvider {
 
   @override
   Future<bool> loadCurrentUser() async => true;
+
+  @override
+  Future<bool> deleteAccount({required String password}) async => false;
 }
 
 Widget _wrapWithProviders({
@@ -90,10 +94,7 @@ Widget _wrapWithProviders({
         value: currencyProvider ?? CurrencyProvider(),
       ),
     ],
-    child: MaterialApp(
-      theme: AppTheme.darkTheme,
-      home: child,
-    ),
+    child: MaterialApp(theme: AppTheme.darkTheme, home: child),
   );
 }
 
@@ -120,46 +121,51 @@ void main() {
   });
 
   group('ProfileScreen Layout & Read-Only Hierarchy', () {
-    testWidgets('renders compact identity header and grouped settings without permanent form fields', (
-      tester,
-    ) async {
-      final fakeAuth = _FakeAuthProvider(
-        initialUser: const UserModel(id: 42, name: 'Elena Rostova', email: 'elena@fintrack.io'),
-      );
+    testWidgets(
+      'renders compact identity header and grouped settings without permanent form fields',
+      (tester) async {
+        final fakeAuth = _FakeAuthProvider(
+          initialUser: const UserModel(
+            id: 42,
+            name: 'Elena Rostova',
+            email: 'elena@fintrack.io',
+          ),
+        );
 
-      await tester.pumpWidget(
-        _wrapWithProviders(
-          child: const ProfileScreen(),
-          authProvider: fakeAuth,
-        ),
-      );
+        await tester.pumpWidget(
+          _wrapWithProviders(
+            child: const ProfileScreen(),
+            authProvider: fakeAuth,
+          ),
+        );
 
-      // Verify compact identity header
-      expect(find.text('Elena Rostova'), findsOneWidget);
-      expect(find.text('elena@fintrack.io'), findsOneWidget);
-      expect(find.text('E'), findsOneWidget); // Monogram initial
-      expect(find.text('Edit'), findsOneWidget); // Subtle edit action
+        // Verify compact identity header
+        expect(find.text('Elena Rostova'), findsOneWidget);
+        expect(find.text('elena@fintrack.io'), findsOneWidget);
+        expect(find.text('E'), findsOneWidget); // Monogram initial
+        expect(find.text('Edit'), findsOneWidget); // Subtle edit action
 
-      // Verify no permanent form fields are exposed on main screen
-      expect(find.byType(TextFormField), findsNothing);
-      expect(find.text('UPDATE DETAILS'), findsNothing);
-      expect(find.text('CHANGE PASSWORD'), findsNothing);
+        // Verify no permanent form fields are exposed on main screen
+        expect(find.byType(TextFormField), findsNothing);
+        expect(find.text('UPDATE DETAILS'), findsNothing);
+        expect(find.text('CHANGE PASSWORD'), findsNothing);
 
-      // Verify grouped settings sections
-      expect(find.text('PREFERENCES'), findsOneWidget);
-      expect(find.text('Appearance'), findsOneWidget);
-      expect(find.text('Accounts & Wallets'), findsOneWidget);
-      expect(find.text('Push Notifications'), findsOneWidget);
-      expect(find.text('Display Currency'), findsOneWidget);
+        // Verify grouped settings sections
+        expect(find.text('PREFERENCES'), findsOneWidget);
+        expect(find.text('Appearance'), findsOneWidget);
+        expect(find.text('Accounts & Wallets'), findsOneWidget);
+        expect(find.text('Push Notifications'), findsNothing);
+        expect(find.text('Display Currency'), findsOneWidget);
 
-      expect(find.text('SECURITY & LEGAL'), findsOneWidget);
-      expect(find.text('Security & Password'), findsOneWidget);
-      expect(find.text('Privacy Policy'), findsOneWidget);
-      expect(find.text('About Application'), findsOneWidget);
+        expect(find.text('SECURITY & LEGAL'), findsOneWidget);
+        expect(find.text('Security & Password'), findsOneWidget);
+        expect(find.text('Privacy & Data Controls'), findsOneWidget);
+        expect(find.text('About Application'), findsOneWidget);
 
-      expect(find.text('ACCOUNT'), findsOneWidget);
-      expect(find.text('Log Out'), findsOneWidget);
-    });
+        expect(find.text('ACCOUNT'), findsOneWidget);
+        expect(find.text('Log Out'), findsOneWidget);
+      },
+    );
   });
 
   group('EditProfileScreen', () {
@@ -167,7 +173,11 @@ void main() {
       tester,
     ) async {
       final fakeAuth = _FakeAuthProvider(
-        initialUser: const UserModel(id: 10, name: 'Marcus Vance', email: 'marcus@vance.io'),
+        initialUser: const UserModel(
+          id: 10,
+          name: 'Marcus Vance',
+          email: 'marcus@vance.io',
+        ),
       );
 
       await tester.pumpWidget(
@@ -178,8 +188,14 @@ void main() {
       );
 
       expect(find.text('Edit Profile'), findsOneWidget);
-      expect(find.widgetWithText(TextFormField, 'Marcus Vance'), findsOneWidget);
-      expect(find.widgetWithText(TextFormField, 'marcus@vance.io'), findsOneWidget);
+      expect(
+        find.widgetWithText(TextFormField, 'Marcus Vance'),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(TextFormField, 'marcus@vance.io'),
+        findsOneWidget,
+      );
 
       // Modify the name
       final nameField = find.widgetWithText(TextFormField, 'Marcus Vance');
@@ -199,7 +215,11 @@ void main() {
   group('SecurityScreen', () {
     testWidgets('validates required fields and minimum length', (tester) async {
       final fakeAuth = _FakeAuthProvider(
-        initialUser: const UserModel(id: 10, name: 'User', email: 'user@test.com'),
+        initialUser: const UserModel(
+          id: 10,
+          name: 'User',
+          email: 'user@test.com',
+        ),
       );
 
       await tester.pumpWidget(
@@ -227,7 +247,10 @@ void main() {
       await tester.tap(find.text('UPDATE PASSWORD'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Password must be at least 6 characters'), findsOneWidget);
+      expect(
+        find.text('Password must be at least 6 characters'),
+        findsOneWidget,
+      );
 
       // Enter matching valid new passwords
       await tester.enterText(textFields.at(1), 'newsecret456');

@@ -145,6 +145,12 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       await _tokenRemover();
+    } catch (_) {
+      if (generation == _sessionGeneration) {
+        _errorMessage =
+            'Signed out, but local credential removal could not be confirmed.';
+        notifyListeners();
+      }
     } finally {
       if (generation == _sessionGeneration) {
         await CacheService.clearAll();
@@ -206,19 +212,76 @@ class AuthProvider extends ChangeNotifier {
     required String name,
     required String email,
   }) async {
-    _errorMessage = 'Profile updates are not supported by the current backend.';
-    notifyListeners();
-    return false;
+    final generation = _sessionGeneration;
+    try {
+      final response = await _repository.updateProfile(
+        name: name,
+        email: email,
+      );
+      if (generation != _sessionGeneration) return false;
+      _currentUser = response.data.user;
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } catch (error) {
+      if (generation != _sessionGeneration) return false;
+      _errorMessage = _accountError(
+        error,
+        'Unable to update profile. Please try again.',
+      );
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<bool> changePassword({
     required String currentPassword,
     required String newPassword,
   }) async {
-    _errorMessage =
-        'Password changes are not supported by the current backend.';
-    notifyListeners();
-    return false;
+    final generation = _sessionGeneration;
+    try {
+      await _repository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      if (generation != _sessionGeneration) return false;
+      await logout();
+      return true;
+    } catch (error) {
+      if (generation != _sessionGeneration) return false;
+      _errorMessage = _accountError(
+        error,
+        'Unable to update password. Please try again.',
+      );
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteAccount({required String password}) async {
+    final generation = _sessionGeneration;
+    try {
+      await _repository.deleteAccount(password: password);
+      if (generation != _sessionGeneration) return false;
+      await logout();
+      return true;
+    } catch (error) {
+      if (generation != _sessionGeneration) return false;
+      _errorMessage = _accountError(
+        error,
+        'Unable to confirm deletion. Check your connection and try again.',
+      );
+      notifyListeners();
+      return false;
+    }
+  }
+
+  String _accountError(Object error, String fallback) {
+    if (error is DioException && error.response?.data is Map) {
+      final message = error.response?.data['message'];
+      if (message is String) return message;
+    }
+    return fallback;
   }
 
   Future<bool> _prepareSession(int userId, {required int generation}) async {

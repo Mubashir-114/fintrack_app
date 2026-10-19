@@ -19,37 +19,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Settings mock state
-  bool _notificationsEnabled = true;
-
-  void _showPrivacyPolicy() {
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        final colors = AppColors.of(ctx);
-        return AlertDialog(
-          title: const Text(
-            "Privacy Policy",
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
-          ),
-          backgroundColor: colors.surface,
-          content: const SingleChildScrollView(
-            child: Text(
-              "Your privacy is our priority. Personal Finance Manager encrypts your authentication token locally using secure hardware-backed storage. None of your transaction details, savings data, or budgets are shared with third parties or advertisers. Information is fetched securely over HTTPS from our cloud server. If you request account deletion, all data is immediately and permanently removed from our hosting database.\n\nFor questions, please contact support@personalfinance.io.",
-              style: TextStyle(fontSize: 13, height: 1.45),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text("CLOSE"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _showAbout() {
     showDialog(
       context: context,
@@ -66,6 +35,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               FinTrackLogo(
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.go('/dashboard');
+                },
                 size: 64,
                 collection: themeProvider.collection,
                 borderRadius: 18,
@@ -79,13 +52,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 2),
               Text(
-                "Version 2.0.0 (${themeProvider.collection.displayName} Edition)",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colors.textSecondary,
-                ),
+                "Version 1.0.0 (${themeProvider.collection.displayName} Edition)",
+                style: TextStyle(fontSize: 12, color: colors.textSecondary),
               ),
               const SizedBox(height: 16),
+              Text("\u00a9 ${DateTime.now().year} FinTrack"),
               const Text(
                 "Engineered with Flutter, Provider, and refined fintech design tokens. Optimized for rapid transaction tracking and offline caching.",
                 textAlign: TextAlign.center,
@@ -132,7 +103,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
             child: const Text(
               "LOGOUT",
-              style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                color: AppColors.danger,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -152,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         : "FinTrack User";
     final email = (user?.email != null && user!.email.isNotEmpty)
         ? user.email
-        : "user@fintrack.io";
+        : "Email unavailable";
     final initial = name.substring(0, 1).toUpperCase();
 
     return Scaffold(
@@ -181,30 +155,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Row(
                 children: [
                   // Clean monogram avatar (64px)
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isDark
-                            ? colors.elevated
-                            : colors.primary.withValues(alpha: 0.12),
-                        border: Border.all(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.35),
-                          width: 2,
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isDark
+                          ? colors.elevated
+                          : colors.primary.withValues(alpha: 0.12),
+                      border: Border.all(
+                        color: theme.colorScheme.primary.withValues(
+                          alpha: 0.35,
                         ),
+                        width: 2,
                       ),
-                      child: Center(
-                        child: Text(
-                          initial,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            color: theme.colorScheme.primary,
-                          ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        initial,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                     ),
+                  ),
                   const SizedBox(width: 14),
 
                   // User Info
@@ -243,7 +219,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onTap: () => context.push('/profile/edit'),
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
                         color: colors.primary.withValues(
                           alpha: isDark ? 0.12 : 0.09,
@@ -287,31 +266,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 SettingsTile(
                   icon: Icons.palette_outlined,
                   title: "Appearance",
-                  subtitle: "Graphite & Champagne, Obsidian & Jade, Arctic Blue",
+                  subtitle:
+                      "Graphite & Champagne, Obsidian & Jade, Arctic Blue",
                   onTap: () => context.push('/profile/appearance'),
                 ),
                 SettingsTile(
                   icon: Icons.account_balance_wallet_outlined,
                   title: "Accounts & Wallets",
-                  subtitle: "Manage bank accounts, credit cards and cash wallets",
+                  subtitle:
+                      "Manage bank accounts, credit cards and cash wallets",
                   onTap: () => context.push('/accounts'),
-                ),
-                SettingsTile(
-                  icon: Icons.notifications_none_rounded,
-                  title: "Push Notifications",
-                  subtitle: "Receive limit threshold alerts",
-                  trailing: Switch.adaptive(
-                    value: _notificationsEnabled,
-                    onChanged: (val) {
-                      setState(() {
-                        _notificationsEnabled = val;
-                      });
-                      CustomToast.showInfo(
-                        context,
-                        val ? "Notifications Enabled" : "Notifications Disabled",
-                      );
-                    },
-                  ),
                 ),
                 SettingsTile(
                   icon: Icons.attach_money_rounded,
@@ -344,13 +308,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: colors.elevated,
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: colors.divider,
-                            ),
+                            border: Border.all(color: colors.divider),
                           ),
                           child: Text(
                             currency.currencyCode,
@@ -384,34 +349,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         backgroundColor: colors.surface,
                         content: Column(
                           mainAxisSize: MainAxisSize.min,
-                          children: [
-                            {'label': 'USD (\$)', 'code': 'USD'},
-                            {'label': 'EUR (€)', 'code': 'EUR'},
-                            {'label': 'GBP (£)', 'code': 'GBP'},
-                            {'label': 'INR (₹)', 'code': 'INR'},
-                          ]
-                              .map((c) => ListTile(
-                                    title: Text(
-                                      c['label']!,
-                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          children:
+                              [
+                                    {'label': 'USD (\$)', 'code': 'USD'},
+                                    {'label': 'EUR (€)', 'code': 'EUR'},
+                                    {'label': 'GBP (£)', 'code': 'GBP'},
+                                    {'label': 'INR (₹)', 'code': 'INR'},
+                                  ]
+                                  .map(
+                                    (c) => ListTile(
+                                      title: Text(
+                                        c['label']!,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      trailing:
+                                          currencyProv.currencyCode == c['code']
+                                          ? Icon(
+                                              Icons.check_circle_rounded,
+                                              color: colors.primary,
+                                              size: 20,
+                                            )
+                                          : null,
+                                      onTap: () {
+                                        currencyProv.setCurrency(c['code']!);
+                                        Navigator.pop(ctx);
+                                        CustomToast.showSuccess(
+                                          context,
+                                          "Currency updated to ${c['label']}",
+                                        );
+                                      },
                                     ),
-                                    trailing: currencyProv.currencyCode == c['code']
-                                        ? Icon(
-                                            Icons.check_circle_rounded,
-                                            color: colors.primary,
-                                            size: 20,
-                                          )
-                                        : null,
-                                    onTap: () {
-                                      currencyProv.setCurrency(c['code']!);
-                                      Navigator.pop(ctx);
-                                      CustomToast.showSuccess(
-                                        context,
-                                        "Currency updated to ${c['label']}",
-                                      );
-                                    },
-                                  ))
-                              .toList(),
+                                  )
+                                  .toList(),
                         ),
                       ),
                     );
@@ -433,14 +405,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 SettingsTile(
                   icon: Icons.shield_outlined,
-                  title: "Privacy Policy",
-                  subtitle: "Data encryption and local storage protection",
-                  onTap: _showPrivacyPolicy,
+                  title: "Privacy & Data Controls",
+                  subtitle: "Storage, SMS permissions and deletion",
+                  onTap: () => context.push('/profile/privacy'),
                 ),
                 SettingsTile(
                   icon: Icons.info_outline_rounded,
                   title: "About Application",
-                  subtitle: "Version 2.0.0 · Graphite & Champagne edition",
+                  subtitle: "Version 1.0.0",
                   showDivider: false,
                   onTap: _showAbout,
                 ),
@@ -452,6 +424,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SettingsGroup(
               title: "Account",
               children: [
+                SettingsTile(
+                  icon: Icons.delete_forever_outlined,
+                  title: "Delete account & data",
+                  subtitle: "Password confirmation required",
+                  isDestructive: true,
+                  onTap: () => context.push('/profile/delete'),
+                ),
                 SettingsTile(
                   icon: Icons.logout_rounded,
                   title: "Log Out",

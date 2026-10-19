@@ -41,7 +41,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   void _checkForChanges() {
-    final changed = _nameController.text.trim() != _initialName ||
+    final changed =
+        _nameController.text.trim() != _initialName ||
         _emailController.text.trim() != _initialEmail;
     if (changed != _hasChanges) {
       setState(() {
@@ -178,6 +179,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 AppTextField(
                   controller: _emailController,
                   label: "Email Address",
+                  readOnly: true,
                   prefixIcon: Icons.mail_outline_rounded,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.done,
@@ -186,8 +188,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     if (val == null || val.trim().isEmpty) {
                       return "Email is required";
                     }
-                    if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$')
-                        .hasMatch(val.trim())) {
+                    if (!RegExp(
+                      r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(val.trim())) {
                       return "Enter a valid email address";
                     }
                     return null;
@@ -199,7 +202,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Text(
-                    "Your name and email are used for account identification and report exports.",
+                    "You can update your name. Email changes require a verification service and are currently unavailable.",
                     style: TextStyle(
                       fontSize: 12,
                       height: 1.4,
@@ -216,7 +219,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: AppButton(
                     text: "SAVE CHANGES",
                     isLoading: _isUpdating,
-                    onPressed: _hasChanges ? _handleSave : () {},
+                    onPressed: _hasChanges ? _handleSave : null,
                   ),
                 ),
                 const SizedBox(height: 12),
