@@ -1,3 +1,7 @@
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../core/widgets/profile_avatar.dart';
+import 'avatar_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,7 +12,8 @@ import '../../core/widgets/custom_toast.dart';
 import '../../providers/auth_provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
-  const EditProfileScreen({super.key});
+  const EditProfileScreen({super.key, this.picker});
+  final ImagePicker? picker;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -22,6 +27,68 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   late String _initialName;
   late String _initialEmail;
+
+  Uint8List? _photo;
+  bool _photoChanged = false;
+  bool _picking = false;
+  late final ImagePicker _picker = widget.picker ?? ImagePicker();
+
+  Future<void> _previewPhoto(XFile file) async {
+    if (await file.length() > 8 * 1024 * 1024) {
+      throw Exception('Choose a photo under 8 MB.');
+    }
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+    final cropped = await Navigator.of(context).push<Uint8List>(
+      MaterialPageRoute(builder: (_) => AvatarEditor(bytes: bytes)),
+    );
+    if (cropped == null || !mounted) return;
+    setState(() {
+      _photo = cropped;
+      _photoChanged = true;
+    });
+    _checkForChanges();
+  }
+
+  Future<void> _recoverPhoto() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    try {
+      final recovered = await _picker.retrieveLostData();
+      if (!mounted ||
+          recovered.isEmpty ||
+          recovered.files?.isNotEmpty != true) {
+        return;
+      }
+      await _previewPhoto(recovered.files!.first);
+    } catch (_) {
+      /* A cancelled/missing previous selection does not block editing. */
+    }
+  }
+
+  Future<void> _choosePhoto() async {
+    if (_picking || _isUpdating) return;
+    setState(() => _picking = true);
+    try {
+      final file = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 90,
+        requestFullMetadata: false,
+      );
+      if (file == null || !mounted) return;
+      await _previewPhoto(file);
+    } catch (_) {
+      if (mounted) {
+        CustomToast.showError(
+          context,
+          'Unable to open photo. Try a JPEG or PNG, or check gallery access in Android Settings.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _picking = false);
+    }
+  }
 
   bool _isUpdating = false;
   bool _hasChanges = false;
@@ -38,12 +105,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     _nameController.addListener(_checkForChanges);
     _emailController.addListener(_checkForChanges);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _recoverPhoto();
+    });
   }
 
   void _checkForChanges() {
     final changed =
         _nameController.text.trim() != _initialName ||
-        _emailController.text.trim() != _initialEmail;
+        _emailController.text.trim() != _initialEmail ||
+        _photoChanged;
     if (changed != _hasChanges) {
       setState(() {
         _hasChanges = changed;
@@ -69,11 +140,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
 
     final provider = context.read<AuthProvider>();
-    final success = await provider.updateProfile(
+    var success = await provider.updateProfile(
       name: _nameController.text.trim(),
       email: _emailController.text.trim(),
     );
 
+    if (success && _photoChanged) success = await provider.saveAvatar(_photo);
     if (!mounted) return;
 
     setState(() {
@@ -96,10 +168,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final colors = AppColors.of(context);
 
     final user = context.watch<AuthProvider>().currentUser;
-    final initials = (user?.name.isNotEmpty ?? false)
-        ? user!.name.substring(0, 1).toUpperCase()
-        : 'U';
-
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
@@ -109,7 +177,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: _isUpdating ? null : () => Navigator.of(context).pop(),
             child: const Text("Cancel"),
           ),
         ],
@@ -123,40 +191,52 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Compact avatar monogram
                 Center(
-                  child: Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: colors.surface,
-                      border: Border.all(
-                        color: colors.primary.withValues(alpha: 0.35),
-                        width: 2,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        initials,
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: colors.primary,
-                        ),
-                      ),
-                    ),
+                  child: ProfileAvatar(
+                    name: user?.name ?? '',
+                    bytes: _photoChanged
+                        ? _photo
+                        : context.watch<AuthProvider>().avatarBytes,
+                    size: 72,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 Center(
-                  child: Text(
-                    "Personal Information",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: colors.textSecondary,
-                    ),
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    children: [
+                      TextButton.icon(
+                        onPressed: _isUpdating || _picking
+                            ? null
+                            : _choosePhoto,
+                        icon: _picking
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.photo_library_outlined),
+                        label: const Text('Choose photo'),
+                      ),
+                      if ((_photoChanged
+                              ? _photo
+                              : context.watch<AuthProvider>().avatarBytes) !=
+                          null)
+                        TextButton(
+                          onPressed: _isUpdating
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _photo = null;
+                                    _photoChanged = true;
+                                  });
+                                  _checkForChanges();
+                                },
+                          child: const Text('Remove photo'),
+                        ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 28),

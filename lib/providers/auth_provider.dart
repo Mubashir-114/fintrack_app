@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
@@ -27,6 +28,46 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   UserModel? _currentUser;
+  int _avatarRevision = 0;
+  Uint8List? _avatarBytes;
+  Uint8List? get avatarBytes => _avatarBytes;
+
+  Future<void> loadAvatar() async {
+    final generation = _sessionGeneration;
+    final revision = ++_avatarRevision;
+    try {
+      final bytes = await _repository.getAvatar();
+      if (generation != _sessionGeneration) return;
+      if (revision != _avatarRevision) return;
+      _avatarBytes = bytes;
+      notifyListeners();
+    } catch (_) {
+      /* A missing/unavailable avatar never prevents sign-in. */
+    }
+  }
+
+  Future<bool> saveAvatar(Uint8List? bytes) async {
+    final generation = _sessionGeneration;
+    final revision = ++_avatarRevision;
+    try {
+      final saved = await _repository.saveAvatar(bytes);
+      if (generation != _sessionGeneration) return false;
+      if (revision != _avatarRevision) return false;
+      _avatarBytes = saved;
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } catch (error) {
+      if (generation != _sessionGeneration) return false;
+      _errorMessage = _accountError(
+        error,
+        'Photo could not be saved. Please retry.',
+      );
+      notifyListeners();
+      return false;
+    }
+  }
+
   int _sessionGeneration = 0;
 
   bool get isLoading => _isLoading;
@@ -60,6 +101,7 @@ class AuthProvider extends ChangeNotifier {
       if (generation != _sessionGeneration) return false;
 
       _currentUser = response.data.user;
+      loadAvatar();
 
       notifyListeners();
 
@@ -111,6 +153,7 @@ class AuthProvider extends ChangeNotifier {
       if (generation != _sessionGeneration) return false;
 
       _currentUser = response.data.user;
+      loadAvatar();
 
       notifyListeners();
 
@@ -139,6 +182,7 @@ class AuthProvider extends ChangeNotifier {
     CacheService.setUserId(null);
     onSessionReset?.call();
     _currentUser = null;
+    _avatarBytes = null;
     _isLoading = false;
     _errorMessage = null;
     notifyListeners();
@@ -180,6 +224,7 @@ class AuthProvider extends ChangeNotifier {
       }
 
       _currentUser = response.data.user;
+      loadAvatar();
       _errorMessage = null;
 
       notifyListeners();
@@ -220,6 +265,7 @@ class AuthProvider extends ChangeNotifier {
       );
       if (generation != _sessionGeneration) return false;
       _currentUser = response.data.user;
+      loadAvatar();
       _errorMessage = null;
       notifyListeners();
       return true;
@@ -290,6 +336,7 @@ class AuthProvider extends ChangeNotifier {
       await CacheService.clearAll();
       if (generation != _sessionGeneration) return false;
       onSessionReset?.call();
+      _avatarBytes = null;
     }
     if (generation != _sessionGeneration) return false;
     CacheService.setUserId(userId);

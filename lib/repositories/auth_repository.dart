@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 
 import '../api/api_client.dart';
@@ -21,6 +23,20 @@ class AuthRepository {
       response.data,
       (json) => ProfileResponse.fromJson(json),
     );
+  }
+
+  Future<Uint8List?> getAvatar() async {
+    final response = await _dio.get('auth/avatar');
+    final value = response.data['data']['avatar'] as String?;
+    return value == null ? null : base64Decode(value);
+  }
+
+  Future<Uint8List?> saveAvatar(Uint8List? bytes) async {
+    final response = bytes == null
+        ? await _dio.delete('auth/avatar')
+        : await _dio.put('auth/avatar', data: {'image': base64Encode(bytes)});
+    final value = response.data['data']['avatar'] as String?;
+    return value == null ? null : base64Decode(value);
   }
 
   Future<void> changePassword({

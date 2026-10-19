@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,12 @@ class _FakeAuthProvider extends ChangeNotifier implements AuthProvider {
 
   @override
   UserModel? get currentUser => _user;
+  @override
+  Uint8List? get avatarBytes => null;
+  @override
+  Future<void> loadAvatar() async {}
+  @override
+  Future<bool> saveAvatar(Uint8List? bytes) async => true;
 
   @override
   bool get isLoggedIn => _user != null;

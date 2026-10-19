@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:async';
 
 import 'package:dio/dio.dart';
@@ -18,6 +19,9 @@ class _TokenState {
 class _FakeAuthRepository extends AuthRepository {
   _FakeAuthRepository({this.loginHandler, this.profileHandler})
     : super(dio: Dio());
+
+  @override
+  Future<Uint8List?> getAvatar() async => null;
 
   Future<ApiResponse<AuthResponse>> Function()? loginHandler;
   Future<ApiResponse<ProfileResponse>> Function()? profileHandler;

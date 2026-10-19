@@ -1,3 +1,4 @@
+import '../../core/widgets/profile_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -127,7 +128,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final email = (user?.email != null && user!.email.isNotEmpty)
         ? user.email
         : "Email unavailable";
-    final initial = name.substring(0, 1).toUpperCase();
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -154,32 +154,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Row(
                 children: [
-                  // Clean monogram avatar (64px)
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isDark
-                          ? colors.elevated
-                          : colors.primary.withValues(alpha: 0.12),
-                      border: Border.all(
-                        color: theme.colorScheme.primary.withValues(
-                          alpha: 0.35,
-                        ),
-                        width: 2,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        initial,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ),
+                  ProfileAvatar(
+                    name: name,
+                    bytes: context.watch<AuthProvider>().avatarBytes,
+                    size: 64,
                   ),
                   const SizedBox(width: 14),
 
