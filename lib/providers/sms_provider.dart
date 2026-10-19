@@ -15,9 +15,9 @@ class SmsProvider extends ChangeNotifier {
     SmsService? smsService,
     TransactionRepository? repository,
     SmartTransactionRepository? smartRepo,
-  })  : _smsService = smsService ?? SmsService(),
-        _repository = repository ?? TransactionRepository(),
-        _smartRepo = smartRepo ?? SmartTransactionRepository();
+  }) : _smsService = smsService ?? SmsService(),
+       _repository = repository ?? TransactionRepository(),
+       _smartRepo = smartRepo ?? SmartTransactionRepository();
 
   final SmsService _smsService;
   final TransactionRepository _repository;
@@ -97,16 +97,21 @@ class SmsProvider extends ChangeNotifier {
 
   int get foundCount => _transactions.length;
   int get selectedCount => _selectedHashes.length;
-  bool get isAllSelected => _transactions.isNotEmpty && _selectedHashes.length == _transactions.length;
+  bool get isAllSelected =>
+      _transactions.isNotEmpty &&
+      _selectedHashes.length == _transactions.length;
 
   // Getters - Phase 3B Smart Transactions
-  List<DetectedTransactionModel> get detectedTransactions => _detectedTransactions;
-  List<DetectedTransactionModel> get archivedDetectedTransactions => _archivedDetectedTransactions;
+  List<DetectedTransactionModel> get detectedTransactions =>
+      _detectedTransactions;
+  List<DetectedTransactionModel> get archivedDetectedTransactions =>
+      _archivedDetectedTransactions;
   Set<int> get selectedDetectedIds => _selectedDetectedIds;
   int get detectedCount => _detectedTransactions.length;
   int get selectedDetectedCount => _selectedDetectedIds.length;
   bool get isAllDetectedSelected =>
-      _detectedTransactions.isNotEmpty && _selectedDetectedIds.length == _detectedTransactions.length;
+      _detectedTransactions.isNotEmpty &&
+      _selectedDetectedIds.length == _detectedTransactions.length;
 
   // ── Phase 3B Smart Transactions Methods ─────────────────────────────────────
 
@@ -156,7 +161,9 @@ class SmsProvider extends ChangeNotifier {
     } catch (e) {
       if (sessionGeneration != _sessionGeneration) return;
       _detectedErrorMessage = e is DioException
-          ? (e.response?.data["message"] ?? e.message ?? "Failed to load detected transactions")
+          ? (e.response?.data["message"] ??
+                e.message ??
+                "Failed to load detected transactions")
           : e.toString().replaceAll("Exception: ", "");
     } finally {
       if (sessionGeneration == _sessionGeneration) {
@@ -168,7 +175,15 @@ class SmsProvider extends ChangeNotifier {
 
   /// Scans device SMS inbox, transmits financial SMS to backend for smart parsing,
   /// and updates both smart transactions and legacy transactions.
-  Future<void> scanAndDetectSmartTransactions() async {
+  Future<void> scanAndDetectSmartTransactions({
+    bool userConsented = false,
+  }) async {
+    if (!userConsented) {
+      _errorMessage =
+          'Review and accept the SMS import notice before scanning.';
+      notifyListeners();
+      return;
+    }
     if (_isScanning || _isImporting) return;
     final sessionGeneration = _sessionGeneration;
     _isScanning = true;
@@ -192,7 +207,8 @@ class SmsProvider extends ChangeNotifier {
 
         if (!requestStatus.isGranted) {
           if (requestStatus.isPermanentlyDenied) {
-            _errorMessage = 'SMS permission permanently denied. Please enable it in system settings.';
+            _errorMessage =
+                'SMS permission permanently denied. Please enable it in system settings.';
           } else {
             _errorMessage = 'SMS permission denied.';
           }
@@ -246,7 +262,10 @@ class SmsProvider extends ChangeNotifier {
   }
 
   /// Confirms a single detected transaction into the ledger.
-  Future<bool> confirmDetected(int id, {Map<String, dynamic>? overrides}) async {
+  Future<bool> confirmDetected(
+    int id, {
+    Map<String, dynamic>? overrides,
+  }) async {
     _isOperating = true;
     _detectedErrorMessage = null;
     notifyListeners();
@@ -266,7 +285,9 @@ class SmsProvider extends ChangeNotifier {
       }
     } catch (e) {
       _detectedErrorMessage = e is DioException
-          ? (e.response?.data["message"] ?? e.message ?? "Failed to confirm transaction")
+          ? (e.response?.data["message"] ??
+                e.message ??
+                "Failed to confirm transaction")
           : e.toString().replaceAll("Exception: ", "");
       return false;
     } finally {
@@ -294,7 +315,9 @@ class SmsProvider extends ChangeNotifier {
       }
     } catch (e) {
       _detectedErrorMessage = e is DioException
-          ? (e.response?.data["message"] ?? e.message ?? "Failed to reject transaction")
+          ? (e.response?.data["message"] ??
+                e.message ??
+                "Failed to reject transaction")
           : e.toString().replaceAll("Exception: ", "");
       return false;
     } finally {
@@ -324,7 +347,9 @@ class SmsProvider extends ChangeNotifier {
       }
     } catch (e) {
       _detectedErrorMessage = e is DioException
-          ? (e.response?.data["message"] ?? e.message ?? "Failed to update transaction")
+          ? (e.response?.data["message"] ??
+                e.message ??
+                "Failed to update transaction")
           : e.toString().replaceAll("Exception: ", "");
       return false;
     } finally {
@@ -344,7 +369,9 @@ class SmsProvider extends ChangeNotifier {
       final items = _selectedDetectedIds.map((id) => {"id": id}).toList();
       final res = await _smartRepo.batchConfirm(items);
       if (res.success) {
-        _detectedTransactions.removeWhere((t) => _selectedDetectedIds.contains(t.id));
+        _detectedTransactions.removeWhere(
+          (t) => _selectedDetectedIds.contains(t.id),
+        );
         _selectedDetectedIds.clear();
         await CacheService.remove('dashboard_cache');
         await CacheService.clearBudgetCaches();
@@ -356,7 +383,9 @@ class SmsProvider extends ChangeNotifier {
       }
     } catch (e) {
       _detectedErrorMessage = e is DioException
-          ? (e.response?.data["message"] ?? e.message ?? "Failed to batch confirm transactions")
+          ? (e.response?.data["message"] ??
+                e.message ??
+                "Failed to batch confirm transactions")
           : e.toString().replaceAll("Exception: ", "");
       return false;
     } finally {
@@ -376,7 +405,9 @@ class SmsProvider extends ChangeNotifier {
       final ids = _selectedDetectedIds.toList();
       final res = await _smartRepo.batchReject(ids, reason: reason);
       if (res.success) {
-        _detectedTransactions.removeWhere((t) => _selectedDetectedIds.contains(t.id));
+        _detectedTransactions.removeWhere(
+          (t) => _selectedDetectedIds.contains(t.id),
+        );
         _selectedDetectedIds.clear();
         notifyListeners();
         return true;
@@ -386,7 +417,9 @@ class SmsProvider extends ChangeNotifier {
       }
     } catch (e) {
       _detectedErrorMessage = e is DioException
-          ? (e.response?.data["message"] ?? e.message ?? "Failed to batch reject transactions")
+          ? (e.response?.data["message"] ??
+                e.message ??
+                "Failed to batch reject transactions")
           : e.toString().replaceAll("Exception: ", "");
       return false;
     } finally {
@@ -398,7 +431,13 @@ class SmsProvider extends ChangeNotifier {
   // ── Existing SMS Scanning and Import Methods (Preserved) ────────────────────
 
   /// Check permissions and scan for financial transactions in the device SMS inbox.
-  Future<void> scanSms() async {
+  Future<void> scanSms({bool userConsented = false}) async {
+    if (!userConsented) {
+      _errorMessage =
+          'Review and accept the SMS import notice before scanning.';
+      notifyListeners();
+      return;
+    }
     if (_isScanning || _isImporting) return;
     final sessionGeneration = _sessionGeneration;
     _isScanning = true;
@@ -422,7 +461,8 @@ class SmsProvider extends ChangeNotifier {
 
         if (!requestStatus.isGranted) {
           if (requestStatus.isPermanentlyDenied) {
-            _errorMessage = 'SMS permission permanently denied. Please enable it in system settings.';
+            _errorMessage =
+                'SMS permission permanently denied. Please enable it in system settings.';
           } else {
             _errorMessage = 'SMS permission denied.';
           }
@@ -566,7 +606,10 @@ class SmsProvider extends ChangeNotifier {
     } catch (e) {
       if (sessionGeneration != _sessionGeneration) return false;
       if (e is DioException) {
-        _errorMessage = e.response?.data["message"] ?? e.message ?? 'Failed to connect to the server.';
+        _errorMessage =
+            e.response?.data["message"] ??
+            e.message ??
+            'Failed to connect to the server.';
       } else {
         _errorMessage = e.toString().replaceAll('Exception: ', '');
       }

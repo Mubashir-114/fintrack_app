@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +15,7 @@ import '../../providers/currency_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/sms_provider.dart';
 import '../../providers/transaction_provider.dart';
+import '../../core/services/cache_service.dart';
 
 class SmsImportScreen extends StatefulWidget {
   const SmsImportScreen({super.key});
@@ -24,14 +26,58 @@ class SmsImportScreen extends StatefulWidget {
 
 class _SmsImportScreenState extends State<SmsImportScreen> {
   final Set<String> _expandedHashes = {};
+  bool _scanPromptOpen = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SmsProvider>().scanAndDetectSmartTransactions();
+      if (!mounted) return;
+      _requestScan();
       context.read<AccountProvider>().loadAccounts();
     });
+  }
+
+  Future<void> _requestScan() async {
+    if (_scanPromptOpen) return;
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'SMS import is available on Android. You can add transactions manually.',
+          ),
+        ),
+      );
+      return;
+    }
+    final userId = CacheService.userId;
+    _scanPromptOpen = true;
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Optional SMS import'),
+        scrollable: true,
+        content: const Text(
+          'FinTrack reads your SMS inbox on this device to find financial messages. Detected financial-message information is sent to the FinTrack backend for your review. Ledger entries and balances change only after you approve them. FIN does not read your inbox. You can decline and enter transactions manually, or revoke SMS permission in device settings.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Not now'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Continue to scan'),
+          ),
+        ],
+      ),
+    );
+    _scanPromptOpen = false;
+    if (approved == true && mounted && userId == CacheService.userId) {
+      await context.read<SmsProvider>().scanAndDetectSmartTransactions(
+        userConsented: true,
+      );
+    }
   }
 
   void _toggleMessageExpand(String hash) {
@@ -44,30 +90,56 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
     });
   }
 
-  void _showResultDialog(BuildContext context, int imported, int duplicates, int failed) {
+  void _showResultDialog(
+    BuildContext context,
+    int imported,
+    int duplicates,
+    int failed,
+  ) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusLG)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
+        ),
         title: const Row(
           children: [
-            Icon(Icons.check_circle_outline_rounded, color: AppColors.success, size: 28),
+            Icon(
+              Icons.check_circle_outline_rounded,
+              color: AppColors.success,
+              size: 28,
+            ),
             SizedBox(width: 8),
-            Text("Import Summary"),
+            Expanded(child: Text("Import Summary")),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Import job processed successfully with the following results:"),
+            const Text("The server returned the following import results:"),
             const SizedBox(height: 16),
-            _buildResultRow(Icons.add_task_rounded, "Imported", imported, AppColors.success),
+            _buildResultRow(
+              Icons.add_task_rounded,
+              "Imported",
+              imported,
+              AppColors.success,
+            ),
             const SizedBox(height: 8),
-            _buildResultRow(Icons.copy_rounded, "Duplicates (Skipped)", duplicates, AppColors.warning),
+            _buildResultRow(
+              Icons.copy_rounded,
+              "Duplicates (Skipped)",
+              duplicates,
+              AppColors.warning,
+            ),
             const SizedBox(height: 8),
-            _buildResultRow(Icons.error_outline_rounded, "Failed", failed, AppColors.danger),
+            _buildResultRow(
+              Icons.error_outline_rounded,
+              "Failed",
+              failed,
+              AppColors.danger,
+            ),
           ],
         ),
         actions: [
@@ -82,7 +154,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                 context.go('/dashboard');
               }
             },
-            child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              "OK",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -125,14 +200,17 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
           title: const Text("Smart SMS Transactions"),
           elevation: 0,
           actions: [
-            if (!smsProvider.isScanning && !smsProvider.isImporting && !smsProvider.isOperating)
+            if (!smsProvider.isScanning &&
+                !smsProvider.isImporting &&
+                !smsProvider.isOperating)
               IconButton(
                 icon: const Icon(Icons.refresh_rounded),
-                onPressed: () => smsProvider.scanAndDetectSmartTransactions(),
+                onPressed: _requestScan,
                 tooltip: "Rescan SMS",
               ),
           ],
           bottom: const TabBar(
+            isScrollable: true,
             tabs: [
               Tab(text: "Smart Review"),
               Tab(text: "New SMS"),
@@ -149,13 +227,24 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
             // Tab 2: New Messages Checklist (Legacy inbox import preserved)
             Stack(
               children: [
-                _buildLegacyContent(context, smsProvider, isDark, showArchived: false),
-                if (smsProvider.isImporting) _buildImportOverlay("Importing to ledger..."),
+                _buildLegacyContent(
+                  context,
+                  smsProvider,
+                  isDark,
+                  showArchived: false,
+                ),
+                if (smsProvider.isImporting)
+                  _buildImportOverlay("Importing to ledger..."),
               ],
             ),
 
             // Tab 3: Archived Messages List
-            _buildLegacyContent(context, smsProvider, isDark, showArchived: true),
+            _buildLegacyContent(
+              context,
+              smsProvider,
+              isDark,
+              showArchived: true,
+            ),
           ],
         ),
       ),
@@ -172,9 +261,7 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
       decoration: BoxDecoration(
         color: colors.primary.withValues(alpha: isDark ? 0.15 : 0.08),
         borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: 0.25),
-        ),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,7 +282,7 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "SMS notifications are parsed on your device. Unreviewed records never alter your ledger or account balances until explicitly approved. Full account numbers are never logged.",
+                  "SMS messages are parsed on your device. Detected financial-message information is sent to FinTrack for review. Unreviewed records never alter your ledger or account balances until explicitly approved.",
                   style: TextStyle(
                     fontSize: 11,
                     height: 1.35,
@@ -212,7 +299,11 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
 
   // ── Tab 1: Smart Review Content ─────────────────────────────────────────────
 
-  Widget _buildSmartReviewTab(BuildContext context, SmsProvider smsProvider, bool isDark) {
+  Widget _buildSmartReviewTab(
+    BuildContext context,
+    SmsProvider smsProvider,
+    bool isDark,
+  ) {
     final colors = AppColors.of(context);
     if (smsProvider.isScanning || smsProvider.isLoadingDetected) {
       return Center(
@@ -234,14 +325,19 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
       );
     }
 
-    if (smsProvider.detectedErrorMessage != null && smsProvider.detectedTransactions.isEmpty) {
+    if (smsProvider.detectedErrorMessage != null &&
+        smsProvider.detectedTransactions.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.lg),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.cloud_off_rounded, size: 56, color: AppColors.danger),
+              const Icon(
+                Icons.cloud_off_rounded,
+                size: 56,
+                color: AppColors.danger,
+              ),
               const SizedBox(height: 16),
               Text(
                 "Unable to load suggestions",
@@ -255,13 +351,12 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
               Text(
                 smsProvider.detectedErrorMessage!,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colors.textSecondary,
-                ),
+                style: TextStyle(color: colors.textSecondary),
               ),
               const SizedBox(height: 20),
               ElevatedButton.icon(
-                onPressed: () => smsProvider.loadDetectedTransactions(status: "suggested"),
+                onPressed: () =>
+                    smsProvider.loadDetectedTransactions(status: "suggested"),
                 icon: const Icon(Icons.refresh_rounded),
                 label: const Text("Retry"),
               ),
@@ -276,7 +371,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
         children: [
           _buildPrivacyBanner(isDark),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 48, horizontal: AppDimensions.lg),
+            padding: const EdgeInsets.symmetric(
+              vertical: 48,
+              horizontal: AppDimensions.lg,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -298,13 +396,11 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                 Text(
                   "No detected transactions are currently awaiting review. Tap Rescan to scan new SMS messages.",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: colors.textSecondary,
-                  ),
+                  style: TextStyle(color: colors.textSecondary),
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
-                  onPressed: () => smsProvider.scanAndDetectSmartTransactions(),
+                  onPressed: _requestScan,
                   icon: const Icon(Icons.sync_rounded),
                   label: const Text("Rescan Inbox"),
                 ),
@@ -321,18 +417,27 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
 
         // Multi-select & Batch Actions Header
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppDimensions.md, vertical: AppDimensions.sm),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.md,
+            vertical: AppDimensions.sm,
+          ),
           color: colors.surface,
           child: Row(
             children: [
               Checkbox(
                 value: smsProvider.isAllDetectedSelected,
-                tristate: smsProvider.selectedDetectedCount > 0 && !smsProvider.isAllDetectedSelected,
-                onChanged: (val) => smsProvider.toggleSelectAllDetected(val ?? true),
+                tristate:
+                    smsProvider.selectedDetectedCount > 0 &&
+                    !smsProvider.isAllDetectedSelected,
+                onChanged: (val) =>
+                    smsProvider.toggleSelectAllDetected(val ?? true),
               ),
               Text(
                 "${smsProvider.detectedCount} Detected (${smsProvider.selectedDetectedCount} selected)",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
               const Spacer(),
               if (smsProvider.selectedDetectedCount > 0) ...[
@@ -343,12 +448,21 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                           final ok = await smsProvider.batchRejectSelected();
                           if (ok && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Selected transactions rejected")),
+                              const SnackBar(
+                                content: Text("Selected transactions rejected"),
+                              ),
                             );
                           }
                         },
-                  icon: const Icon(Icons.close_rounded, size: 16, color: AppColors.danger),
-                  label: const Text("Reject", style: TextStyle(color: AppColors.danger, fontSize: 12)),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    size: 16,
+                    color: AppColors.danger,
+                  ),
+                  label: const Text(
+                    "Reject",
+                    style: TextStyle(color: AppColors.danger, fontSize: 12),
+                  ),
                 ),
                 const SizedBox(width: 4),
                 ElevatedButton.icon(
@@ -357,16 +471,26 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                       : () async {
                           final ok = await smsProvider.batchConfirmSelected();
                           if (ok && context.mounted) {
-                            context.read<TransactionProvider>().loadTransactions();
-                            context.read<DashboardProvider>().loadDashboardData();
+                            context
+                                .read<TransactionProvider>()
+                                .loadTransactions();
+                            context
+                                .read<DashboardProvider>()
+                                .loadDashboardData();
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Selected transactions confirmed into ledger")),
+                              const SnackBar(
+                                content: Text(
+                                  "Selected transactions confirmed into ledger",
+                                ),
+                              ),
                             );
                           }
                         },
                   icon: const Icon(Icons.check_rounded, size: 16),
                   label: const Text("Confirm", style: TextStyle(fontSize: 12)),
-                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10)),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                  ),
                 ),
               ],
             ],
@@ -397,13 +521,21 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
     final colors = AppColors.of(context);
     final currencySymbol = context.watch<CurrencyProvider>().currencySymbol;
     final isSelected = smsProvider.selectedDetectedIds.contains(tx.id);
-    final isIncomeType = ["income", "refund", "credit_card_repayment"].contains(tx.classification);
-    final isNeedsReview = tx.confidence < 0.8 || tx.isAccountAmbiguous || tx.accountId == null;
+    final isIncomeType = [
+      "income",
+      "refund",
+      "credit_card_repayment",
+    ].contains(tx.classification);
+    final isNeedsReview =
+        tx.confidence < 0.8 || tx.isAccountAmbiguous || tx.accountId == null;
 
     final cardBg = colors.surface;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.sm, vertical: AppDimensions.xs),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.sm,
+        vertical: AppDimensions.xs,
+      ),
       elevation: 1,
       color: cardBg,
       shape: RoundedRectangleBorder(
@@ -431,12 +563,18 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        tx.merchantClean.isNotEmpty ? tx.merchantClean : "Unknown Merchant",
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        tx.merchantClean.isNotEmpty
+                            ? tx.merchantClean
+                            : "Unknown Merchant",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (tx.merchantRaw.isNotEmpty && tx.merchantRaw != tx.merchantClean)
+                      if (tx.merchantRaw.isNotEmpty &&
+                          tx.merchantRaw != tx.merchantClean)
                         Text(
                           "Raw: ${tx.merchantRaw}",
                           style: TextStyle(
@@ -454,9 +592,7 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: isIncomeType
-                        ? colors.success
-                        : colors.textPrimary,
+                    color: isIncomeType ? colors.success : colors.textPrimary,
                   ),
                 ),
               ],
@@ -473,7 +609,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                 _buildBadge(
                   label: _formatClassification(tx.classification),
                   color: isIncomeType ? colors.success : colors.primary,
-                  icon: isIncomeType ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+                  icon: isIncomeType
+                      ? Icons.arrow_downward_rounded
+                      : Icons.arrow_upward_rounded,
                 ),
 
                 // Account suggestion badge
@@ -483,7 +621,8 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     color: colors.warning,
                     icon: Icons.warning_amber_rounded,
                   )
-                else if (tx.suggestedAccountName != null || tx.accountName != null)
+                else if (tx.suggestedAccountName != null ||
+                    tx.accountName != null)
                   _buildBadge(
                     label: tx.accountName ?? tx.suggestedAccountName!,
                     color: colors.primary,
@@ -498,9 +637,12 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
 
                 // Category suggestion badge
                 _buildBadge(
-                  label: tx.categoryName ?? tx.suggestedCategoryName ?? "General",
+                  label:
+                      tx.categoryName ?? tx.suggestedCategoryName ?? "General",
                   color: colors.secondary,
-                  icon: getCategoryIcon(tx.categoryName ?? tx.suggestedCategoryName ?? "General"),
+                  icon: getCategoryIcon(
+                    tx.categoryName ?? tx.suggestedCategoryName ?? "General",
+                  ),
                 ),
 
                 // Confidence badge
@@ -509,12 +651,15 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                       ? "Needs Review (${(tx.confidence * 100).toInt()}%)"
                       : "${(tx.confidence * 100).toInt()}% Match",
                   color: isNeedsReview ? colors.warning : colors.success,
-                  icon: isNeedsReview ? Icons.rate_review_outlined : Icons.verified_rounded,
+                  icon: isNeedsReview
+                      ? Icons.rate_review_outlined
+                      : Icons.verified_rounded,
                 ),
               ],
             ),
 
-            if (tx.confidenceReason != null && tx.confidenceReason!.isNotEmpty) ...[
+            if (tx.confidenceReason != null &&
+                tx.confidenceReason!.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
                 tx.confidenceReason!,
@@ -536,18 +681,22 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
               children: [
                 Text(
                   tx.transactionDate,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colors.textSecondary,
-                  ),
+                  style: TextStyle(fontSize: 12, color: colors.textSecondary),
                 ),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: smsProvider.isOperating
                       ? null
                       : () => _showRejectDialog(context, tx.id, smsProvider),
-                  icon: const Icon(Icons.close_rounded, size: 16, color: AppColors.danger),
-                  label: const Text("Reject", style: TextStyle(color: AppColors.danger, fontSize: 12)),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    size: 16,
+                    color: AppColors.danger,
+                  ),
+                  label: const Text(
+                    "Reject",
+                    style: TextStyle(color: AppColors.danger, fontSize: 12),
+                  ),
                 ),
                 TextButton.icon(
                   onPressed: smsProvider.isOperating
@@ -562,10 +711,18 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                       : () async {
                           final ok = await smsProvider.confirmDetected(tx.id);
                           if (ok && context.mounted) {
-                            context.read<TransactionProvider>().loadTransactions();
-                            context.read<DashboardProvider>().loadDashboardData();
+                            context
+                                .read<TransactionProvider>()
+                                .loadTransactions();
+                            context
+                                .read<DashboardProvider>()
+                                .loadDashboardData();
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Confirmed ${tx.merchantClean} to ledger")),
+                              SnackBar(
+                                content: Text(
+                                  "Confirmed ${tx.merchantClean} to ledger",
+                                ),
+                              ),
                             );
                           }
                         },
@@ -574,7 +731,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.success,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
               ],
@@ -585,7 +745,11 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
     );
   }
 
-  Widget _buildBadge({required String label, required Color color, required IconData icon}) {
+  Widget _buildBadge({
+    required String label,
+    required Color color,
+    required IconData icon,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -600,7 +764,11 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
         ],
       ),
@@ -643,7 +811,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
       context: context,
       builder: (dialogCtx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusLG)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
+          ),
           title: const Text("Edit Transaction"),
           content: SingleChildScrollView(
             child: Column(
@@ -667,13 +837,24 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                   items: const [
                     DropdownMenuItem(value: "expense", child: Text("Expense")),
                     DropdownMenuItem(value: "income", child: Text("Income")),
-                    DropdownMenuItem(value: "credit_card_purchase", child: Text("Card Purchase")),
-                    DropdownMenuItem(value: "credit_card_repayment", child: Text("Card Repayment")),
+                    DropdownMenuItem(
+                      value: "credit_card_purchase",
+                      child: Text("Card Purchase"),
+                    ),
+                    DropdownMenuItem(
+                      value: "credit_card_repayment",
+                      child: Text("Card Repayment"),
+                    ),
                     DropdownMenuItem(value: "refund", child: Text("Refund")),
-                    DropdownMenuItem(value: "transfer", child: Text("Transfer")),
+                    DropdownMenuItem(
+                      value: "transfer",
+                      child: Text("Transfer"),
+                    ),
                   ],
                   onChanged: (val) {
-                    if (val != null) setDialogState(() => selectedClassification = val);
+                    if (val != null) {
+                      setDialogState(() => selectedClassification = val);
+                    }
                   },
                 ),
                 const SizedBox(height: 12),
@@ -684,11 +865,16 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     border: OutlineInputBorder(),
                   ),
                   items: [
-                    const DropdownMenuItem(value: null, child: Text("None / Default")),
+                    const DropdownMenuItem(
+                      value: null,
+                      child: Text("None / Default"),
+                    ),
                     ...accounts.map(
                       (acc) => DropdownMenuItem(
                         value: acc.id,
-                        child: Text("${acc.displayName} (${acc.maskedLast4 ?? 'no digits'})"),
+                        child: Text(
+                          "${acc.displayName} (${acc.maskedLast4 ?? 'no digits'})",
+                        ),
                       ),
                     ),
                   ],
@@ -704,7 +890,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     border: OutlineInputBorder(),
                   ),
                   items: [
-                    const DropdownMenuItem(value: null, child: Text("Auto Category")),
+                    const DropdownMenuItem(
+                      value: null,
+                      child: Text("Auto Category"),
+                    ),
                     ...categories.map(
                       (c) => DropdownMenuItem(
                         value: c.id,
@@ -743,7 +932,11 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
     );
   }
 
-  void _showRejectDialog(BuildContext context, int txId, SmsProvider smsProvider) {
+  void _showRejectDialog(
+    BuildContext context,
+    int txId,
+    SmsProvider smsProvider,
+  ) {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
@@ -757,7 +950,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.danger,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () async {
               Navigator.of(dialogCtx).pop();
               await smsProvider.rejectDetected(txId);
@@ -802,7 +998,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
     bool isDark, {
     required bool showArchived,
   }) {
-    final list = showArchived ? smsProvider.archivedTransactions : smsProvider.transactions;
+    final list = showArchived
+        ? smsProvider.archivedTransactions
+        : smsProvider.transactions;
 
     if (smsProvider.isScanning) {
       return Center(
@@ -825,14 +1023,19 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
     }
 
     if (smsProvider.errorMessage != null && list.isEmpty) {
-      final isPermanent = smsProvider.permissionStatus?.isPermanentlyDenied ?? false;
+      final isPermanent =
+          smsProvider.permissionStatus?.isPermanentlyDenied ?? false;
       return Padding(
         padding: const EdgeInsets.all(AppDimensions.lg),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.sms_failed_outlined, size: 64, color: AppColors.danger),
+              const Icon(
+                Icons.sms_failed_outlined,
+                size: 64,
+                color: AppColors.danger,
+              ),
               const SizedBox(height: 16),
               Text(
                 "Access Blocked",
@@ -847,7 +1050,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                 smsProvider.errorMessage!,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondaryLight,
                 ),
               ),
               const SizedBox(height: 24),
@@ -859,7 +1064,7 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                 )
               else
                 ElevatedButton.icon(
-                  onPressed: () => smsProvider.scanSms(),
+                  onPressed: _requestScan,
                   icon: const Icon(Icons.refresh_rounded),
                   label: const Text("Retry Scanning"),
                 ),
@@ -877,9 +1082,13 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                showArchived ? Icons.archive_outlined : Icons.mark_email_read_rounded,
+                showArchived
+                    ? Icons.archive_outlined
+                    : Icons.mark_email_read_rounded,
                 size: 64,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
               ),
               const SizedBox(height: 16),
               Text(
@@ -897,13 +1106,15 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     : "We scanned your messages but couldn't find any new financial transactions.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondaryLight,
                 ),
               ),
               const SizedBox(height: 24),
               if (!showArchived)
                 ElevatedButton.icon(
-                  onPressed: () => smsProvider.scanSms(),
+                  onPressed: _requestScan,
                   icon: const Icon(Icons.sync_rounded),
                   label: const Text("Rescan Inbox"),
                 ),
@@ -923,22 +1134,36 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
               children: [
                 Checkbox(
                   value: smsProvider.isAllSelected,
-                  tristate: smsProvider.selectedCount > 0 && !smsProvider.isAllSelected,
+                  tristate:
+                      smsProvider.selectedCount > 0 &&
+                      !smsProvider.isAllSelected,
                   onChanged: (val) => smsProvider.toggleSelectAll(val ?? true),
                 ),
                 Text(
                   "${smsProvider.foundCount} Found (${smsProvider.selectedCount} selected)",
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
                 const Spacer(),
                 ElevatedButton(
-                  onPressed: smsProvider.selectedCount == 0 || smsProvider.isImporting
+                  onPressed:
+                      smsProvider.selectedCount == 0 || smsProvider.isImporting
                       ? null
                       : () async {
-                          final ok = await smsProvider.importSelectedTransactions();
-                          if (ok && smsProvider.importResponse != null && context.mounted) {
+                          final ok = await smsProvider
+                              .importSelectedTransactions();
+                          if (ok &&
+                              smsProvider.importResponse != null &&
+                              context.mounted) {
                             final res = smsProvider.importResponse!;
-                            _showResultDialog(context, res.imported, res.duplicates, res.failed);
+                            _showResultDialog(
+                              context,
+                              res.imported,
+                              res.duplicates,
+                              res.failed,
+                            );
                           }
                         },
                   child: const Text("Import Selected"),
@@ -951,10 +1176,15 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
             itemCount: list.length,
             itemBuilder: (ctx, idx) {
               final tx = list[idx];
-              final isSelected = smsProvider.selectedHashes.contains(tx.smsHash);
+              final isSelected = smsProvider.selectedHashes.contains(
+                tx.smsHash,
+              );
               final isExpanded = _expandedHashes.contains(tx.smsHash);
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: AppDimensions.sm, vertical: AppDimensions.xs),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.sm,
+                  vertical: AppDimensions.xs,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(AppDimensions.sm),
                   child: Column(
@@ -964,18 +1194,26 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                           if (!showArchived)
                             Checkbox(
                               value: isSelected,
-                              onChanged: (_) => smsProvider.toggleSelection(tx.smsHash),
+                              onChanged: (_) =>
+                                  smsProvider.toggleSelection(tx.smsHash),
                             ),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(tx.merchant, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                Text(
+                                  tx.merchant,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 Text(
                                   "${DateFormat('d MMM y').format(tx.date)} • ${tx.bank}",
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                                    color: isDark
+                                        ? AppColors.textSecondaryDark
+                                        : AppColors.textSecondaryLight,
                                   ),
                                 ),
                               ],
@@ -985,11 +1223,17 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                             "${tx.type == 'income' ? '+' : '-'} ₹${tx.amount.toStringAsFixed(2)}",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: tx.type == 'income' ? AppColors.success : AppColors.danger,
+                              color: tx.type == 'income'
+                                  ? AppColors.success
+                                  : AppColors.danger,
                             ),
                           ),
                           IconButton(
-                            icon: Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
+                            icon: Icon(
+                              isExpanded
+                                  ? Icons.expand_less
+                                  : Icons.expand_more,
+                            ),
                             onPressed: () => _toggleMessageExpand(tx.smsHash),
                           ),
                         ],
@@ -1000,7 +1244,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
                             tx.messageBody,
-                            style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                            ),
                           ),
                         ),
                       ],

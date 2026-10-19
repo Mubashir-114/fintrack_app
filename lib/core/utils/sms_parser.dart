@@ -231,7 +231,7 @@ class SmsParser {
     return sender;
   }
 
-  /// Map transaction data to BudgetBee categories
+  /// Map transaction data to FinTrack categories
   static String detectCategory(String merchant, String body) {
     final merchantLower = merchant.toLowerCase();
     final bodyLower = body.toLowerCase();

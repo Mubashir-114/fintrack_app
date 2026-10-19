@@ -13,10 +13,13 @@ class _FakeSmsService extends SmsService {
 
   final List<ParsedSmsTransaction> transactions;
   int readCount = 0;
+  int permissionChecks = 0;
 
   @override
-  Future<PermissionStatus> getPermissionStatus() async =>
-      PermissionStatus.granted;
+  Future<PermissionStatus> getPermissionStatus() async {
+    permissionChecks++;
+    return PermissionStatus.granted;
+  }
 
   @override
   Future<List<ParsedSmsTransaction>> readAndParseSms() async {
@@ -70,6 +73,19 @@ void main() {
   });
 
   test(
+    'both SMS scan paths refuse to request permissions or read without consent',
+    () async {
+      final service = _FakeSmsService([_transaction('synthetic')]);
+      final provider = SmsProvider(smsService: service);
+      await provider.scanSms();
+      await provider.scanAndDetectSmartTransactions();
+      expect(service.permissionChecks, 0);
+      expect(service.readCount, 0);
+      expect(provider.errorMessage, contains('notice before scanning'));
+    },
+  );
+
+  test(
     'keeps selected SMS transactions visible after partial import failure',
     () async {
       final smsService = _FakeSmsService([_transaction('hash-1')]);
@@ -90,7 +106,7 @@ void main() {
         repository: repository,
       );
 
-      await provider.scanSms();
+      await provider.scanSms(userConsented: true);
       expect(provider.selectedCount, 1);
 
       expect(await provider.importSelectedTransactions(), isTrue);
@@ -121,7 +137,7 @@ void main() {
         ),
       );
 
-      await provider.scanSms();
+      await provider.scanSms(userConsented: true);
 
       expect(provider.errorMessage, 'Hash lookup failed');
       expect(provider.transactions, isEmpty);
@@ -149,7 +165,7 @@ void main() {
         ),
       );
 
-      await provider.scanSms();
+      await provider.scanSms(userConsented: true);
       expect(await provider.importSelectedTransactions(), isTrue);
 
       expect(provider.transactions, isEmpty);
