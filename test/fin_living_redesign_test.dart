@@ -300,8 +300,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('global_fin_edge_switch')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('global_fin_action_close')));
-      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('global_fin_action_panel')), findsNothing);
       expect(tester.getTopLeft(handle).dx, 0);
       await _capture(tester, 'peek_left');
       await tester.tap(handle);

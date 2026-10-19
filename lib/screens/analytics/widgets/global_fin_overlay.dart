@@ -44,6 +44,7 @@ class FinOverlayObserver extends NavigatorObserver {
 /// Restricted to browsing surfaces; forms, import and security stay unobstructed.
 class GlobalFinOverlay extends StatefulWidget {
   const GlobalFinOverlay({super.key});
+
   /// Transparent hit target at the edge. The painted portrait is wider but
   /// allocates no page space.
   static const peekWidth = 56.0;
@@ -54,6 +55,7 @@ class GlobalFinOverlay extends StatefulWidget {
     '/reports',
     '/planning',
     '/profile',
+    '/profile/fin',
     '/accounts',
   }.contains(location);
   @override
@@ -218,8 +220,7 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
               math.max(80.0, region.width * .22),
             );
             final y =
-                (region.top +
-                        (region.height - _peekVisualHeight) * _vertical)
+                (region.top + (region.height - _peekVisualHeight) * _vertical)
                     .clamp(
                       region.top,
                       math.max(region.top, region.bottom - _peekVisualHeight),
@@ -458,8 +459,7 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
                             controller: controller,
                             isPeeking: true,
                             peekingOnLeft: isLeft,
-                            peekReveal: (peekWindow /
-                                    (_peekVisualHeight * .72))
+                            peekReveal: (peekWindow / (_peekVisualHeight * .72))
                                 .clamp(.5, 1)
                                 .toDouble(),
                             animationsEnabled: prefs.animationsEnabled,

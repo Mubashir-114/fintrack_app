@@ -1,3 +1,4 @@
+import '../screens/profile/fin_settings_screen.dart';
 import '../screens/profile/privacy_screen.dart';
 import '../screens/profile/delete_account_screen.dart';
 import 'package:go_router/go_router.dart';
@@ -176,6 +177,10 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/profile/delete',
           builder: (context, state) => const DeleteAccountScreen(),
+        ),
+        GoRoute(
+          path: '/profile/fin',
+          builder: (context, state) => const FinSettingsScreen(),
         ),
         GoRoute(
           path: '/profile/edit',

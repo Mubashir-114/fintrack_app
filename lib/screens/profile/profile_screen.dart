@@ -237,6 +237,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 20),
 
+            SettingsGroup(
+              title: 'FIN Companion',
+              children: [
+                SettingsTile(
+                  icon: Icons.auto_awesome_outlined,
+                  title: 'FIN Companion',
+                  subtitle: 'Restore FIN, visibility, position and animation',
+                  showDivider: false,
+                  onTap: () => context.push('/profile/fin'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
             // D. Application Preferences
             SettingsGroup(
               title: "Preferences",

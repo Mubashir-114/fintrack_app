@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
@@ -35,6 +37,7 @@ class AnalyticsProvider extends ChangeNotifier {
   String? _alertsError;
 
   // Phase 5E FIN Living Companion State
+  int _companionRevision = 0;
   CompanionPreferences _companionPreferences = const CompanionPreferences();
   FinCharacterState _characterState = FinCharacterState.idle;
   FinActionPreview? _pendingAction;
@@ -82,6 +85,7 @@ class AnalyticsProvider extends ChangeNotifier {
       _capabilities?.suggestedQuestions ?? [];
 
   void clearSession() {
+    _companionRevision++;
     _isLoading = false;
     _isTyping = false;
     _errorMessage = null;
@@ -164,6 +168,7 @@ class AnalyticsProvider extends ChangeNotifier {
   }
 
   Future<void> loadCompanionPreferences() async {
+    final revision = _companionRevision;
     var prefs = _companionPreferences;
     try {
       final res = await _repository.getCompanionPreferences();
@@ -172,38 +177,55 @@ class AnalyticsProvider extends ChangeNotifier {
       // Local presence preferences still apply when the server is unavailable.
     }
     try {
-      final local = await CacheService.get(
-        'fin_companion_local_prefs',
-      ).timeout(const Duration(milliseconds: 150), onTimeout: () => null);
+      final storage = await SharedPreferences.getInstance();
+      final encoded = storage.getString(
+        'fintrack_companion_v1_${CacheService.userId ?? 'anonymous'}',
+      );
+      final local = encoded == null
+          ? await CacheService.get('fin_companion_local_prefs')
+          : jsonDecode(encoded);
       if (local is Map<String, dynamic>) {
         prefs = prefs.copyWith(
           showAcrossApp: local['showAcrossApp'] as bool?,
           edgePosition: local['edgePosition'] as String?,
           proactiveHints: local['proactiveHints'] as bool?,
+          animationsEnabled:
+              (local['enableCharacterAnimations'] ?? local['animationsEnabled'])
+                  as bool?,
         );
       }
     } catch (_) {}
+    if (revision != _companionRevision) return;
     _companionPreferences = prefs;
     visualController.setAnimationsEnabled(prefs.animationsEnabled);
     notifyListeners();
   }
 
   Future<bool> updateCompanionPreferences(CompanionPreferences prefs) async {
+    final revision = ++_companionRevision;
+    final preferenceKey =
+        'fintrack_companion_v1_${CacheService.userId ?? 'anonymous'}';
+    _companionPreferences = prefs;
+    visualController.resetPresence();
+    visualController.setAnimationsEnabled(prefs.animationsEnabled);
+    notifyListeners();
     try {
       try {
-        await CacheService.save('fin_companion_local_prefs', {
-          'showAcrossApp': prefs.showAcrossApp,
-          'edgePosition': prefs.edgePosition,
-          'proactiveHints': prefs.proactiveHints,
-        }).timeout(const Duration(milliseconds: 150));
+        final storage = await SharedPreferences.getInstance();
+        await storage.setString(
+          preferenceKey,
+          jsonEncode(prefs.toJsonWithLocal()),
+        );
       } catch (_) {}
 
       final res = await _repository.updateCompanionPreferences(prefs);
+      if (revision != _companionRevision) return true;
       if (res.success) {
         _companionPreferences = res.data.copyWith(
           showAcrossApp: prefs.showAcrossApp,
           edgePosition: prefs.edgePosition,
           proactiveHints: prefs.proactiveHints,
+          animationsEnabled: prefs.animationsEnabled,
         );
       } else {
         _companionPreferences = prefs;
@@ -214,6 +236,7 @@ class AnalyticsProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (_) {
+      if (revision != _companionRevision) return true;
       _companionPreferences = prefs;
       visualController.setAnimationsEnabled(
         _companionPreferences.animationsEnabled,
@@ -223,29 +246,17 @@ class AnalyticsProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> restoreFinNow() => updateCompanionPreferences(
+    _companionPreferences.copyWith(showAcrossApp: true),
+  );
+
   Future<bool> resetCompanionPreferences() async {
+    // Reset local visibility immediately; persist defaults even while offline.
+    final result = updateCompanionPreferences(const CompanionPreferences());
     try {
-      try {
-        await CacheService.remove(
-          'fin_companion_local_prefs',
-        ).timeout(const Duration(milliseconds: 150));
-      } catch (_) {}
-      final res = await _repository.resetCompanionPreferences();
-      if (res.success) {
-        _companionPreferences = res.data;
-      } else {
-        _companionPreferences = const CompanionPreferences();
-      }
-      visualController.setAnimationsEnabled(
-        _companionPreferences.animationsEnabled,
-      );
-      notifyListeners();
-      return true;
+      await _repository.resetCompanionPreferences();
     } catch (_) {}
-    _companionPreferences = const CompanionPreferences();
-    visualController.setAnimationsEnabled(true);
-    notifyListeners();
-    return true;
+    return result;
   }
 
   Future<bool> confirmPendingAction(FinActionPreview action) async {
