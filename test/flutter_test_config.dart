@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   // Mock SharedPreferences so all tests with preferences complete without platform channel stalls
   SharedPreferences.setMockInitialValues({});
+  FlutterSecureStorage.setMockInitialValues({});
+  setUp(() => FlutterSecureStorage.setMockInitialValues({}));
 
   // In Flutter headless widget testing with Material 3 (TargetPlatform.android),
   // interactive widgets use InkSparkle.splashFactory, which requires 'shaders/ink_sparkle.frag'

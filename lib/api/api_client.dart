@@ -48,7 +48,12 @@ class ApiClient {
               currentToken != null &&
               currentToken.isNotEmpty &&
               authorization == 'Bearer $currentToken') {
-            await (tokenRemover ?? TokenService.removeToken)();
+            try {
+              await (tokenRemover ?? TokenService.removeToken)();
+            } catch (_) {
+              // Revoked credentials must still reset in-memory financial state.
+              // TokenService also refuses stale credentials after local sign-out.
+            }
             onUnauthorized?.call();
           }
 

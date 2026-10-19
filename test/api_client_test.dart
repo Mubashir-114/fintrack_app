@@ -101,6 +101,30 @@ class _RetryingAdapter implements HttpClientAdapter {
 
 void main() {
   test(
+    'a 401 still resets the session when secure token deletion fails',
+    () async {
+      var resets = 0;
+      final previousHandler = ApiClient.onUnauthorized;
+      ApiClient.onUnauthorized = () => resets++;
+      final client = ApiClient.createDio(
+        tokenProvider: () async => 'synthetic-token',
+        tokenRemover: () async {
+          throw StateError('synthetic storage failure');
+        },
+      )..httpClientAdapter = _UnauthorizedAdapter();
+      try {
+        await expectLater(
+          client.get<void>('protected'),
+          throwsA(isA<DioException>()),
+        );
+        expect(resets, 1);
+      } finally {
+        ApiClient.onUnauthorized = previousHandler;
+        client.close(force: true);
+      }
+    },
+  );
+  test(
     'sends the stored bearer token and does not retry transaction writes',
     () async {
       final adapter = _FailingAdapter();
@@ -118,10 +142,7 @@ void main() {
         adapter.requests.single.headers['Authorization'],
         'Bearer test-token',
       );
-      expect(
-        adapter.requests.single.headers['Authorization'],
-        isNot('******'),
-      );
+      expect(adapter.requests.single.headers['Authorization'], isNot('******'));
       client.close(force: true);
     },
   );
@@ -323,18 +344,26 @@ void main() {
     expect(ApiConstants.baseUrl, isNot(contains('onrender.com')));
   });
 
-  test('Flutter client successfully queries local backend API', () async {
-    final dio = Dio(BaseOptions(
-      baseUrl: 'http://127.0.0.1:5000/',
-      connectTimeout: const Duration(seconds: 5),
-    ));
-    try {
-      final res = await dio.get<Map<String, dynamic>>('health');
-      expect(res.statusCode, 200);
-      expect(res.data?['success'], isTrue);
-      expect(res.data?['data']?['database'], 'healthy');
-    } finally {
-      dio.close(force: true);
-    }
-  });
+  test(
+    'Flutter client successfully queries local backend API',
+    () async {
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: 'http://127.0.0.1:5000/',
+          connectTimeout: const Duration(seconds: 5),
+        ),
+      );
+      try {
+        final res = await dio.get<Map<String, dynamic>>('health');
+        expect(res.statusCode, 200);
+        expect(res.data?['success'], isTrue);
+        expect(res.data?['data']?['database'], 'healthy');
+      } finally {
+        dio.close(force: true);
+      }
+    },
+    skip: !const bool.fromEnvironment('FINTRACK_RUN_LOCAL_INTEGRATION')
+        ? 'Requires a healthy local backend and disposable MySQL; opt in with --dart-define=FINTRACK_RUN_LOCAL_INTEGRATION=true.'
+        : false,
+  );
 }

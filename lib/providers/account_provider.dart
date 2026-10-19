@@ -40,6 +40,7 @@ class AccountProvider extends ChangeNotifier {
 
   // ── Active cancel token for list loads ────────────────────────────────────
   CancelToken? _activeCancelToken;
+  bool _disposed = false;
 
   // ── Getters ───────────────────────────────────────────────────────────────
   bool get isLoading => _isLoading;
@@ -57,6 +58,20 @@ class AccountProvider extends ChangeNotifier {
       _accounts.where((a) => a.isDefault && a.isAsset).firstOrNull;
 
   // ── Session reset ─────────────────────────────────────────────────────────
+
+  @override
+  void notifyListeners() {
+    if (_disposed) return;
+    super.notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _activeCancelToken?.cancel('Provider disposed');
+    _activeCancelToken = null;
+    super.dispose();
+  }
 
   void clearSession() {
     _sessionGeneration++;
