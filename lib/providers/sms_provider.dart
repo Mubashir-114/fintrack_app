@@ -10,6 +10,20 @@ import '../models/detected_transaction_model.dart';
 import '../repositories/transaction_repository.dart';
 import '../repositories/smart_transaction_repository.dart';
 
+class SmsBatchResult {
+  const SmsBatchResult({
+    this.added = 0,
+    this.needsAttention = 0,
+    this.skipped = 0,
+  });
+  final int added;
+  final int needsAttention;
+  final int skipped;
+  String get message =>
+      '$added added; $needsAttention need correction or retry'
+      '${skipped > 0 ? "; $skipped duplicates or unavailable skipped" : ""}.';
+}
+
 class SmsProvider extends ChangeNotifier {
   SmsProvider({
     SmsService? smsService,
@@ -39,6 +53,77 @@ class SmsProvider extends ChangeNotifier {
   List<DetectedTransactionModel> _archivedDetectedTransactions = [];
   final Set<int> _selectedDetectedIds = {};
 
+  SmsBatchResult? _batchResult;
+  final Map<int, String> _confirmationErrors = {};
+  SmsBatchResult? get batchResult => _batchResult;
+  Map<int, String> get confirmationErrors =>
+      Map.unmodifiable(_confirmationErrors);
+
+  /// Validation never supplies fallback values. Ownership and ledger duplicates
+  /// are still checked by the confirmation endpoint.
+  String? confirmationIssue(
+    DetectedTransactionModel tx, {
+    bool checkDuplicates = true,
+  }) {
+    if (!['suggested', 'detected'].contains(tx.status) ||
+        tx.confirmedTransactionId != null) {
+      return 'This transaction is no longer pending.';
+    }
+    if ((tx.accountId ?? tx.suggestedAccountId ?? 0) <= 0 ||
+        (tx.accountId == null && tx.isAccountAmbiguous)) {
+      return 'Choose an unambiguous account using Edit.';
+    }
+    final amount = double.tryParse(tx.amount);
+    if (amount == null ||
+        !amount.isFinite ||
+        amount <= 0 ||
+        amount > 9999999999.99) {
+      return 'Enter a valid positive amount using Edit.';
+    }
+    final date = DateTime.tryParse(tx.transactionDate);
+    if (date == null ||
+        date.toIso8601String().substring(0, 10) != tx.transactionDate) {
+      return 'Enter a valid transaction date using Edit.';
+    }
+    if (tx.merchantClean.trim().isEmpty || tx.merchantClean.length > 150) {
+      return 'Enter a valid merchant using Edit.';
+    }
+    if (![
+      'expense',
+      'income',
+      'transfer',
+      'refund',
+      'credit_card_purchase',
+      'credit_card_repayment',
+    ].contains(tx.classification)) {
+      return 'Choose a valid transaction type using Edit.';
+    }
+    if ((tx.categoryId ?? tx.suggestedCategoryId ?? 0) <= 0) {
+      return 'Choose a category using Edit.';
+    }
+    if (checkDuplicates &&
+        (_archivedDetectedTransactions.any(
+              (other) =>
+                  other.status == 'confirmed' &&
+                  other.smsHash == tx.smsHash &&
+                  tx.smsHash.isNotEmpty,
+            ) ||
+            _detectedTransactions.any(
+              (other) =>
+                  other.id != tx.id &&
+                  other.id < tx.id &&
+                  other.smsHash == tx.smsHash &&
+                  tx.smsHash.isNotEmpty &&
+                  confirmationIssue(other, checkDuplicates: false) == null,
+            ))) {
+      return 'Duplicate SMS candidate; review or reject it.';
+    }
+    return null;
+  }
+
+  int get eligibleDetectedCount =>
+      _detectedTransactions.where((tx) => confirmationIssue(tx) == null).length;
+
   PermissionStatus? _permissionStatus;
   SmsImportResponse? _importResponse;
   DateTime? _lastImportTime;
@@ -46,6 +131,8 @@ class SmsProvider extends ChangeNotifier {
 
   void clearSession() {
     _sessionGeneration++;
+    _batchResult = null;
+    _confirmationErrors.clear();
     _isScanning = false;
     _isImporting = false;
     _isLoadingDetected = false;
@@ -142,26 +229,37 @@ class SmsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final res = await _smartRepo.getDetectedTransactions(status: status);
-      if (sessionGeneration != _sessionGeneration) return;
-
-      if (res.success) {
+      var page = 1;
+      final records = <DetectedTransactionModel>[];
+      while (true) {
+        final response = await _smartRepo.getDetectedTransactions(
+          status: status,
+          page: page,
+          limit: 100,
+        );
+        if (sessionGeneration != _sessionGeneration) return;
+        if (!response.success) throw Exception(response.message);
+        records.addAll(response.data);
+        if (response.data.length < 100) break;
+        page++;
+      }
+      final res = records;
+      {
         if (status == "suggested" || status == "detected") {
-          _detectedTransactions = res.data;
+          _detectedTransactions = res;
           _selectedDetectedIds.clear();
           for (final item in _detectedTransactions) {
             _selectedDetectedIds.add(item.id);
           }
         } else {
-          _archivedDetectedTransactions = res.data;
+          _archivedDetectedTransactions = res;
         }
-      } else {
-        _detectedErrorMessage = res.message;
       }
     } catch (e) {
       if (sessionGeneration != _sessionGeneration) return;
+      final responseData = e is DioException ? e.response?.data : null;
       _detectedErrorMessage = e is DioException
-          ? (e.response?.data["message"] ??
+          ? ((responseData is Map ? responseData['message']?.toString() : null) ??
                 e.message ??
                 "Failed to load detected transactions")
           : e.toString().replaceAll("Exception: ", "");
@@ -173,8 +271,8 @@ class SmsProvider extends ChangeNotifier {
     }
   }
 
-  /// Scans device SMS inbox, transmits financial SMS to backend for smart parsing,
-  /// and updates both smart transactions and legacy transactions.
+  /// Reads only after consent and permission; sends structured financial candidates
+  /// without SMS body text. Candidates remain separate from the ledger.
   Future<void> scanAndDetectSmartTransactions({
     bool userConsented = false,
   }) async {
@@ -221,33 +319,34 @@ class SmsProvider extends ChangeNotifier {
       final parsedList = await _smsService.readAndParseSms();
       if (sessionGeneration != _sessionGeneration) return;
 
-      if (parsedList.isNotEmpty) {
-        final messagesPayload = parsedList.map((p) => p.toJson()).toList();
-        await _smartRepo.detectTransactions(messagesPayload);
+      final unique = {for (final item in parsedList) item.smsHash: item};
+      final candidates = unique.values.toList();
+      for (var start = 0; start < candidates.length; start += 50) {
+        if (sessionGeneration != _sessionGeneration) return;
+        final batch = candidates
+            .skip(start)
+            .take(50)
+            .map(
+              (p) => {
+                'amount': p.amount,
+                'type': p.type,
+                'merchant': p.merchant,
+                'bank': p.bank,
+                'date': p.date.toIso8601String(),
+                'reference': p.referenceNumber,
+                'maskedAccountHint': p.maskedAccountHint,
+                'sms_hash': p.smsHash,
+                'sender': p.sender,
+              },
+            )
+            .toList();
+        final result = await _smartRepo.detectTransactions(batch);
+        if (!result.success) throw Exception(result.message);
       }
-
-      // 3. Load detected transactions from backend
-      await loadDetectedTransactions(status: "suggested");
-      await loadDetectedTransactions(status: "confirmed");
-
-      // 4. Also maintain legacy transactions list for backwards compatibility
-      final hashResponse = await _repository.getImportedSmsHashes();
       if (sessionGeneration != _sessionGeneration) return;
-      final importedSet = Set<String>.from(hashResponse.data);
-
-      _transactions = [];
-      _archivedTransactions = [];
-      for (final tx in parsedList) {
-        if (importedSet.contains(tx.smsHash)) {
-          _archivedTransactions.add(tx);
-        } else {
-          _transactions.add(tx);
-        }
-      }
-      _selectedHashes.clear();
-      for (final tx in _transactions) {
-        _selectedHashes.add(tx.smsHash);
-      }
+      await loadDetectedTransactions(status: 'suggested');
+      if (sessionGeneration != _sessionGeneration) return;
+      await loadDetectedTransactions(status: 'confirmed');
     } catch (e) {
       if (sessionGeneration != _sessionGeneration) return;
       _errorMessage = e is DioException
@@ -266,13 +365,31 @@ class SmsProvider extends ChangeNotifier {
     int id, {
     Map<String, dynamic>? overrides,
   }) async {
+    if (_isOperating) return false;
+    final candidate = _detectedTransactions
+        .where((tx) => tx.id == id)
+        .firstOrNull;
+    final issue = candidate == null
+        ? 'Transaction is no longer pending.'
+        : confirmationIssue(candidate);
+    if (issue != null) {
+      _detectedErrorMessage = issue;
+      notifyListeners();
+      return false;
+    }
+    final operationSession = _sessionGeneration;
     _isOperating = true;
     _detectedErrorMessage = null;
     notifyListeners();
 
     try {
       final res = await _smartRepo.confirmTransaction(id, overrides: overrides);
+      if (operationSession != _sessionGeneration) return false;
       if (res.success) {
+        _archivedDetectedTransactions.add(
+          candidate!.copyWith(status: 'confirmed'),
+        );
+        _confirmationErrors.remove(id);
         _detectedTransactions.removeWhere((t) => t.id == id);
         _selectedDetectedIds.remove(id);
         await CacheService.remove('dashboard_cache');
@@ -284,6 +401,7 @@ class SmsProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
+      if (operationSession != _sessionGeneration) return false;
       _detectedErrorMessage = e is DioException
           ? (e.response?.data["message"] ??
                 e.message ??
@@ -291,19 +409,24 @@ class SmsProvider extends ChangeNotifier {
           : e.toString().replaceAll("Exception: ", "");
       return false;
     } finally {
-      _isOperating = false;
-      notifyListeners();
+      if (operationSession == _sessionGeneration) {
+        _isOperating = false;
+        notifyListeners();
+      }
     }
   }
 
   /// Rejects a detected transaction so it never enters the ledger.
   Future<bool> rejectDetected(int id, {String? reason}) async {
+    if (_isOperating) return false;
+    final operationSession = _sessionGeneration;
     _isOperating = true;
     _detectedErrorMessage = null;
     notifyListeners();
 
     try {
       final res = await _smartRepo.rejectTransaction(id, reason: reason);
+      if (operationSession != _sessionGeneration) return false;
       if (res.success) {
         _detectedTransactions.removeWhere((t) => t.id == id);
         _selectedDetectedIds.remove(id);
@@ -314,6 +437,7 @@ class SmsProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
+      if (operationSession != _sessionGeneration) return false;
       _detectedErrorMessage = e is DioException
           ? (e.response?.data["message"] ??
                 e.message ??
@@ -321,23 +445,29 @@ class SmsProvider extends ChangeNotifier {
           : e.toString().replaceAll("Exception: ", "");
       return false;
     } finally {
-      _isOperating = false;
-      notifyListeners();
+      if (operationSession == _sessionGeneration) {
+        _isOperating = false;
+        notifyListeners();
+      }
     }
   }
 
   /// Updates a detected transaction with manual user corrections.
   Future<bool> updateDetected(int id, Map<String, dynamic> changes) async {
+    if (_isOperating) return false;
+    final operationSession = _sessionGeneration;
     _isOperating = true;
     _detectedErrorMessage = null;
     notifyListeners();
 
     try {
       final res = await _smartRepo.updateDetectedTransaction(id, changes);
+      if (operationSession != _sessionGeneration) return false;
       if (res.success) {
         final index = _detectedTransactions.indexWhere((t) => t.id == id);
         if (index != -1) {
           _detectedTransactions[index] = res.data;
+          _confirmationErrors.remove(id);
         }
         notifyListeners();
         return true;
@@ -346,6 +476,7 @@ class SmsProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
+      if (operationSession != _sessionGeneration) return false;
       _detectedErrorMessage = e is DioException
           ? (e.response?.data["message"] ??
                 e.message ??
@@ -353,50 +484,107 @@ class SmsProvider extends ChangeNotifier {
           : e.toString().replaceAll("Exception: ", "");
       return false;
     } finally {
-      _isOperating = false;
-      notifyListeners();
+      if (operationSession == _sessionGeneration) {
+        _isOperating = false;
+        notifyListeners();
+      }
     }
   }
 
-  /// Batch confirms all selected detected transactions.
-  Future<bool> batchConfirmSelected() async {
-    if (_selectedDetectedIds.isEmpty) return false;
+  /// Add All snapshots all pending items independently of checkbox selection.
+  Future<bool> batchConfirmSelected({bool all = false}) async {
+    if (_isOperating) return false;
+    final candidates = _detectedTransactions
+        .where((tx) => all || _selectedDetectedIds.contains(tx.id))
+        .toList();
+    if (candidates.isEmpty) return false;
+    final operationSession = _sessionGeneration;
     _isOperating = true;
     _detectedErrorMessage = null;
+    _batchResult = null;
+    _confirmationErrors.clear();
+    final eligible = <DetectedTransactionModel>[];
+    var skipped = 0;
+    for (final tx in candidates) {
+      final issue = confirmationIssue(tx);
+      if (issue == null) {
+        eligible.add(tx);
+      } else if (issue.startsWith('Duplicate') ||
+          issue.contains('no longer pending')) {
+        skipped++;
+      } else {
+        _confirmationErrors[tx.id] = issue;
+      }
+    }
     notifyListeners();
-
+    var added = 0;
     try {
-      final items = _selectedDetectedIds.map((id) => {"id": id}).toList();
-      final res = await _smartRepo.batchConfirm(items);
-      if (res.success) {
-        _detectedTransactions.removeWhere(
-          (t) => _selectedDetectedIds.contains(t.id),
-        );
-        _selectedDetectedIds.clear();
+      // The existing endpoint accepts at most 100 candidates per request.
+      for (var start = 0; start < eligible.length; start += 100) {
+        final chunk = eligible.skip(start).take(100).toList();
+        try {
+          final res = await _smartRepo.batchConfirm([
+            for (final tx in chunk) {'id': tx.id},
+          ]);
+          if (operationSession != _sessionGeneration) return false;
+          final confirmed = res.data['confirmed'] as List? ?? [];
+          final completed = confirmed
+              .map((item) => (item['id'] as num).toInt())
+              .where((id) => chunk.any((tx) => tx.id == id))
+              .toSet();
+          final errors = res.data['errors'] as List? ?? [];
+          for (final tx in chunk) {
+            if (completed.contains(tx.id)) {
+              _archivedDetectedTransactions.add(
+                tx.copyWith(status: 'confirmed'),
+              );
+            } else {
+              final error = errors.where((e) => e['id'] == tx.id).firstOrNull;
+              _confirmationErrors[tx.id] =
+                  error?['error']?.toString() ??
+                  (res.success
+                      ? 'Not confirmed. Please retry or Edit.'
+                      : res.message);
+            }
+          }
+          added += completed.length;
+          _detectedTransactions.removeWhere((tx) => completed.contains(tx.id));
+          _selectedDetectedIds.removeAll(completed);
+          notifyListeners();
+        } catch (e) {
+          if (operationSession != _sessionGeneration) return false;
+          for (final tx in chunk) {
+            _confirmationErrors[tx.id] =
+                'Could not confirm. Please retry or Edit.';
+          }
+        }
+      }
+      _batchResult = SmsBatchResult(
+        added: added,
+        needsAttention: _confirmationErrors.length,
+        skipped: skipped,
+      );
+      if (_confirmationErrors.isNotEmpty) {
+        _detectedErrorMessage = _batchResult!.message;
+      }
+      if (added > 0) {
         await CacheService.remove('dashboard_cache');
         await CacheService.clearBudgetCaches();
-        notifyListeners();
-        return true;
-      } else {
-        _detectedErrorMessage = res.message;
-        return false;
       }
-    } catch (e) {
-      _detectedErrorMessage = e is DioException
-          ? (e.response?.data["message"] ??
-                e.message ??
-                "Failed to batch confirm transactions")
-          : e.toString().replaceAll("Exception: ", "");
-      return false;
+      return added > 0 && _confirmationErrors.isEmpty;
     } finally {
-      _isOperating = false;
-      notifyListeners();
+      if (operationSession == _sessionGeneration) {
+        _isOperating = false;
+        notifyListeners();
+      }
     }
   }
 
   /// Batch rejects all selected detected transactions.
   Future<bool> batchRejectSelected({String? reason}) async {
     if (_selectedDetectedIds.isEmpty) return false;
+    if (_isOperating) return false;
+    final operationSession = _sessionGeneration;
     _isOperating = true;
     _detectedErrorMessage = null;
     notifyListeners();
@@ -404,11 +592,20 @@ class SmsProvider extends ChangeNotifier {
     try {
       final ids = _selectedDetectedIds.toList();
       final res = await _smartRepo.batchReject(ids, reason: reason);
+      if (operationSession != _sessionGeneration) return false;
       if (res.success) {
-        _detectedTransactions.removeWhere(
-          (t) => _selectedDetectedIds.contains(t.id),
-        );
-        _selectedDetectedIds.clear();
+        final results =
+            (res.data['confirmed'] ?? res.data['rejected'] ?? []) as List;
+        final completed = results
+            .map((item) => (item['id'] as num).toInt())
+            .toSet();
+        _detectedTransactions.removeWhere((t) => completed.contains(t.id));
+        _selectedDetectedIds.removeAll(completed);
+        final errors = res.data['errors'] as List? ?? [];
+        if (errors.isNotEmpty) {
+          _detectedErrorMessage =
+              '${errors.length} items need correction or retry. Successfully processed items were removed.';
+        }
         notifyListeners();
         return true;
       } else {
@@ -416,6 +613,7 @@ class SmsProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
+      if (operationSession != _sessionGeneration) return false;
       _detectedErrorMessage = e is DioException
           ? (e.response?.data["message"] ??
                 e.message ??
@@ -423,8 +621,10 @@ class SmsProvider extends ChangeNotifier {
           : e.toString().replaceAll("Exception: ", "");
       return false;
     } finally {
-      _isOperating = false;
-      notifyListeners();
+      if (operationSession == _sessionGeneration) {
+        _isOperating = false;
+        notifyListeners();
+      }
     }
   }
 

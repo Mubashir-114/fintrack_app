@@ -11,6 +11,8 @@ import 'package:frontend/screens/transactions/sms_import_screen.dart';
 class _ConsentProvider extends SmsProvider {
   int scans = 0;
   @override
+  Future<void> loadDetectedTransactions({String status = "suggested"}) async {}
+  @override
   Future<void> scanAndDetectSmartTransactions({
     bool userConsented = false,
   }) async {

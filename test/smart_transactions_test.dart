@@ -18,7 +18,8 @@ import 'package:frontend/repositories/smart_transaction_repository.dart';
 import 'package:frontend/repositories/transaction_repository.dart';
 import 'package:frontend/screens/transactions/sms_import_screen.dart';
 
-class _FakeSmartTransactionRepository extends Fake implements SmartTransactionRepository {
+class _FakeSmartTransactionRepository extends Fake
+    implements SmartTransactionRepository {
   List<DetectedTransactionModel> mockTransactions = [];
   bool detectCalled = false;
   bool confirmCalled = false;
@@ -81,11 +82,7 @@ class _FakeSmartTransactionRepository extends Fake implements SmartTransactionRe
       accountId: changes["accountId"] as int?,
       categoryId: changes["categoryId"] as int?,
     );
-    return ApiResponse(
-      success: true,
-      message: "Updated",
-      data: updated,
-    );
+    return ApiResponse(success: true, message: "Updated", data: updated);
   }
 
   @override
@@ -96,7 +93,13 @@ class _FakeSmartTransactionRepository extends Fake implements SmartTransactionRe
     return const ApiResponse(
       success: true,
       message: "Batch confirmed",
-      data: {},
+      data: {
+        'confirmed': [
+          {'id': 1},
+          {'id': 2},
+        ],
+        'errors': [],
+      },
     );
   }
 
@@ -116,16 +119,19 @@ class _FakeSmartTransactionRepository extends Fake implements SmartTransactionRe
 
 class _FakeSmsService extends SmsService {
   @override
-  Future<PermissionStatus> getPermissionStatus() async => PermissionStatus.granted;
+  Future<PermissionStatus> getPermissionStatus() async =>
+      PermissionStatus.granted;
 
   @override
-  Future<PermissionStatus> requestPermission() async => PermissionStatus.granted;
+  Future<PermissionStatus> requestPermission() async =>
+      PermissionStatus.granted;
 
   @override
   Future<List<ParsedSmsTransaction>> readAndParseSms() async => [];
 }
 
 class _FakeAccountRepository extends Fake implements AccountRepository {}
+
 class _FakeTransactionRepository extends Fake implements TransactionRepository {
   @override
   Future<ApiResponse<List<String>>> getImportedSmsHashes() async {
@@ -227,50 +233,57 @@ void main() {
   });
 
   group('Phase 3B: SmsProvider Smart Transactions Workflow', () {
-    test('loadDetectedTransactions populates list and auto-selects all items', () async {
-      final fakeSmartRepo = _FakeSmartTransactionRepository();
-      fakeSmartRepo.mockTransactions = [
-        DetectedTransactionModel(
-          id: 1,
-          userId: 42,
-          classification: 'expense',
-          amount: '450.00',
-          transactionDate: '2026-10-11',
-          merchantRaw: 'SWIGGY',
-          merchantClean: 'Swiggy',
-          smsHash: 'hash1',
-          confidence: 0.95,
-          isAccountAmbiguous: false,
-          status: 'suggested',
-        ),
-        DetectedTransactionModel(
-          id: 2,
-          userId: 42,
-          classification: 'expense',
-          amount: '120.00',
-          transactionDate: '2026-10-11',
-          merchantRaw: 'UBER',
-          merchantClean: 'Uber',
-          smsHash: 'hash2',
-          confidence: 0.90,
-          isAccountAmbiguous: false,
-          status: 'suggested',
-        ),
-      ];
+    test(
+      'loadDetectedTransactions populates list and auto-selects all items',
+      () async {
+        final fakeSmartRepo = _FakeSmartTransactionRepository();
+        fakeSmartRepo.mockTransactions = [
+          DetectedTransactionModel(
+            id: 1,
+            userId: 42,
+            accountId: 5,
+            categoryId: 1,
+            classification: 'expense',
+            amount: '450.00',
+            transactionDate: '2026-10-11',
+            merchantRaw: 'SWIGGY',
+            merchantClean: 'Swiggy',
+            smsHash: 'hash1',
+            confidence: 0.95,
+            isAccountAmbiguous: false,
+            status: 'suggested',
+          ),
+          DetectedTransactionModel(
+            id: 2,
+            userId: 42,
+            accountId: 5,
+            categoryId: 1,
+            classification: 'expense',
+            amount: '120.00',
+            transactionDate: '2026-10-11',
+            merchantRaw: 'UBER',
+            merchantClean: 'Uber',
+            smsHash: 'hash2',
+            confidence: 0.90,
+            isAccountAmbiguous: false,
+            status: 'suggested',
+          ),
+        ];
 
-      final provider = SmsProvider(
-        smartRepo: fakeSmartRepo,
-        repository: _FakeTransactionRepository(),
-      );
+        final provider = SmsProvider(
+          smartRepo: fakeSmartRepo,
+          repository: _FakeTransactionRepository(),
+        );
 
-      await provider.loadDetectedTransactions(status: 'suggested');
+        await provider.loadDetectedTransactions(status: 'suggested');
 
-      expect(provider.detectedCount, 2);
-      expect(provider.selectedDetectedCount, 2);
-      expect(provider.isAllDetectedSelected, isTrue);
-      expect(provider.selectedDetectedIds.contains(1), isTrue);
-      expect(provider.selectedDetectedIds.contains(2), isTrue);
-    });
+        expect(provider.detectedCount, 2);
+        expect(provider.selectedDetectedCount, 2);
+        expect(provider.isAllDetectedSelected, isTrue);
+        expect(provider.selectedDetectedIds.contains(1), isTrue);
+        expect(provider.selectedDetectedIds.contains(2), isTrue);
+      },
+    );
 
     test('toggleDetectedSelection toggles individual selection', () async {
       final fakeSmartRepo = _FakeSmartTransactionRepository();
@@ -278,6 +291,8 @@ void main() {
         DetectedTransactionModel(
           id: 1,
           userId: 42,
+          accountId: 5,
+          categoryId: 1,
           classification: 'expense',
           amount: '450.00',
           transactionDate: '2026-10-11',
@@ -302,33 +317,38 @@ void main() {
       expect(provider.selectedDetectedCount, 1);
     });
 
-    test('confirmDetected removes item from detected list and clears selection', () async {
-      final fakeSmartRepo = _FakeSmartTransactionRepository();
-      fakeSmartRepo.mockTransactions = [
-        DetectedTransactionModel(
-          id: 1,
-          userId: 42,
-          classification: 'expense',
-          amount: '450.00',
-          transactionDate: '2026-10-11',
-          merchantRaw: 'SWIGGY',
-          merchantClean: 'Swiggy',
-          smsHash: 'hash1',
-          confidence: 0.95,
-          isAccountAmbiguous: false,
-          status: 'suggested',
-        ),
-      ];
+    test(
+      'confirmDetected removes item from detected list and clears selection',
+      () async {
+        final fakeSmartRepo = _FakeSmartTransactionRepository();
+        fakeSmartRepo.mockTransactions = [
+          DetectedTransactionModel(
+            id: 1,
+            userId: 42,
+            accountId: 5,
+            categoryId: 1,
+            classification: 'expense',
+            amount: '450.00',
+            transactionDate: '2026-10-11',
+            merchantRaw: 'SWIGGY',
+            merchantClean: 'Swiggy',
+            smsHash: 'hash1',
+            confidence: 0.95,
+            isAccountAmbiguous: false,
+            status: 'suggested',
+          ),
+        ];
 
-      final provider = SmsProvider(smartRepo: fakeSmartRepo);
-      await provider.loadDetectedTransactions();
+        final provider = SmsProvider(smartRepo: fakeSmartRepo);
+        await provider.loadDetectedTransactions();
 
-      final ok = await provider.confirmDetected(1);
-      expect(ok, isTrue);
-      expect(fakeSmartRepo.confirmCalled, isTrue);
-      expect(provider.detectedCount, 0);
-      expect(provider.selectedDetectedIds.contains(1), isFalse);
-    });
+        final ok = await provider.confirmDetected(1);
+        expect(ok, isTrue);
+        expect(fakeSmartRepo.confirmCalled, isTrue);
+        expect(provider.detectedCount, 0);
+        expect(provider.selectedDetectedIds.contains(1), isFalse);
+      },
+    );
 
     test('rejectDetected removes item from detected list', () async {
       final fakeSmartRepo = _FakeSmartTransactionRepository();
@@ -336,6 +356,8 @@ void main() {
         DetectedTransactionModel(
           id: 1,
           userId: 42,
+          accountId: 5,
+          categoryId: 1,
           classification: 'expense',
           amount: '450.00',
           transactionDate: '2026-10-11',
@@ -363,6 +385,8 @@ void main() {
         DetectedTransactionModel(
           id: 1,
           userId: 42,
+          accountId: 5,
+          categoryId: 1,
           classification: 'expense',
           amount: '450.00',
           transactionDate: '2026-10-11',
@@ -376,6 +400,8 @@ void main() {
         DetectedTransactionModel(
           id: 2,
           userId: 42,
+          accountId: 5,
+          categoryId: 1,
           classification: 'expense',
           amount: '120.00',
           transactionDate: '2026-10-11',
@@ -399,71 +425,81 @@ void main() {
   });
 
   group('Phase 3B: SmsImportScreen Widget Tests', () {
-    testWidgets('renders privacy explanation banner and smart transaction cards', (tester) async {
-      final fakeSmartRepo = _FakeSmartTransactionRepository();
-      fakeSmartRepo.mockTransactions = [
-        DetectedTransactionModel(
-          id: 10,
-          userId: 42,
-          accountId: 5,
-          accountName: 'HDFC Savings',
-          categoryId: 1,
-          categoryName: 'Food',
-          classification: 'expense',
-          amount: '450.00',
-          transactionDate: '2026-10-11',
-          merchantRaw: 'SWIGGY BANGALORE IN',
-          merchantClean: 'Swiggy',
-          bank: 'HDFC',
-          sender: 'HDFCBK',
-          smsHash: 'hash123',
-          confidence: 0.95,
-          confidenceReason: 'Merchant recognized: Swiggy',
-          isAccountAmbiguous: false,
-          status: 'suggested',
-        ),
-      ];
-
-      SharedPreferences.setMockInitialValues({});
-      final smsProvider = SmsProvider(
-        smartRepo: fakeSmartRepo,
-        smsService: _FakeSmsService(),
-        repository: _FakeTransactionRepository(),
-      );
-      await smsProvider.loadDetectedTransactions();
-
-      await tester.pumpWidget(
-        MultiProvider(
-          providers: [
-            ChangeNotifierProvider<SmsProvider>.value(value: smsProvider),
-            ChangeNotifierProvider<AccountProvider>(create: (_) => AccountProvider(repository: _FakeAccountRepository())),
-            ChangeNotifierProvider<CurrencyProvider>(create: (_) => CurrencyProvider()),
-            ChangeNotifierProvider<TransactionProvider>(create: (_) => TransactionProvider()),
-            ChangeNotifierProvider<DashboardProvider>(create: (_) => DashboardProvider()),
-          ],
-          child: const MaterialApp(
-            home: SmsImportScreen(),
+    testWidgets(
+      'renders privacy explanation banner and smart transaction cards',
+      (tester) async {
+        final fakeSmartRepo = _FakeSmartTransactionRepository();
+        fakeSmartRepo.mockTransactions = [
+          DetectedTransactionModel(
+            id: 10,
+            userId: 42,
+            accountId: 5,
+            accountName: 'HDFC Savings',
+            categoryId: 1,
+            categoryName: 'Food',
+            classification: 'expense',
+            amount: '450.00',
+            transactionDate: '2026-10-11',
+            merchantRaw: 'SWIGGY BANGALORE IN',
+            merchantClean: 'Swiggy',
+            bank: 'HDFC',
+            sender: 'HDFCBK',
+            smsHash: 'hash123',
+            confidence: 0.95,
+            confidenceReason: 'Merchant recognized: Swiggy',
+            isAccountAmbiguous: false,
+            status: 'suggested',
           ),
-        ),
-      );
+        ];
 
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+        SharedPreferences.setMockInitialValues({});
+        final smsProvider = SmsProvider(
+          smartRepo: fakeSmartRepo,
+          smsService: _FakeSmsService(),
+          repository: _FakeTransactionRepository(),
+        );
+        await smsProvider.loadDetectedTransactions();
 
-      // Verify Smart Review Tab exists
-      expect(find.text("Smart Review"), findsOneWidget);
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: [
+              ChangeNotifierProvider<SmsProvider>.value(value: smsProvider),
+              ChangeNotifierProvider<AccountProvider>(
+                create: (_) =>
+                    AccountProvider(repository: _FakeAccountRepository()),
+              ),
+              ChangeNotifierProvider<CurrencyProvider>(
+                create: (_) => CurrencyProvider(),
+              ),
+              ChangeNotifierProvider<TransactionProvider>(
+                create: (_) => TransactionProvider(),
+              ),
+              ChangeNotifierProvider<DashboardProvider>(
+                create: (_) => DashboardProvider(),
+              ),
+            ],
+            child: const MaterialApp(home: SmsImportScreen()),
+          ),
+        );
 
-      // Verify Privacy Banner exists
-      expect(find.text("Privacy & Financial Safety"), findsOneWidget);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
-      // Verify clean merchant name and amount are rendered
-      expect(find.text("Swiggy"), findsOneWidget);
-      expect(find.textContaining("450.00"), findsOneWidget);
+        // Verify Smart Review Tab exists
+        expect(find.text("SMS Import"), findsOneWidget);
 
-      // Verify action buttons are rendered
-      expect(find.text("Confirm"), findsWidgets);
-      expect(find.text("Edit"), findsOneWidget);
-      expect(find.text("Reject"), findsWidgets);
-    });
+        // Verify Privacy Banner exists
+        expect(find.text("Review before saving"), findsOneWidget);
+
+        // Verify clean merchant name and amount are rendered
+        expect(find.text("Swiggy"), findsOneWidget);
+        expect(find.textContaining("450.00"), findsOneWidget);
+
+        // Verify action buttons are rendered
+        expect(find.text("Confirm"), findsWidgets);
+        expect(find.text("Edit"), findsOneWidget);
+        expect(find.text("Reject"), findsWidgets);
+      },
+    );
   });
 }

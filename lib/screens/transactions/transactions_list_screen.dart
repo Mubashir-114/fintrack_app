@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -705,6 +706,11 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
+          IconButton(
+            tooltip: 'SMS Import',
+            icon: const Icon(Icons.sms_outlined),
+            onPressed: () => context.push('/sms-import'),
+          ),
           IconButton(
             tooltip: "Sort",
             icon: Icon(
