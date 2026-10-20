@@ -400,7 +400,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Net Savings (Cash Flow)",
+                      "Monthly surplus",
                       style: TextStyle(
                         fontSize: 12,
                         color: isDark
@@ -425,7 +425,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      "Savings Rate",
+                      "Surplus rate",
                       style: TextStyle(
                         fontSize: 12,
                         color: isDark
@@ -470,7 +470,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Icons.north_east_rounded,
       ),
       (
-        'Savings',
+        'Monthly surplus',
         overview?.monthlyNetSavings ?? '0.00',
         colors.primary,
         Icons.savings_outlined,
@@ -646,15 +646,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
+    final previewAccounts = accounts.take(3).toList();
+
     return SizedBox(
       height:
           150 * (MediaQuery.textScalerOf(context).scale(14) / 14).clamp(1, 2.5),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: accounts.length,
+        itemCount: previewAccounts.length,
         separatorBuilder: (context, index) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
-          final acc = accounts[index];
+          final acc = previewAccounts[index];
           final isCredit = acc.type == "credit_card";
           final accentColor = isCredit ? colors.danger : colors.primary;
 
@@ -1244,7 +1246,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     AppDimensions.hMD,
 
-                    // 2. Cash Flow (Income, Expenses, Net Savings)
+                    // 2. Compact monthly cash-flow summary
+                    PremiumSectionHeader(
+                      title: "This month",
+                      subtitle: "Income, expenses and monthly surplus",
+                      actionLabel: "Income details",
+                      onAction: () => context.push('/income-details'),
+                    ),
+                    AppDimensions.hXS,
                     DashboardEntrance(
                       index: 1,
                       child: _buildCashFlowSection(
@@ -1254,12 +1263,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     AppDimensions.hLG,
 
-                    // 5. Account Balance Overview
+                    // 3. Account balance preview
                     PremiumSectionHeader(
                       title: "Account Balances",
-                      subtitle: "Live balances from your ledger",
-                      actionLabel: "Manage",
-                      onAction: () => context.push('/accounts'),
+                      subtitle: "Where your money is currently stored",
+                      actionLabel: "View all",
+                      onAction: () => context.push('/money-storage'),
                     ),
                     AppDimensions.hXS,
                     DashboardEntrance(
@@ -1272,10 +1281,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     AppDimensions.hLG,
 
                     PremiumSectionHeader(
-                      title: "Recent Transactions",
-                      subtitle: "Latest activity across your accounts",
-                      actionLabel: "See All",
-                      onAction: () => context.go("/transactions"),
+                      title: "Recent activity",
+                      subtitle: "A quick look at the latest money movement",
+                      actionLabel: "See ledger",
+                      onAction: () => context.push('/ledger'),
                     ),
                     AppDimensions.hXS,
                     if (dashboardProvider.recentTransactions.isEmpty)
@@ -1372,67 +1381,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                     AppDimensions.hLG,
-                    // 3. Spending by Category
-                    PremiumSectionHeader(
-                      title: "Spending by Category",
-                      subtitle: "Where this period's money went",
-                    ),
-                    AppDimensions.hSM,
-                    DashboardEntrance(
-                      index: 3,
-                      child: _buildSpendingByCategory(
-                        dashboardProvider.categorySummaries,
-                        isDark,
-                      ),
-                    ),
-                    AppDimensions.hLG,
-
-                    ExpansionTile(
-                      tilePadding: EdgeInsets.zero,
-                      title: const Text('Cash-flow trend'),
-                      children: [
-                        PremiumSummaryCard(
-                          child: _buildMonthlyTrendChart(
-                            dashboardProvider,
-                            isDark,
-                          ),
-                        ),
-                      ],
-                    ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.pie_chart_outline),
-                      title: const Text('Budgets'),
-                      subtitle: const Text(
-                        'Review category limits and progress',
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => context.go('/budgets'),
-                    ),
-                    AppDimensions.hMD,
-                    _buildInsightsSection(dashboardProvider.insights, isDark),
-                    AppDimensions.hLG,
-
-                    // Financial Planning & Goals
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.auto_awesome_outlined),
-                      title: const Text('Ask FIN'),
-                      subtitle: const Text(
-                        'Explore your approved financial activity',
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => context.push('/analytics'),
-                    ),
-                    ExpansionTile(
-                      tilePadding: EdgeInsets.zero,
-                      title: const Text('Planning & goals'),
-                      children: [_buildPlanningSection(isDark)],
-                    ),
-                    AppDimensions.hLG,
-
-                    // 6. Recent Transactions Section
-                    const SizedBox(height: 36),
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),

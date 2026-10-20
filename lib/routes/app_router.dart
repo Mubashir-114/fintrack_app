@@ -13,6 +13,9 @@ import '../screens/auth/register_screen.dart';
 import '../screens/main_navigation_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/transactions/transactions_list_screen.dart';
+import '../screens/ledger/ledger_screen.dart';
+import '../screens/income/income_details_screen.dart';
+import '../screens/money_storage/money_storage_screen.dart';
 import '../screens/budgets/budgets_list_screen.dart';
 import '../screens/reports/reports_screen.dart';
 import '../screens/profile/profile_screen.dart';
@@ -133,6 +136,18 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/transactions',
           builder: (context, state) => const TransactionsListScreen(),
+        ),
+        GoRoute(
+          path: '/ledger',
+          builder: (context, state) => const LedgerScreen(),
+        ),
+        GoRoute(
+          path: '/income-details',
+          builder: (context, state) => const IncomeDetailsScreen(),
+        ),
+        GoRoute(
+          path: '/money-storage',
+          builder: (context, state) => const MoneyStorageScreen(),
         ),
         GoRoute(
           path: '/sms-import',

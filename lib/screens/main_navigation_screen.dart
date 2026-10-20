@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../core/constants/app_colors.dart';
 import '../core/services/connectivity_service.dart';
+import '../core/widgets/floating_bottom_navigation.dart';
 import '../providers/dashboard_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/budget_provider.dart';
@@ -83,7 +84,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _getSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith('/dashboard')) return 0;
-    if (location.startsWith('/transactions')) return 1;
+    // `/transactions` remains a compatible deep link to transaction
+    // management. It belongs to the Ledger destination in the new IA.
+    if (location.startsWith('/ledger') || location.startsWith('/transactions')) {
+      return 1;
+    }
     if (location.startsWith('/budgets')) return 2;
     if (location.startsWith('/reports')) return 3;
     if (location.startsWith('/profile')) return 4;
@@ -97,7 +102,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         route = '/dashboard';
         break;
       case 1:
-        route = '/transactions';
+        route = '/ledger';
         break;
       case 2:
         route = '/budgets';
@@ -119,7 +124,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     final selectedIndex = _getSelectedIndex(context);
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final colors = AppColors.of(context);
     final media = MediaQuery.of(context);
     final isTablet = media.size.width >= 600 && media.size.height >= 520;
@@ -152,7 +156,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   Icons.grid_view_rounded,
                   color: theme.colorScheme.primary,
                 ),
-                label: const Text('Dashboard'),
+                label: const Text('Home'),
               ),
               NavigationRailDestination(
                 icon: const Icon(Icons.receipt_long_rounded),
@@ -160,7 +164,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   Icons.receipt_long_rounded,
                   color: theme.colorScheme.primary,
                 ),
-                label: const Text('Transactions'),
+                label: const Text('Ledger'),
               ),
               NavigationRailDestination(
                 icon: const Icon(Icons.account_balance_wallet_rounded),
@@ -201,6 +205,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final screenTitle = switch (location) {
       '/dashboard' => 'Dashboard',
       '/transactions' => 'Transactions',
+      '/ledger' => 'Ledger',
+      '/income-details' => 'Income details',
+      '/money-storage' => 'Money storage',
       '/sms-import' => 'SMS import',
       '/budgets' => 'Budgets',
       '/reports' => 'Reports',
@@ -270,88 +277,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             const Positioned.fill(child: GlobalFinOverlay()),
           ],
         ),
-        bottomNavigationBar: !isTablet
-            ? Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: isDark
-                          ? Colors.black.withValues(alpha: 0.2)
-                          : Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 15,
-                      offset: const Offset(0, -6),
-                    ),
-                  ],
-                ),
-                child: NavigationBar(
-                  height: 68,
-                  elevation: 0,
-                  backgroundColor: theme.colorScheme.surface,
-                  selectedIndex: selectedIndex,
-                  onDestinationSelected: (index) =>
-                      _onItemTapped(index, context),
-                  indicatorColor: theme.colorScheme.primary.withValues(
-                    alpha: 0.14,
-                  ),
-                  labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-                  destinations: [
-                    NavigationDestination(
-                      icon: Icon(
-                        Icons.grid_view_rounded,
-                        color: colors.textSecondary,
-                      ),
-                      selectedIcon: Icon(
-                        Icons.grid_view_rounded,
-                        color: theme.colorScheme.primary,
-                      ),
-                      label: 'Home',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(
-                        Icons.receipt_long_rounded,
-                        color: colors.textSecondary,
-                      ),
-                      selectedIcon: Icon(
-                        Icons.receipt_long_rounded,
-                        color: theme.colorScheme.primary,
-                      ),
-                      label: 'Activity',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(
-                        Icons.account_balance_wallet_rounded,
-                        color: colors.textSecondary,
-                      ),
-                      selectedIcon: Icon(
-                        Icons.account_balance_wallet_rounded,
-                        color: theme.colorScheme.primary,
-                      ),
-                      label: 'Budgets',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(
-                        Icons.bar_chart_rounded,
-                        color: colors.textSecondary,
-                      ),
-                      selectedIcon: Icon(
-                        Icons.bar_chart_rounded,
-                        color: theme.colorScheme.primary,
-                      ),
-                      label: 'Reports',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(
-                        Icons.person_rounded,
-                        color: colors.textSecondary,
-                      ),
-                      selectedIcon: Icon(
-                        Icons.person_rounded,
-                        color: theme.colorScheme.primary,
-                      ),
-                      label: 'Profile',
-                    ),
-                  ],
-                ),
+        // The shell reserves this height, so scrollable screen content never
+        // sits beneath the floating card. Hide it while a keyboard is open so
+        // fields retain the full visible area.
+        bottomNavigationBar: !isTablet && media.viewInsets.bottom == 0
+            ? FloatingBottomNavigation(
+                selectedIndex: selectedIndex,
+                onDestinationSelected: (index) => _onItemTapped(index, context),
               )
             : null,
       ),

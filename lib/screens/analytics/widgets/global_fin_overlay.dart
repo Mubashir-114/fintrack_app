@@ -51,6 +51,7 @@ class GlobalFinOverlay extends StatefulWidget {
   static bool supportsLocation(String location) => const {
     '/dashboard',
     '/transactions',
+    '/ledger',
     '/budgets',
     '/reports',
     '/planning',
@@ -158,7 +159,14 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
           }
           return const SizedBox.shrink();
         }
-        final isLeft = prefs.edgePosition == 'left';
+        // Transaction amounts and action menus are right-aligned. On both
+        // transaction surfaces FIN peeks from the opposite edge so its visual
+        // layer cannot obscure those controls.
+        final isTransactionSurface =
+            location == '/transactions' || location == '/ledger';
+        final isLeft = isTransactionSurface
+            ? true
+            : prefs.edgePosition == 'left';
         final expanded = controller.isPeekExpanded;
         final colors = AppColors.of(context);
         return LayoutBuilder(

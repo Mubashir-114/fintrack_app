@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/core/services/cache_service.dart';
 import 'package:frontend/core/theme/app_theme.dart';
 import 'package:frontend/core/theme/theme_collection.dart';
+import 'package:frontend/core/widgets/floating_bottom_navigation.dart';
 import 'package:frontend/models/analytics_model.dart';
 import 'package:frontend/models/api_response.dart';
 import 'package:frontend/providers/analytics_provider.dart';
@@ -624,7 +625,7 @@ void main() {
       expect(tester.getSize(content).width, 390);
       expect(
         tester.getRect(handle).bottom,
-        lessThan(tester.getRect(find.byType(NavigationBar)).top),
+        lessThan(tester.getRect(find.byType(FloatingBottomNavigation)).top),
       );
       provider.visualController.dismissFloating();
       await tester.pumpAndSettle();

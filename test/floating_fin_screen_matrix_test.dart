@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/core/services/cache_service.dart';
 import 'package:frontend/core/theme/app_theme.dart';
+import 'package:frontend/core/widgets/floating_bottom_navigation.dart';
 import 'package:frontend/models/account_model.dart';
 import 'package:frontend/models/budget_model.dart';
 import 'package:frontend/models/dashboard_models.dart';
@@ -32,6 +33,7 @@ import 'package:frontend/screens/analytics/analytics_screen.dart';
 import 'package:frontend/screens/analytics/widgets/global_fin_overlay.dart';
 import 'package:frontend/screens/budgets/budgets_list_screen.dart';
 import 'package:frontend/screens/dashboard/dashboard_screen.dart';
+import 'package:frontend/screens/ledger/ledger_screen.dart';
 import 'package:frontend/screens/main_navigation_screen.dart';
 import 'package:frontend/screens/profile/appearance_screen.dart';
 import 'package:frontend/screens/profile/edit_profile_screen.dart';
@@ -113,6 +115,7 @@ class _Reports extends ReportProvider {
 const _screens = <String, Widget>{
   '/dashboard': DashboardScreen(),
   '/transactions': TransactionsListScreen(),
+  '/ledger': LedgerScreen(),
   '/accounts': AccountsListScreen(),
   '/budgets': BudgetsListScreen(),
   '/reports': ReportsScreen(),
@@ -373,10 +376,27 @@ void main() {
             reason: 'FIN must preserve page scrolling',
           );
           if (width < 600) {
-            expect(tester.getSize(find.byType(NavigationBar)).width, width);
-            await tester.tap(find.text('Activity'));
+            final navigation = find.byType(FloatingBottomNavigation);
+            expect(tester.getSize(navigation).width, width);
+            expect(
+              tester.getSize(
+                find.byKey(const ValueKey('floating_navigation_card')),
+              ).height,
+              FloatingBottomNavigation.cardHeight,
+            );
+            expect(
+              tester.getSize(
+                find.byKey(
+                  const ValueKey('floating_navigation_active_pill'),
+                ),
+              ).height,
+              FloatingBottomNavigation.activePillHeight,
+            );
+            await tester.tap(
+              find.byKey(const ValueKey('floating_navigation_ledger')),
+            );
             await tester.pumpAndSettle();
-            expect(find.byType(TransactionsListScreen), findsOneWidget);
+            expect(find.byType(LedgerScreen), findsOneWidget);
             expect(
               tester.getRect(find.byKey(const ValueKey('page_bounds'))).width,
               width,
