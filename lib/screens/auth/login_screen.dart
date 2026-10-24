@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_dimensions.dart';
-import '../../core/constants/app_motion.dart';
-import '../../core/widgets/app_button.dart';
-import '../../core/widgets/app_logo.dart';
-import '../../core/widgets/app_text_field.dart';
+import '../../core/horizon/horizon.dart';
 import '../../core/widgets/custom_toast.dart';
-import '../../core/widgets/living_wallet.dart';
 import '../../providers/auth_provider.dart';
 
+/// FinTrack // HORIZON — Authentication Screen.
+/// Clean, single-hierarchy vertical layout with keyboard resilience,
+/// autofill compatibility, and zero duplicate headings.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -24,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -34,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     FocusManager.instance.primaryFocus?.unfocus();
-    if (!_formKey.currentState!.validate()) return;
+    if (_isLoading || !_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.login(
@@ -56,254 +54,264 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    final short = MediaQuery.sizeOf(context).height < 700;
-
-    final tokens = AppColors.of(context);
+    final tokens = HorizonThemeTokens.of(context);
+    final size = MediaQuery.of(context).size;
+    final isCompact = size.height < 700;
 
     return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [tokens.surface, tokens.background],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Stack(
+      backgroundColor: tokens.canvas,
+      resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                  color: tokens.textHigh,
+                ),
+                onPressed: () => context.pop(),
+              )
+            : null,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Positioned(
-              top: -90,
-              right: -80,
-              child: _AmbientOrb(color: tokens.primary),
+            Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(
+                color: tokens.ionCyan,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: tokens.ionCyan.withValues(alpha: 0.5),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
             ),
-            Positioned(
-              top: 220,
-              left: -105,
-              child: _AmbientOrb(color: tokens.secondary, size: 210),
+            const SizedBox(width: 8),
+            Text(
+              'FINTRACK // HORIZON',
+              style: HorizonTypography.labelCaps.copyWith(
+                color: tokens.ionCyan,
+                letterSpacing: 1.5,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: EdgeInsets.fromLTRB(20, short ? 12 : 24, 20, 24),
+          ],
+        ),
+        centerTitle: true,
+      ),
+      body: Stack(
+        children: [
+          // Ambient lighting glows
+          Positioned(
+            top: -40,
+            right: -40,
+            child: IgnorePointer(
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: tokens.ionCyan.withValues(alpha: 0.07),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 60,
+            left: -60,
+            child: IgnorePointer(
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: tokens.electricIndigo.withValues(alpha: 0.08),
+                ),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: HorizonDimensions.marginMobile,
+                    vertical: isCompact ? 12 : 24,
+                  ),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 440),
-                    child: TweenAnimationBuilder<double>(
-                      duration: reduceMotion ? Duration.zero : AppMotion.reveal,
-                      curve: AppMotion.enter,
-                      tween: Tween(begin: 0, end: 1),
-                      builder: (context, value, child) => Opacity(
-                        opacity: value,
-                        child: Transform.translate(
-                          offset: Offset(0, (1 - value) * 18),
-                          child: child,
-                        ),
-                      ),
-                      child: AutofillGroup(
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const _Wordmark(),
-                              SizedBox(height: short ? 4 : 10),
-                              LivingWallet(height: short ? 132 : 172),
-                              Text(
-                                'Your money, beautifully in control.',
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.headlineMedium?.copyWith(
-                                  fontSize: short ? 25 : 29,
-                                  height: 1.1,
-                                ),
-                              ),
-                              const SizedBox(height: 7),
-                              Text(
-                                'Welcome Back · Sign in to see the full picture.',
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: tokens.textSecondary,
-                                ),
-                              ),
-                              SizedBox(height: short ? 18 : 25),
-                              Container(
-                                padding: const EdgeInsets.all(18),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.surface.withValues(
-                                    alpha: .88,
-                                  ),
-                                  borderRadius: BorderRadius.circular(
-                                    AppDimensions.radiusXL,
-                                  ),
-                                  border: Border.all(
-                                    color: theme.dividerColor.withValues(
-                                      alpha: .8,
-                                    ),
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha:
-                                            theme.brightness == Brightness.dark
-                                            ? .18
-                                            : .05,
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight - (isCompact ? 24 : 48),
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        child: AutofillGroup(
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Top Hero Emblem & Single Title
+                                Center(
+                                  child: Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: tokens.surface2,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: tokens.rimCyanActive,
+                                        width: 1.2,
                                       ),
-                                      blurRadius: 28,
-                                      offset: const Offset(0, 12),
                                     ),
-                                  ],
+                                    child: Icon(
+                                      Icons.lock_outline_rounded,
+                                      size: 22,
+                                      color: tokens.ionCyan,
+                                    ),
+                                  ),
                                 ),
-                                child: Column(
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Sign In',
+                                  textAlign: TextAlign.center,
+                                  style: HorizonTypography.headlineLg.copyWith(
+                                    color: tokens.textHigh,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Enter your credentials to access your financial vault.',
+                                  textAlign: TextAlign.center,
+                                  style: HorizonTypography.bodyMd.copyWith(
+                                    color: tokens.textMedium,
+                                  ),
+                                ),
+                                SizedBox(height: isCompact ? 20 : 28),
+
+                                // Interactive Form Module
+                                HorizonSurface(
+                                  tier: HorizonSurfaceTier.surface2,
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      // Email Field
+                                      HorizonTextField(
+                                        controller: emailController,
+                                        label: 'Email address',
+                                        hintText: 'name@example.com',
+                                        prefixIcon: Icons.alternate_email_rounded,
+                                        keyboardType: TextInputType.emailAddress,
+                                        textInputAction: TextInputAction.next,
+                                        autofillHints: const [AutofillHints.email],
+                                        validator: (value) {
+                                          if (value == null || value.trim().isEmpty) {
+                                            return 'Email is required';
+                                          }
+                                          if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                              .hasMatch(value.trim())) {
+                                            return 'Enter a valid email address';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                      const SizedBox(height: 16),
+
+                                      // Password Field
+                                      HorizonTextField(
+                                        controller: passwordController,
+                                        label: 'Password',
+                                        hintText: 'Enter your password',
+                                        prefixIcon: Icons.lock_outline_rounded,
+                                        obscureText: _obscurePassword,
+                                        textInputAction: TextInputAction.done,
+                                        autofillHints: const [AutofillHints.password],
+                                        onSubmitted: (_) => _login(),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            _obscurePassword
+                                                ? Icons.visibility_outlined
+                                                : Icons.visibility_off_outlined,
+                                            color: tokens.textMedium,
+                                            size: 20,
+                                          ),
+                                          tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                                          onPressed: () => setState(
+                                            () => _obscurePassword = !_obscurePassword,
+                                          ),
+                                        ),
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Password is required';
+                                          }
+                                          if (value.length < 6) {
+                                            return 'Password must be at least 6 characters';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                      const SizedBox(height: 24),
+
+                                      // Sign In Button
+                                      HorizonButton(
+                                        text: 'Sign In',
+                                        icon: Icons.arrow_forward_rounded,
+                                        variant: HorizonButtonVariant.primary,
+                                        isLoading: _isLoading,
+                                        onPressed: _login,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+
+                                // Navigation Link to Register
+                                Wrap(
+                                  alignment: WrapAlignment.center,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
                                   children: [
-                                    AppTextField(
-                                      controller: emailController,
-                                      label: 'Email address',
-                                      prefixIcon: Icons.alternate_email_rounded,
-                                      keyboardType: TextInputType.emailAddress,
-                                      textInputAction: TextInputAction.next,
-                                      autofillHints: const [
-                                        AutofillHints.username,
-                                        AutofillHints.email,
-                                      ],
-                                      validator: (value) {
-                                        if (value == null ||
-                                            value.trim().isEmpty) {
-                                          return 'Email is required';
-                                        }
-                                        if (!RegExp(
-                                          r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
-                                        ).hasMatch(value)) {
-                                          return 'Enter a valid email address';
-                                        }
-                                        return null;
-                                      },
+                                    Text(
+                                      'New to FinTrack? ',
+                                      style: HorizonTypography.bodyMd.copyWith(
+                                        color: tokens.textMedium,
+                                      ),
                                     ),
-                                    const SizedBox(height: 14),
-                                    AppTextField(
-                                      controller: passwordController,
-                                      label: 'Password',
-                                      prefixIcon: Icons.lock_outline_rounded,
-                                      isPassword: true,
-                                      textInputAction: TextInputAction.done,
-                                      autofillHints: const [
-                                        AutofillHints.password,
-                                      ],
-                                      onFieldSubmitted: (_) => _login(),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Password is required';
-                                        }
-                                        if (value.length < 6) {
-                                          return 'Password must be at least 6 characters';
-                                        }
-                                        return null;
-                                      },
+                                    GestureDetector(
+                                      onTap: () => context.push('/register'),
+                                      child: Text(
+                                        'Create an account',
+                                        style: HorizonTypography.bodyMd.copyWith(
+                                          color: tokens.ionCyan,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-                              const SizedBox(height: 18),
-                              AppButton(
-                                text: 'SIGN IN',
-                                isLoading: _isLoading,
-                                onPressed: _login,
-                              ),
-                              const SizedBox(height: 10),
-                              Wrap(
-                                alignment: WrapAlignment.center,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  Text(
-                                    'New to FinTrack?',
-                                    style: theme.textTheme.bodyMedium,
-                                  ),
-                                  TextButton(
-                                    onPressed: _isLoading
-                                        ? null
-                                        : () => context.push('/register'),
-                                    child: const Text('Create account'),
-                                  ),
-                                ],
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Wordmark extends StatelessWidget {
-  const _Wordmark();
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = AppColors.of(context);
-    return Semantics(
-      header: true,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FinTrackLogo(
-            onTap: () => context.go('/login'),
-            size: 34,
-            borderRadius: 10,
-          ),
-          const SizedBox(width: 10),
-          Text(
-            'FinTrack',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontSize: 22),
-          ),
-          const SizedBox(width: 7),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-            decoration: BoxDecoration(
-              color: tokens.primary.withValues(alpha: .14),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '2.0',
-              style: TextStyle(
-                color: tokens.primary,
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-              ),
+                );
+              },
             ),
           ),
         ],
       ),
     );
   }
-}
-
-class _AmbientOrb extends StatelessWidget {
-  const _AmbientOrb({required this.color, this.size = 240});
-  final Color color;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) => IgnorePointer(
-    child: Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [color.withValues(alpha: .14), Colors.transparent],
-        ),
-      ),
-    ),
-  );
 }

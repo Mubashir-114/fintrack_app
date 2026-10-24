@@ -10,6 +10,7 @@ import '../providers/auth_provider.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
+import '../screens/auth/otp_verification_screen.dart';
 import '../screens/main_navigation_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/transactions/transactions_list_screen.dart';
@@ -73,7 +74,8 @@ final GoRouter appRouter = GoRouter(
     final isGoingToSplash = state.matchedLocation == '/splash';
     final isGoingToAuth =
         state.matchedLocation == '/login' ||
-        state.matchedLocation == '/register';
+        state.matchedLocation == '/register' ||
+        state.matchedLocation == '/otp-verification';
 
     if (isGoingToSplash) {
       return null;
@@ -102,6 +104,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/register',
       builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: '/otp-verification',
+      builder: (context, state) {
+        final email = state.uri.queryParameters['email'];
+        final dest = state.uri.queryParameters['dest'];
+        return OtpVerificationScreen(email: email, destination: dest);
+      },
     ),
     // Full-screen account creation modal outside bottom-navigation shell
     GoRoute(

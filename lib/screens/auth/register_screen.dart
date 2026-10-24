@@ -2,13 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/widgets/app_button.dart';
-import '../../core/widgets/app_logo.dart';
-import '../../core/widgets/app_text_field.dart';
-import '../../providers/auth_provider.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_dimensions.dart';
+import '../../core/horizon/horizon.dart';
 import '../../core/widgets/custom_toast.dart';
+import '../../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -25,6 +21,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
   @override
   void dispose() {
@@ -36,21 +34,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (_isLoading || !_formKey.currentState!.validate()) return;
 
     if (passwordController.text != confirmPasswordController.text) {
       CustomToast.showWarning(context, "Passwords do not match");
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
+    setState(() => _isLoading = true);
     final authProvider = context.read<AuthProvider>();
-
     final success = await authProvider.register(
       name: nameController.text.trim(),
       email: emailController.text.trim(),
@@ -63,9 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       CustomToast.showSuccess(context, "Registration Successful! Welcome!");
       context.go("/dashboard");
     } else {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
       CustomToast.showError(
         context,
         authProvider.errorMessage ?? "Registration Failed",
@@ -75,188 +66,256 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final tokens = AppColors.of(context);
+    final tokens = HorizonThemeTokens.of(context);
 
     return Scaffold(
+      backgroundColor: tokens.canvas,
       appBar: AppBar(
-        title: const Text("Create Account"),
+        backgroundColor: tokens.canvas,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => context.pop(),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: tokens.textHigh),
+          onPressed: () => context.go('/login'),
         ),
+        title: Column(
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: tokens.ionCyan,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'FINTRACK // IDENTITY',
+                  style: HorizonTypography.labelCaps.copyWith(
+                    color: tokens.ionCyan,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ],
+            ),
+            Text(
+              'Create Account',
+              style: HorizonTypography.headlineSm.copyWith(
+                color: tokens.textHigh,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        centerTitle: true,
       ),
-      extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [tokens.surface, tokens.background],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      body: Stack(
+        children: [
+          // Ambient lighting
+          Positioned(
+            top: -60,
+            right: -60,
+            child: Container(
+              width: 240,
+              height: 240,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: tokens.ionCyan.withValues(alpha: 0.08),
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.lg),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: FinTrackLogo(
-                          onTap: () => context.go('/login'),
-                          size: 52,
-                          borderRadius: 15,
-                          showShadow: true,
-                          showBorder: true,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      "Create your FinTrack",
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: tokens.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    AppDimensions.hXS,
-                    Text(
-                      "One calm place for every account, budget and goal.",
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: tokens.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
+          Positioned(
+            top: 240,
+            left: -80,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: tokens.electricIndigo.withValues(alpha: 0.12),
+              ),
+            ),
+          ),
 
-                    // Register inputs card
-                    Card(
-                      elevation: 0,
-                      color: tokens.surface,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusXL,
-                        ),
-                        side: BorderSide(color: tokens.divider, width: 1.0),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppDimensions.lg),
-                        child: Column(
-                          children: [
-                            AppTextField(
-                              controller: nameController,
-                              label: "Full Name",
-                              prefixIcon: Icons.person_outline_rounded,
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return "Full name is required";
-                                }
-                                return null;
-                              },
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: HorizonDimensions.marginMobile,
+                  vertical: 16,
+                ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: AutofillGroup(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Header Framing
+                          Text(
+                            'Create Account',
+                            style: HorizonTypography.headlineLg.copyWith(
+                              color: tokens.textHigh,
+                              fontWeight: FontWeight.w700,
                             ),
-                            AppDimensions.hMD,
-                            AppTextField(
-                              controller: emailController,
-                              label: "Email Address",
-                              prefixIcon: Icons.email_outlined,
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return "Email is required";
-                                }
-                                if (!RegExp(
-                                  r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
-                                ).hasMatch(value)) {
-                                  return "Enter a valid email address";
-                                }
-                                return null;
-                              },
-                            ),
-                            AppDimensions.hMD,
-                            AppTextField(
-                              controller: passwordController,
-                              label: "Password",
-                              prefixIcon: Icons.lock_outline_rounded,
-                              isPassword: true,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Password is required";
-                                }
-                                if (value.length < 6) {
-                                  return "Password must be at least 6 characters";
-                                }
-                                return null;
-                              },
-                            ),
-                            AppDimensions.hMD,
-                            AppTextField(
-                              controller: confirmPasswordController,
-                              label: "Confirm Password",
-                              prefixIcon: Icons.lock_outline_rounded,
-                              isPassword: true,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Confirm your password";
-                                }
-                                if (value != passwordController.text) {
-                                  return "Passwords do not match";
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    AppButton(
-                      text: "GET STARTED",
-                      isLoading: _isLoading,
-                      onPressed: _register,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'FinTrack stores your profile and financial records to provide tracking, reports and FIN. Optional SMS import requires a separate choice. No bank access is required.',
-                      textAlign: TextAlign.center,
-                    ),
-                    TextButton(
-                      onPressed: () => context.push('/privacy'),
-                      child: const Text('How your data is used'),
-                    ),
-                    AppDimensions.hMD,
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          "Already have an account?",
-                          style: TextStyle(
-                            color: tokens.textSecondary,
-                            fontSize: 14,
                           ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            context.go('/login');
-                          },
-                          child: const Text("Sign In"),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(
+                            'Set up your financial operating system profile.',
+                            style: HorizonTypography.bodyMd.copyWith(
+                              color: tokens.textMedium,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Form Module
+                          HorizonSurface(
+                            tier: HorizonSurfaceTier.surface2,
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Full Name Field
+                                HorizonTextField(
+                                  controller: nameController,
+                                  label: 'Full Name',
+                                  hintText: 'Enter your full name',
+                                  prefixIcon: Icons.person_outline_rounded,
+                                  textInputAction: TextInputAction.next,
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return 'Name is required';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Email Field
+                                HorizonTextField(
+                                  controller: emailController,
+                                  label: 'Email Address',
+                                  hintText: 'Enter your email address',
+                                  prefixIcon: Icons.alternate_email_rounded,
+                                  keyboardType: TextInputType.emailAddress,
+                                  textInputAction: TextInputAction.next,
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return 'Email is required';
+                                    }
+                                    if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                      return 'Enter a valid email address';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Password Field
+                                HorizonTextField(
+                                  controller: passwordController,
+                                  label: 'Password',
+                                  hintText: 'At least 6 characters',
+                                  prefixIcon: Icons.lock_outline_rounded,
+                                  obscureText: _obscurePassword,
+                                  textInputAction: TextInputAction.next,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                      color: tokens.textMedium,
+                                      size: 20,
+                                    ),
+                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Password is required';
+                                    }
+                                    if (value.length < 6) {
+                                      return 'Password must be at least 6 characters';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Confirm Password Field
+                                HorizonTextField(
+                                  controller: confirmPasswordController,
+                                  label: 'Confirm Password',
+                                  hintText: 'Re-enter your password',
+                                  prefixIcon: Icons.lock_reset_rounded,
+                                  obscureText: _obscureConfirm,
+                                  textInputAction: TextInputAction.done,
+                                  onSubmitted: (_) => _register(),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscureConfirm ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                      color: tokens.textMedium,
+                                      size: 20,
+                                    ),
+                                    onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Confirm your password';
+                                    }
+                                    if (value != passwordController.text) {
+                                      return 'Passwords do not match';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 24),
+
+                                // Submit Button
+                                HorizonButton(
+                                  text: 'Create Account',
+                                  icon: Icons.arrow_forward_rounded,
+                                  variant: HorizonButtonVariant.primary,
+                                  isLoading: _isLoading,
+                                  onPressed: _register,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Already have account
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Already have an account? ',
+                                style: HorizonTypography.bodyMd.copyWith(
+                                  color: tokens.textMedium,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => context.go('/login'),
+                                child: Text(
+                                  'Sign In',
+                                  style: HorizonTypography.bodyMd.copyWith(
+                                    color: tokens.ionCyan,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

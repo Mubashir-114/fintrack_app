@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/constants/app_colors.dart';
+import '../../core/horizon/horizon.dart';
 import '../../core/services/token_service.dart';
 import '../../core/widgets/fintrack_loading_scene.dart';
 import '../../providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
@@ -87,69 +88,159 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    final theme = Theme.of(context);
+    final tokens = HorizonThemeTokens.of(context);
+
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: tokens.canvas,
       body: DisplayFeatureSubScreen(
         anchorPoint: Offset.zero,
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Stack(
+            children: [
+              // ── Atmospheric Horizon Backdrop ─────────────────────────────
+              Positioned(
+                top: -80,
+                left: 0,
+                right: 0,
                 child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 420),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 28,
-                        vertical: 24,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          FinTrackLoadingScene(animate: !_showRetry),
-                          const SizedBox(height: 12),
-                          Text(
-                            'FinTrack',
-                            style: theme.textTheme.headlineMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Your money, beautifully in control.',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-                          Semantics(
-                            liveRegion: true,
-                            child: Text(
-                              _statusMessage,
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.textSecondary,
-                                height: 1.5,
-                              ),
-                            ),
-                          ),
-                          if (_showRetry) ...[
-                            const SizedBox(height: 20),
-                            OutlinedButton.icon(
-                              onPressed: _initialize,
-                              icon: const Icon(Icons.refresh_rounded),
-                              label: const Text('Retry connection'),
-                            ),
-                          ],
+                  child: Container(
+                    width: 320,
+                    height: 320,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          tokens.electricIndigo.withValues(alpha: 0.22),
+                          tokens.ionCyan.withValues(alpha: 0.08),
+                          Colors.transparent,
                         ],
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
+
+              // ── Main Content ─────────────────────────────────────────────
+              Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 24,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Animated Loading / Brand Scene
+                        FinTrackLoadingScene(animate: !_showRetry),
+                        const SizedBox(height: 16),
+
+                        // Horizon Wordmark
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              'FinTrack',
+                              style: HorizonTypography.displayHero.copyWith(
+                                color: tokens.textHigh,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -1.2,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                color: tokens.ionCyan,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: tokens.ionCyan.withValues(alpha: 0.5),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+
+                        // Eyebrow
+                        Text(
+                          'WELCOME TO FINTRACK',
+                          style: HorizonTypography.labelCaps.copyWith(
+                            color: tokens.ionCyan,
+                            letterSpacing: 2.0,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Tagline
+                        Text(
+                          'Your money, beautifully in control.',
+                          textAlign: TextAlign.center,
+                          style: HorizonTypography.bodyMd.copyWith(
+                            color: tokens.textMedium,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Telemetry Status Badge
+                        HorizonSurface(
+                          tier: HorizonSurfaceTier.surface1,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: _showRetry ? tokens.outflow : tokens.ionCyan,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Semantics(
+                                  liveRegion: true,
+                                  child: Text(
+                                    _statusMessage,
+                                    textAlign: TextAlign.center,
+                                    style: HorizonTypography.bodySm.copyWith(
+                                      color: tokens.textMedium,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        if (_showRetry) ...[
+                          const SizedBox(height: 24),
+                          HorizonButton(
+                            text: 'Retry Connection',
+                            icon: Icons.refresh_rounded,
+                            variant: HorizonButtonVariant.secondary,
+                            onPressed: _initialize,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

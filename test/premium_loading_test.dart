@@ -167,10 +167,10 @@ void main() {
       auth.response.complete(false);
       await tester.pump();
       await tester.pump();
-      expect(find.text('Retry connection'), findsOneWidget);
+      expect(find.text('RETRY CONNECTION'), findsOneWidget);
       expect(await TokenService.getToken(), 'test-only-token');
       auth.response = Completer<bool>();
-      await tester.tap(find.text('Retry connection'));
+      await tester.tap(find.text('RETRY CONNECTION'));
       await tester.pump();
       expect(auth.calls, 2);
       auth.response.complete(true);
