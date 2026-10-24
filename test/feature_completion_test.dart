@@ -377,7 +377,9 @@ void main() {
       await tester.tap(find.text('Not now'));
       await tester.pumpAndSettle();
       expect(dashboard.loads, 0);
-      await tester.tap(find.text('Confirm'));
+      await tester.ensureVisible(find.text('CONFIRM'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('CONFIRM'));
       await tester.pumpAndSettle();
       expect(dashboard.loads, 1);
       expect(ledger.loads, 1);
@@ -420,7 +422,7 @@ void main() {
       );
       await tester.tap(find.text('Edit identity'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Choose photo'));
+      await tester.tap(find.text('CHOOSE PHOTO'));
       await tester.pumpAndSettle();
       expect(picker.usedGallery, true);
       expect(find.text('Crop profile photo'), findsOneWidget);
@@ -453,12 +455,12 @@ void main() {
                   ),
                 );
               },
-              child: const Text('Choose photo'),
+              child: const Text('CHOOSE PHOTO'),
             ),
           ),
         ),
       );
-      await tester.tap(find.text('Choose photo'));
+      await tester.tap(find.text('CHOOSE PHOTO'));
       await tester.pumpAndSettle();
       await tester.drag(find.byType(Slider).first, const Offset(60, 0));
       await tester.tap(find.text('Use photo'));
