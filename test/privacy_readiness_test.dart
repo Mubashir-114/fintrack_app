@@ -90,8 +90,8 @@ void main() {
           ),
         ),
       );
-      await tester.ensureVisible(find.text('Delete account permanently'));
-      await tester.tap(find.text('Delete account permanently'));
+      await tester.ensureVisible(find.text('DELETE ACCOUNT PERMANENTLY'));
+      await tester.tap(find.text('DELETE ACCOUNT PERMANENTLY'));
       await tester.pumpAndSettle();
       expect(find.text('Enter your current password'), findsOneWidget);
       expect(find.text('Type DELETE exactly'), findsOneWidget);
@@ -115,8 +115,8 @@ void main() {
       final fields = find.byType(TextFormField);
       await tester.enterText(fields.at(0), 'synthetic-password');
       await tester.enterText(fields.at(1), 'DELETE');
-      await tester.ensureVisible(find.text('Delete account permanently'));
-      await tester.tap(find.text('Delete account permanently'));
+      await tester.ensureVisible(find.text('DELETE ACCOUNT PERMANENTLY'));
+      await tester.tap(find.text('DELETE ACCOUNT PERMANENTLY'));
       await tester.pumpAndSettle();
       expect(find.text('Permanently delete your account?'), findsOneWidget);
       expect(repository.calls, 0);

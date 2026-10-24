@@ -5,9 +5,7 @@ import 'avatar_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/constants/app_colors.dart';
-import '../../core/widgets/app_button.dart';
-import '../../core/widgets/app_text_field.dart';
+import '../../core/horizon/horizon.dart';
 import '../../core/widgets/custom_toast.dart';
 import '../../providers/auth_provider.dart';
 
@@ -165,155 +163,200 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-
+    final tokens = HorizonThemeTokens.of(context);
     final user = context.watch<AuthProvider>().currentUser;
+
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: tokens.canvas,
       appBar: AppBar(
-        title: const Text(
-          "Edit Profile",
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+        backgroundColor: tokens.canvas,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: tokens.textHigh),
+          onPressed: _isUpdating ? null : () => Navigator.of(context).pop(),
         ),
-        actions: [
-          TextButton(
-            onPressed: _isUpdating ? null : () => Navigator.of(context).pop(),
-            child: const Text("Cancel"),
-          ),
-        ],
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'HORIZON // PROTOCOL',
+              style: HorizonTypography.labelCaps.copyWith(
+                color: tokens.ionCyan,
+                letterSpacing: 1.5,
+              ),
+            ),
+            Text(
+              'Edit Personal Details',
+              style: HorizonTypography.headlineSm.copyWith(
+                color: tokens.textHigh,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: HorizonDimensions.marginMobile,
+            vertical: 16,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: ProfileAvatar(
-                    name: user?.name ?? '',
-                    bytes: _photoChanged
-                        ? _photo
-                        : context.watch<AuthProvider>().avatarBytes,
-                    size: 72,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
+                // Avatar Hero
+                HorizonSurface(
+                  tier: HorizonSurfaceTier.surface2,
+                  child: Column(
                     children: [
-                      TextButton.icon(
-                        onPressed: _isUpdating || _picking
-                            ? null
-                            : _choosePhoto,
-                        icon: _picking
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                      Center(
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: tokens.ionCyan.withValues(alpha: 0.6),
+                                  width: 1.5,
                                 ),
-                              )
-                            : const Icon(Icons.photo_library_outlined),
-                        label: const Text('Choose photo'),
-                      ),
-                      if ((_photoChanged
-                              ? _photo
-                              : context.watch<AuthProvider>().avatarBytes) !=
-                          null)
-                        TextButton(
-                          onPressed: _isUpdating
-                              ? null
-                              : () {
-                                  setState(() {
-                                    _photo = null;
-                                    _photoChanged = true;
-                                  });
-                                  _checkForChanges();
-                                },
-                          child: const Text('Remove photo'),
+                              ),
+                              child: ProfileAvatar(
+                                name: user?.name ?? '',
+                                bytes: _photoChanged
+                                    ? _photo
+                                    : context.watch<AuthProvider>().avatarBytes,
+                                size: 84,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: _isUpdating || _picking ? null : _choosePhoto,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: tokens.ionCyan,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: tokens.ionCyan.withValues(alpha: 0.4),
+                                      blurRadius: 6,
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.photo_camera,
+                                  size: 16,
+                                  color: Color(0xFF00363C),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        children: [
+                          HorizonButton(
+                            text: 'Choose Photo',
+                            icon: Icons.photo_library_outlined,
+                            variant: HorizonButtonVariant.secondary,
+                            expandWidth: false,
+                            height: 38,
+                            isLoading: _picking,
+                            onPressed: _isUpdating || _picking ? null : _choosePhoto,
+                          ),
+                          if ((_photoChanged
+                                  ? _photo
+                                  : context.watch<AuthProvider>().avatarBytes) !=
+                              null)
+                            HorizonButton(
+                              text: 'Remove',
+                              icon: Icons.delete_outline,
+                              variant: HorizonButtonVariant.ghost,
+                              expandWidth: false,
+                              height: 38,
+                              onPressed: _isUpdating
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        _photo = null;
+                                        _photoChanged = true;
+                                      });
+                                      _checkForChanges();
+                                    },
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 20),
 
                 // Form Fields
-                AppTextField(
-                  controller: _nameController,
-                  label: "Full Name",
-                  prefixIcon: Icons.person_outline_rounded,
-                  textInputAction: TextInputAction.next,
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return "Name is required";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
+                HorizonSurface(
+                  tier: HorizonSurfaceTier.surface2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      HorizonTextField(
+                        controller: _nameController,
+                        label: "Full Name",
+                        hintText: "Enter your full name",
+                        prefixIcon: Icons.person_outline_rounded,
+                        textInputAction: TextInputAction.next,
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return "Name is required";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
 
-                AppTextField(
-                  controller: _emailController,
-                  label: "Email Address",
-                  readOnly: true,
-                  prefixIcon: Icons.mail_outline_rounded,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _handleSave(),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return "Email is required";
-                    }
-                    if (!RegExp(
-                      r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
-                    ).hasMatch(val.trim())) {
-                      return "Enter a valid email address";
-                    }
-                    return null;
-                  },
+                      HorizonTextField(
+                        controller: _emailController,
+                        label: "Email Address",
+                        prefixIcon: Icons.mail_outline_rounded,
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 8),
+
+                      Text(
+                        "You can update your name. Email changes require verification and are currently managed by system administrators.",
+                        style: HorizonTypography.bodySm.copyWith(
+                          color: tokens.textMedium,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Save Action
+                HorizonButton(
+                  text: 'Save Changes',
+                  icon: Icons.check_circle_outline,
+                  variant: HorizonButtonVariant.primary,
+                  isLoading: _isUpdating,
+                  onPressed: _hasChanges ? _handleSave : null,
                 ),
                 const SizedBox(height: 12),
 
-                // Subtle helper text
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(
-                    "You can update your name. Email changes require a verification service and are currently unavailable.",
-                    style: TextStyle(
-                      fontSize: 12,
-                      height: 1.4,
-                      color: colors.textSecondary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Save action - only active when changes exist
-                AnimatedOpacity(
-                  duration: const Duration(milliseconds: 200),
-                  opacity: _hasChanges ? 1.0 : 0.45,
-                  child: AppButton(
-                    text: "SAVE CHANGES",
-                    isLoading: _isUpdating,
-                    onPressed: _hasChanges ? _handleSave : null,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Cancel button
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton(
-                    onPressed: _isUpdating
-                        ? null
-                        : () => Navigator.of(context).pop(),
-                    child: const Text("CANCEL"),
-                  ),
+                // Cancel Button
+                HorizonButton(
+                  text: 'Cancel',
+                  variant: HorizonButtonVariant.ghost,
+                  onPressed: _isUpdating ? null : () => Navigator.of(context).pop(),
                 ),
                 const SizedBox(height: 32),
               ],

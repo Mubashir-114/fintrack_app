@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'package:frontend/core/constants/app_colors.dart';
 import 'package:frontend/core/theme/app_theme.dart';
+import 'package:frontend/core/theme/theme_collection.dart';
 import 'package:frontend/models/user_model.dart';
 import 'package:frontend/providers/auth_provider.dart';
 import 'package:frontend/providers/currency_provider.dart';
@@ -120,10 +121,13 @@ void main() {
     });
 
     test('ThemeData reflects graphite surface and champagne primary', () {
-      final darkTheme = AppTheme.darkTheme;
-      expect(darkTheme.scaffoldBackgroundColor, const Color(0xFF171B24));
+      final darkTheme = AppTheme.buildTheme(
+        ThemeCollection.graphiteChampagne,
+        Brightness.dark,
+      );
+      expect(darkTheme.scaffoldBackgroundColor, const Color(0xFF12151B));
       expect(darkTheme.colorScheme.primary, const Color(0xFFD6A668));
-      expect(darkTheme.colorScheme.surface, const Color(0xFF252934));
+      expect(darkTheme.colorScheme.surface, const Color(0xFF1B1E26));
     });
   });
 
@@ -150,7 +154,7 @@ void main() {
         expect(find.text('Elena Rostova'), findsOneWidget);
         expect(find.text('elena@fintrack.io'), findsOneWidget);
         expect(find.text('E'), findsOneWidget); // Monogram initial
-        expect(find.text('Edit'), findsOneWidget); // Subtle edit action
+        expect(find.text('EDIT PROFILE'), findsOneWidget); // Subtle edit action
 
         // Verify no permanent form fields are exposed on main screen
         expect(find.byType(TextFormField), findsNothing);
@@ -158,18 +162,18 @@ void main() {
         expect(find.text('CHANGE PASSWORD'), findsNothing);
 
         // Verify grouped settings sections
-        expect(find.text('PREFERENCES'), findsOneWidget);
+        expect(find.text('PREFERENCES & APPEARANCE'), findsOneWidget);
         expect(find.text('Appearance'), findsOneWidget);
         expect(find.text('Accounts & Wallets'), findsOneWidget);
         expect(find.text('Push Notifications'), findsNothing);
         expect(find.text('Display Currency'), findsOneWidget);
 
-        expect(find.text('SECURITY & LEGAL'), findsOneWidget);
+        expect(find.text('SECURITY & CONTROL'), findsOneWidget);
         expect(find.text('Security & Password'), findsOneWidget);
         expect(find.text('Privacy & Data Controls'), findsOneWidget);
         expect(find.text('About Application'), findsOneWidget);
 
-        expect(find.text('ACCOUNT'), findsOneWidget);
+        expect(find.text('ACCOUNT OPERATIONS'), findsOneWidget);
         expect(find.text('Log Out'), findsOneWidget);
       },
     );
@@ -194,7 +198,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Edit Profile'), findsOneWidget);
+      expect(find.text('Edit Personal Details'), findsOneWidget);
       expect(
         find.widgetWithText(TextFormField, 'Marcus Vance'),
         findsOneWidget,
@@ -210,6 +214,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap SAVE CHANGES
+      await tester.ensureVisible(find.text('SAVE CHANGES'));
       await tester.tap(find.text('SAVE CHANGES'));
       await tester.pumpAndSettle();
 
@@ -236,10 +241,11 @@ void main() {
         ),
       );
 
-      expect(find.text('Security & Password'), findsOneWidget);
+      expect(find.text('Change Password'), findsOneWidget);
       expect(find.text('UPDATE PASSWORD'), findsOneWidget);
 
       // Tap update without entering passwords
+      await tester.ensureVisible(find.text('UPDATE PASSWORD'));
       await tester.tap(find.text('UPDATE PASSWORD'));
       await tester.pumpAndSettle();
 
@@ -251,6 +257,7 @@ void main() {
       await tester.enterText(textFields.at(0), 'oldpass123');
       await tester.enterText(textFields.at(1), '123');
       await tester.enterText(textFields.at(2), '123');
+      await tester.ensureVisible(find.text('UPDATE PASSWORD'));
       await tester.tap(find.text('UPDATE PASSWORD'));
       await tester.pumpAndSettle();
 
@@ -262,6 +269,7 @@ void main() {
       // Enter matching valid new passwords
       await tester.enterText(textFields.at(1), 'newsecret456');
       await tester.enterText(textFields.at(2), 'newsecret456');
+      await tester.ensureVisible(find.text('UPDATE PASSWORD'));
       await tester.tap(find.text('UPDATE PASSWORD'));
       await tester.pumpAndSettle();
 

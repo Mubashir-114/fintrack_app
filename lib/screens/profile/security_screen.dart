@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
-import '../../core/constants/app_colors.dart';
-import '../../core/widgets/app_button.dart';
-import '../../core/widgets/app_text_field.dart';
+import '../../core/horizon/horizon.dart';
 import '../../core/widgets/custom_toast.dart';
 import '../../providers/auth_provider.dart';
 
@@ -23,6 +21,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
   final _confirmPasswordController = TextEditingController();
 
   bool _isChangingPassword = false;
+  bool _obscureCurrent = true;
+  bool _obscureNew = true;
+  bool _obscureConfirm = true;
 
   @override
   void dispose() {
@@ -33,6 +34,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   Future<void> _handleChangePassword() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     if (!_formKey.currentState!.validate() || _isChangingPassword) return;
 
     setState(() {
@@ -72,50 +74,69 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final colors = AppColors.of(context);
+    final tokens = HorizonThemeTokens.of(context);
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: tokens.canvas,
       appBar: AppBar(
-        title: const Text(
-          "Security & Password",
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+        backgroundColor: tokens.canvas,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: tokens.textHigh),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'HORIZON // PROTOCOL',
+              style: HorizonTypography.labelCaps.copyWith(
+                color: tokens.ionCyan,
+                letterSpacing: 1.5,
+              ),
+            ),
+            Text(
+              'Change Password',
+              style: HorizonTypography.headlineSm.copyWith(
+                color: tokens.textHigh,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: HorizonDimensions.marginMobile,
+            vertical: 16,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Security header card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: colors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: colors.divider.withValues(alpha: isDark ? 0.7 : 1),
-                    ),
-                  ),
+                // Security Header Card
+                HorizonSurface(
+                  tier: HorizonSurfaceTier.surface2,
                   child: Row(
                     children: [
                       Container(
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: colors.primary.withValues(alpha: 0.12),
+                          color: tokens.ionCyan.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: tokens.rimNeutral),
                         ),
                         child: Icon(
                           Icons.shield_outlined,
-                          color: colors.primary,
-                          size: 24,
+                          color: tokens.ionCyan,
+                          size: 22,
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -125,18 +146,16 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           children: [
                             Text(
                               "Password Security",
-                              style: TextStyle(
-                                fontSize: 15,
+                              style: HorizonTypography.bodyMd.copyWith(
+                                color: tokens.textHigh,
                                 fontWeight: FontWeight.w700,
-                                color: colors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               "Choose a strong password with at least 6 characters.",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: colors.textSecondary,
+                              style: HorizonTypography.bodySm.copyWith(
+                                color: tokens.textMedium,
                                 height: 1.3,
                               ),
                             ),
@@ -146,64 +165,100 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 20),
+
+                // Form Fields
+                HorizonSurface(
+                  tier: HorizonSurfaceTier.surface2,
+                  child: Column(
+                    children: [
+                      HorizonTextField(
+                        controller: _currentPasswordController,
+                        label: "Current Password",
+                        hintText: "Enter current password",
+                        prefixIcon: Icons.lock_outline_rounded,
+                        obscureText: _obscureCurrent,
+                        textInputAction: TextInputAction.next,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureCurrent ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            color: tokens.textMedium,
+                            size: 20,
+                          ),
+                          onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                        ),
+                        validator: (val) {
+                          if (val == null || val.isEmpty) {
+                            return "Current password is required";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      HorizonTextField(
+                        controller: _newPasswordController,
+                        label: "New Password",
+                        hintText: "At least 6 characters",
+                        prefixIcon: Icons.lock_reset_rounded,
+                        obscureText: _obscureNew,
+                        textInputAction: TextInputAction.next,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureNew ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            color: tokens.textMedium,
+                            size: 20,
+                          ),
+                          onPressed: () => setState(() => _obscureNew = !_obscureNew),
+                        ),
+                        validator: (val) {
+                          if (val == null || val.isEmpty) {
+                            return "New password is required";
+                          }
+                          if (val.length < 6) {
+                            return "Password must be at least 6 characters";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      HorizonTextField(
+                        controller: _confirmPasswordController,
+                        label: "Confirm New Password",
+                        hintText: "Re-enter new password",
+                        prefixIcon: Icons.check_circle_outline_rounded,
+                        obscureText: _obscureConfirm,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => _handleChangePassword(),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirm ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            color: tokens.textMedium,
+                            size: 20,
+                          ),
+                          onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                        ),
+                        validator: (val) {
+                          if (val == null || val.isEmpty) {
+                            return "Please confirm your password";
+                          }
+                          if (val != _newPasswordController.text) {
+                            return "Passwords do not match";
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 24),
 
-                // Password Fields
-                AppTextField(
-                  controller: _currentPasswordController,
-                  label: "Current Password",
-                  prefixIcon: Icons.lock_outline_rounded,
-                  isPassword: true,
-                  textInputAction: TextInputAction.next,
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return "Current password is required";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                AppTextField(
-                  controller: _newPasswordController,
-                  label: "New Password",
-                  prefixIcon: Icons.lock_reset_rounded,
-                  isPassword: true,
-                  textInputAction: TextInputAction.next,
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return "New password is required";
-                    }
-                    if (val.length < 6) {
-                      return "Password must be at least 6 characters";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                AppTextField(
-                  controller: _confirmPasswordController,
-                  label: "Confirm New Password",
-                  prefixIcon: Icons.check_circle_outline_rounded,
-                  isPassword: true,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _handleChangePassword(),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return "Please confirm your password";
-                    }
-                    if (val != _newPasswordController.text) {
-                      return "Passwords do not match";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
-
                 // Submit button
-                AppButton(
-                  text: "UPDATE PASSWORD",
+                HorizonButton(
+                  text: "Update Password",
+                  icon: Icons.check_circle_outline,
+                  variant: HorizonButtonVariant.primary,
                   isLoading: _isChangingPassword,
                   onPressed: _handleChangePassword,
                 ),
