@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' show DisplayFeatureType;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:go_router/go_router.dart';
@@ -43,7 +44,9 @@ class FinOverlayObserver extends NavigatorObserver {
 
 /// Restricted to browsing surfaces; forms, import and security stay unobstructed.
 class GlobalFinOverlay extends StatefulWidget {
-  const GlobalFinOverlay({super.key});
+  const GlobalFinOverlay({super.key, this.contentBounds});
+
+  final ValueListenable<List<Rect>>? contentBounds;
 
   /// Transparent hit target at the edge. The painted portrait is wider but
   /// allocates no page space.
@@ -75,6 +78,7 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
   String? _location;
   bool _foreground = true;
   Timer? _greetingTimer;
+  bool _panelFits = true;
 
   @override
   void initState() {
@@ -84,6 +88,10 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
 
   /// A short one-off wave while FIN leans in, never a permanent raised arm.
   void _greetThenRelax(AnalyticsProvider provider) {
+    if (!_panelFits) {
+      context.go('/analytics');
+      return;
+    }
     final controller = provider.visualController;
     controller.setPeekExpanded(true);
     controller.onGreeting();
@@ -128,7 +136,11 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
     final provider = context.watch<AnalyticsProvider>();
     final controller = provider.visualController;
     return ListenableBuilder(
-      listenable: Listenable.merge([controller, FinOverlayObserver.obscured]),
+      listenable: Listenable.merge([
+        controller,
+        FinOverlayObserver.obscured,
+        widget.contentBounds,
+      ]),
       builder: (context, _) {
         final location = GoRouterState.of(context).matchedLocation;
         if (_location != location) {
@@ -227,7 +239,7 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
               math.min(96.0, region.width),
               math.max(80.0, region.width * .22),
             );
-            final y =
+            var y =
                 (region.top + (region.height - _peekVisualHeight) * _vertical)
                     .clamp(
                       region.top,
@@ -236,10 +248,70 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
                     .toDouble();
             final panelWidth = math.min(320.0, region.width - 16);
             final panelHeight = math.min(360.0, region.height);
-            final panelTop = (y - 24).clamp(
+            var panelTop = (y - 24).clamp(
               region.top,
               math.max(region.top, region.bottom - panelHeight),
             );
+            // Find blank space instead of covering records or controls. If a
+            // panel cannot fit, tapping FIN opens the dedicated conversation.
+            // The shell's content observer and overlay are full-size siblings.
+            const origin = Offset.zero;
+            final occupied = widget.contentBounds?.value ?? const <Rect>[];
+            double? freeTop(
+              double x,
+              double width,
+              double height,
+              double preferred,
+            ) {
+              final maxTop = region.bottom - height;
+              final candidates =
+                  <double>[
+                    preferred,
+                    region.top,
+                    maxTop,
+                    for (final rect in occupied) rect.bottom - origin.dy,
+                  ]..sort(
+                    (a, b) =>
+                        (a - preferred).abs().compareTo((b - preferred).abs()),
+                  );
+              for (final top in candidates) {
+                if (top < region.top || top > maxTop) continue;
+                final footprint = Rect.fromLTWH(
+                  x,
+                  top,
+                  width,
+                  height,
+                ).shift(origin);
+                if (!occupied.any(footprint.overlaps)) return top;
+              }
+              return null;
+            }
+
+            final safeY = freeTop(
+              isLeft ? region.left : region.right - peekWindow,
+              peekWindow,
+              _peekVisualHeight,
+              y,
+            );
+            if (safeY == null) return const SizedBox.shrink();
+            y = safeY;
+            final safePanelTop = freeTop(
+              isLeft ? region.left + 8 : region.right - panelWidth - 8,
+              panelWidth,
+              panelHeight,
+              panelTop.toDouble(),
+            );
+            _panelFits = safePanelTop != null;
+            if (safePanelTop != null) panelTop = safePanelTop;
+            if (expanded && !_panelFits) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && controller.isPeekExpanded) {
+                  controller.setPeekExpanded(false);
+                  context.go('/analytics');
+                }
+              });
+              return const SizedBox.shrink();
+            }
             return Stack(
               fit: StackFit.expand,
               children: [

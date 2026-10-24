@@ -389,7 +389,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.textContaining("Private & Read-Only: Analyzes only saved records"),
+        find.textContaining("Backend analysis of your authorized saved records"),
         findsOneWidget,
       );
       expect(find.text("Suggested Questions"), findsOneWidget);

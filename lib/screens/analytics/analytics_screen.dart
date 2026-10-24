@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_dimensions.dart';
 import '../../core/constants/fin_constants.dart';
+import '../../core/horizon/horizon.dart';
 import '../../models/analytics_model.dart';
 import '../../providers/analytics_provider.dart';
 import 'widgets/alert_preferences_sheet.dart';
@@ -361,7 +362,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   colors,
                   Icons.lock_outline,
                   "Deterministic backend calculations",
-                  "Calculations use exact mathematical formulas and verified templates. External services never receive financial data.",
+                  "FIN processes authorized saved records and questions on the FinTrack backend using deterministic calculations. Outbound guards block financial data from external model providers.",
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -618,6 +619,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
+    final tokens = HorizonThemeTokens.of(context);
     final provider = context.watch<AnalyticsProvider>();
 
     final hasConversation =
@@ -630,12 +632,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ? Offset.zero
           : const Offset(double.maxFinite, 0),
       child: Scaffold(
-        backgroundColor: colors.background,
+        backgroundColor: tokens.canvas,
         appBar: AppBar(
-          backgroundColor: colors.surface,
+          backgroundColor: tokens.canvas,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
           title: Row(
             children: [
-              Icon(Icons.auto_awesome_rounded, color: colors.primary, size: 20),
+              Icon(Icons.auto_awesome_rounded, color: tokens.ionCyan, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
@@ -646,21 +650,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       FinIdentity.screenTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: colors.textPrimary,
+                      style: HorizonTypography.headlineSm.copyWith(
+                        color: tokens.textHigh,
                         fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                        letterSpacing: 0.4,
+                        letterSpacing: -0.2,
                       ),
                     ),
                     Text(
                       FinIdentity.tagline,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: colors.textSecondary,
-                        fontWeight: FontWeight.w500,
+                      style: HorizonTypography.labelCaps.copyWith(
+                        color: tokens.textMedium,
+                        letterSpacing: 0.8,
                       ),
                     ),
                   ],
@@ -1200,9 +1202,99 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             animationActive: _isFinHeroVisible,
             onTap: () => CompanionPreferencesSheet.show(context),
           );
+          final characterArena = Stack(
+            alignment: Alignment.center,
+            children: [
+              // Atmospheric Ambient Core Glow
+              Container(
+                width: characterSize * 0.95,
+                height: characterSize * 0.95,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFF75DEED).withValues(alpha: colors.isDark ? 0.20 : 0.12),
+                      const Color(0xFF6CD6E4).withValues(alpha: colors.isDark ? 0.08 : 0.04),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.55, 1.0],
+                  ),
+                ),
+              ),
+              // Pedestal Projection Ring
+              Positioned(
+                bottom: 2,
+                child: Container(
+                  width: characterSize * 0.58,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.elliptical(characterSize * 0.58, 16)),
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF75DEED).withValues(alpha: colors.isDark ? 0.35 : 0.22),
+                        const Color(0xFF171C26).withValues(alpha: 0.12),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.6, 1.0],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF75DEED).withValues(alpha: colors.isDark ? 0.22 : 0.12),
+                        blurRadius: 14,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // 2.5D Articulated Character
+              character,
+              // Status Indicator Ring
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: colors.isDark
+                        ? const Color(0xFF303540).withValues(alpha: 0.85)
+                        : Colors.white.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF75DEED).withValues(alpha: 0.4),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.sensors,
+                        size: 11,
+                        color: Color(0xFF75DEED),
+                      ),
+                      const SizedBox(width: 4),
+                      ListenableBuilder(
+                        listenable: _finController,
+                        builder: (context, _) => Text(
+                          _finController.state.name.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.8,
+                            color: Color(0xFF75DEED),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
           if (stacked) {
             return Column(
-              children: [character, const SizedBox(height: 12), introduction],
+              children: [characterArena, const SizedBox(height: 12), introduction],
             );
           }
           return Row(
@@ -1210,7 +1302,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               Expanded(child: introduction),
               const SizedBox(width: 8),
               Flexible(
-                child: FittedBox(fit: BoxFit.scaleDown, child: character),
+                child: FittedBox(fit: BoxFit.scaleDown, child: characterArena),
               ),
             ],
           );
@@ -1262,7 +1354,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              "Private & Read-Only: Analyzes only saved records",
+              "Backend analysis of your authorized saved records",
               style: TextStyle(
                 fontSize: 11,
                 color: colors.textSecondary,
@@ -1279,7 +1371,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(
-              "View Guarantee",
+              "Privacy details",
               style: TextStyle(
                 fontSize: 11,
                 color: colors.primary,

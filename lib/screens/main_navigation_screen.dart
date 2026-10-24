@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../core/constants/app_colors.dart';
+import '../core/horizon/horizon.dart';
 import '../core/services/connectivity_service.dart';
 import '../core/widgets/floating_bottom_navigation.dart';
 import '../providers/dashboard_provider.dart';
@@ -14,6 +15,7 @@ import '../providers/account_provider.dart';
 import '../providers/goal_provider.dart';
 import '../providers/analytics_provider.dart';
 import 'analytics/widgets/global_fin_overlay.dart';
+import 'analytics/widgets/fin_content_bounds.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   final Widget child;
@@ -27,6 +29,7 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   StreamSubscription<bool>? _connectivitySubscription;
   bool _wasOffline = false;
+  final _finContentBounds = ValueNotifier<List<Rect>>([Rect.largest]);
 
   @override
   void initState() {
@@ -50,6 +53,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   void dispose() {
+    _finContentBounds.dispose();
     _connectivitySubscription?.cancel();
     super.dispose();
   }
@@ -86,7 +90,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (location.startsWith('/dashboard')) return 0;
     // `/transactions` remains a compatible deep link to transaction
     // management. It belongs to the Ledger destination in the new IA.
-    if (location.startsWith('/ledger') || location.startsWith('/transactions')) {
+    if (location.startsWith('/ledger') ||
+        location.startsWith('/transactions')) {
       return 1;
     }
     if (location.startsWith('/budgets')) return 2;
@@ -123,7 +128,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _getSelectedIndex(context);
-    final theme = Theme.of(context);
+    final horizon = HorizonThemeTokens.of(context);
     final colors = AppColors.of(context);
     final media = MediaQuery.of(context);
     final isTablet = media.size.width >= 600 && media.size.height >= 520;
@@ -138,10 +143,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             selectedIndex: selectedIndex,
             onDestinationSelected: (index) => _onItemTapped(index, context),
             labelType: NavigationRailLabelType.all,
-            backgroundColor: theme.colorScheme.surface,
-            indicatorColor: theme.colorScheme.primary.withValues(alpha: 0.14),
+            backgroundColor: horizon.surface1,
+            indicatorColor: horizon.ionCyan.withValues(alpha: 0.14),
             selectedLabelTextStyle: TextStyle(
-              color: theme.colorScheme.primary,
+              color: horizon.ionCyan,
               fontWeight: FontWeight.bold,
               fontSize: 11,
             ),
@@ -154,7 +159,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 icon: const Icon(Icons.grid_view_rounded),
                 selectedIcon: Icon(
                   Icons.grid_view_rounded,
-                  color: theme.colorScheme.primary,
+                  color: horizon.ionCyan,
                 ),
                 label: const Text('Home'),
               ),
@@ -162,7 +167,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 icon: const Icon(Icons.receipt_long_rounded),
                 selectedIcon: Icon(
                   Icons.receipt_long_rounded,
-                  color: theme.colorScheme.primary,
+                  color: horizon.ionCyan,
                 ),
                 label: const Text('Ledger'),
               ),
@@ -170,7 +175,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 icon: const Icon(Icons.account_balance_wallet_rounded),
                 selectedIcon: Icon(
                   Icons.account_balance_wallet_rounded,
-                  color: theme.colorScheme.primary,
+                  color: horizon.ionCyan,
                 ),
                 label: const Text('Budgets'),
               ),
@@ -178,7 +183,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 icon: const Icon(Icons.bar_chart_rounded),
                 selectedIcon: Icon(
                   Icons.bar_chart_rounded,
-                  color: theme.colorScheme.primary,
+                  color: horizon.ionCyan,
                 ),
                 label: const Text('Reports'),
               ),
@@ -186,7 +191,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 icon: const Icon(Icons.person_rounded),
                 selectedIcon: Icon(
                   Icons.person_rounded,
-                  color: theme.colorScheme.primary,
+                  color: horizon.ionCyan,
                 ),
                 label: const Text('Profile'),
               ),
@@ -229,52 +234,57 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           fit: StackFit.expand,
           children: [
             Positioned.fill(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  StreamBuilder<bool>(
-                    stream: ConnectivityService.connectionStream,
-                    initialData: ConnectivityService.isOnline,
-                    builder: (context, snapshot) {
-                      final isOnline = snapshot.data ?? true;
-                      if (isOnline) return const SizedBox.shrink();
-                      return Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 7,
-                          horizontal: 12,
-                        ),
-                        color: AppColors.danger.withValues(alpha: .94),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.wifi_off_rounded,
-                              color: Colors.white,
-                              size: 14,
-                            ),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                "Offline · Showing saved data. Changes need a connection.",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
+              child: FinContentBounds(
+                bounds: _finContentBounds,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    StreamBuilder<bool>(
+                      stream: ConnectivityService.connectionStream,
+                      initialData: ConnectivityService.isOnline,
+                      builder: (context, snapshot) {
+                        final isOnline = snapshot.data ?? true;
+                        if (isOnline) return const SizedBox.shrink();
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 7,
+                            horizontal: 12,
+                          ),
+                          color: AppColors.danger.withValues(alpha: .94),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.wifi_off_rounded,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  "Offline · Showing saved data. Changes need a connection.",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  Expanded(child: mainLayout),
-                ],
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    Expanded(child: mainLayout),
+                  ],
+                ),
               ),
             ),
-            const Positioned.fill(child: GlobalFinOverlay()),
+            Positioned.fill(
+              child: GlobalFinOverlay(contentBounds: _finContentBounds),
+            ),
           ],
         ),
         // The shell reserves this height, so scrollable screen content never
