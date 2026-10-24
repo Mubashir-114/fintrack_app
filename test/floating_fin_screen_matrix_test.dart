@@ -1,3 +1,6 @@
+import 'package:frontend/screens/profile/fin_settings_screen.dart';
+import 'package:frontend/screens/money_storage/money_storage_screen.dart';
+import 'package:frontend/screens/transactions/sms_import_screen.dart';
 import 'package:frontend/screens/profile/privacy_screen.dart';
 import 'package:frontend/screens/profile/delete_account_screen.dart';
 import 'dart:io';
@@ -114,6 +117,9 @@ class _Reports extends ReportProvider {
 
 const _screens = <String, Widget>{
   '/dashboard': DashboardScreen(),
+  '/profile/fin': FinSettingsScreen(),
+  '/money-storage': MoneyStorageScreen(),
+  '/sms-import': SmsImportScreen(),
   '/transactions': TransactionsListScreen(),
   '/ledger': LedgerScreen(),
   '/accounts': AccountsListScreen(),
@@ -161,6 +167,9 @@ void main() {
       }
     }
     await loader.load();
+    for (final entry in {'Space Grotesk': 'SpaceGrotesk', 'Plus Jakarta Sans': 'PlusJakartaSans'}.entries) {
+      await (FontLoader(entry.key)..addFont(rootBundle.load('assets/fonts/${entry.value}.ttf'))).load();
+    }
     await (FontLoader(
       'MaterialIcons',
     )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
@@ -287,6 +296,10 @@ void main() {
             );
             router.go(path);
             await tester.pumpAndSettle();
+            if (find.text('Not now').evaluate().isNotEmpty) {
+              await tester.tap(find.text('Not now'));
+              await tester.pumpAndSettle();
+            }
             final page = find.byKey(const ValueKey('page_bounds'));
             final original = tester.getRect(page);
             expect(original.right, width, reason: '$path right edge');
