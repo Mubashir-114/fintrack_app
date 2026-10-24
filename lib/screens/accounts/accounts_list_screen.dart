@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_dimensions.dart';
 import '../../providers/account_provider.dart';
+import '../../core/horizon/horizon.dart';
 import 'widgets/account_card.dart';
 import 'widgets/account_type_summary.dart';
 
@@ -46,22 +47,33 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = AppColors.of(context);
+    final tokens = HorizonThemeTokens.of(context);
 
     return Scaffold(
+      backgroundColor: tokens.canvas,
       appBar: AppBar(
-        title: const Text('Accounts & Wallets'),
+        backgroundColor: tokens.canvas,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Accounts & Wallets',
+          style: HorizonTypography.headlineSm.copyWith(
+            fontWeight: FontWeight.w700,
+            color: tokens.textHigh,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.swap_horiz_rounded),
+            icon: Icon(Icons.swap_horiz_rounded, color: tokens.textMedium, size: 22),
             tooltip: 'Transfer',
             onPressed: () => context.push('/accounts/transfer'),
           ),
           IconButton(
-            icon: const Icon(Icons.add_rounded),
+            icon: Icon(Icons.add_rounded, color: tokens.textHigh, size: 22),
             tooltip: 'Add Account',
             onPressed: () => context.push('/accounts/add'),
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: Consumer<AccountProvider>(
@@ -86,7 +98,8 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
               activeAccounts.where((a) => !a.isAsset).toList();
 
           return RefreshIndicator(
-            color: tokens.primary,
+            color: tokens.ionCyan,
+            backgroundColor: tokens.surface2,
             onRefresh: provider.refresh,
             child: CustomScrollView(
               controller: _scrollController,
@@ -106,7 +119,7 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
                   _SectionHeader(
                     label: 'Asset Accounts',
                     count: assets.length,
-                    color: tokens.success,
+                    color: tokens.surplus,
                   ),
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
@@ -129,7 +142,7 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
                   _SectionHeader(
                     label: 'Credit Cards',
                     count: liabilities.length,
-                    color: tokens.danger,
+                    color: tokens.outflow,
                   ),
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
@@ -154,7 +167,7 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Center(
                         child: CircularProgressIndicator(
-                          color: tokens.primary,
+                          color: tokens.ionCyan,
                           strokeWidth: 2,
                         ),
                       ),
@@ -163,7 +176,7 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
 
                 // Bottom padding
                 const SliverToBoxAdapter(
-                  child: SizedBox(height: 24),
+                  child: SizedBox(height: HorizonDimensions.dockClearance),
                 ),
               ],
             ),
@@ -173,8 +186,20 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'add_account_fab',
         onPressed: () => context.push('/accounts/add'),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Add Account'),
+        backgroundColor: tokens.ionCyan,
+        foregroundColor: tokens.isDark ? Colors.black : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: HorizonDimensions.borderDefault,
+        ),
+        icon: const Icon(Icons.add_rounded, size: 22),
+        label: Text(
+          'Add Account',
+          style: HorizonTypography.labelCaps.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
+            color: tokens.isDark ? Colors.black : Colors.white,
+          ),
+        ),
       ),
     );
   }

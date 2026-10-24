@@ -13,6 +13,7 @@ import '../../providers/account_provider.dart';
 import 'widgets/account_icon.dart';
 import 'widgets/money_text.dart';
 import 'widgets/credit_card_components.dart';
+import '../../core/horizon/horizon.dart';
 
 class AccountDetailScreen extends StatefulWidget {
   final int accountId;
@@ -349,31 +350,55 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final tokens = AppColors.of(context);
+    final horizonTokens = HorizonThemeTokens.of(context);
 
     if (_isLoading) {
       return Scaffold(
-        body: Center(child: CircularProgressIndicator(color: tokens.primary)),
+        backgroundColor: horizonTokens.canvas,
+        body: Center(child: CircularProgressIndicator(color: horizonTokens.ionCyan)),
       );
     }
     if (_error != null || _account == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Account Details')),
+        backgroundColor: horizonTokens.canvas,
+        appBar: AppBar(
+          backgroundColor: horizonTokens.canvas,
+          title: Text(
+            'Account Details',
+            style: HorizonTypography.headlineSm.copyWith(
+              fontWeight: FontWeight.w700,
+              color: horizonTokens.textHigh,
+            ),
+          ),
+        ),
         body: Center(
-          child: Text(_error ?? 'Account not found',
-              style: TextStyle(color: tokens.danger)),
+          child: Text(
+            _error ?? 'Account not found',
+            style: TextStyle(color: horizonTokens.outflow),
+          ),
         ),
       );
     }
 
     final account = _account!;
     final isCredit = account.type == 'credit_card';
-    final accentColor = isCredit ? tokens.danger : tokens.primary;
+    final accentColor = isCredit ? horizonTokens.outflow : horizonTokens.ionCyan;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: horizonTokens.canvas,
       appBar: AppBar(
-        title: const Text('Account Details'),
+        backgroundColor: horizonTokens.canvas,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Account Details',
+          style: HorizonTypography.headlineSm.copyWith(
+            fontWeight: FontWeight.w700,
+            color: horizonTokens.textHigh,
+          ),
+        ),
         actions: [
           if (account.isActive)
             PopupMenuButton<String>(
@@ -1114,4 +1139,3 @@ class _ActivityFeedCard extends StatelessWidget {
     );
   }
 }
-
