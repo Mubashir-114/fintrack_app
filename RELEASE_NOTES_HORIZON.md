@@ -1,0 +1,13 @@
+# HORIZON upgrade — release review
+
+This upgrade introduces the shared HORIZON design system, bundled licensed typography, six curated themes, responsive navigation, redesigned authentication/splash, Dashboard, Ledger, budgets/reports, account storage, profile/security, FIN and SMS review screens. Existing saved-record APIs and action confirmations remain in use.
+
+The pre-commit review removed BOM/newline-only noise and corrected unsupported claims without redesigning the UI. The OTP preview now explicitly says email-code verification is unavailable, accepts no code, sends no message and returns to password sign-in. Production email verification requires a real backend challenge/delivery flow. FIN settings describes backend processing rather than local-enclave protection. Money Storage shows recorded account status rather than fabricated autopay, yield, synchronization or OpenBanking guarantees; missing monthly income defaults to zero.
+
+SMS detection can route unmatched candidates to the user's designated active default account, while a unique masked-account match takes priority. Detection still creates unconfirmed suggestions; ledger writes require existing confirmation endpoints and ownership checks. The frontend supplies the selected default through existing single/batch confirmation override fields. No production database migration or new environment variable is required: `accounts.is_default` is part of the existing account schema.
+
+Backend release risk was reviewed conservatively as a possible Render automatic deployment. The GitHub integration exposes no hook, commit check or deployment record establishing Render's auto-deploy state; its dashboard toggle could not be verified in this session. The patch changes no endpoint contract, startup task, dependency, infrastructure or migration. No production records or infrastructure are changed by this Git release task.
+
+`FIN_ACCEPTANCE.md` records the preceding headless character comparison and signed-APK verification. Its `build/` screenshots, logs and binary paths are local artifacts deliberately excluded from Git. The extracted Stitch reference archive is also outside the repositories. Later HORIZON/theme and release-review fixes supersede those full-screen screenshots and APK source state; the earlier APK is not claimed to contain these later corrections. Physical-device installation, animation/touch performance and fold/manufacturer behavior remain unverified.
+
+Final commit hashes, complete verification results, remote HEAD checks and excluded artifacts are recorded in the local Git release report after verification and pushes complete. No credentials, generated APKs, caches or temporary logs belong in this release's commits.
