@@ -129,10 +129,10 @@ class BudgetHeroOverview extends StatelessWidget {
                 // Central Composition: Circular Ring Gauge + Key Financial Metrics
                 Row(
                   children: [
-                    // Animated Circular Progress Ring
+                    // Animated Circular Progress Ring with 80% Threshold Marker
                     SizedBox(
-                      width: 104,
-                      height: 104,
+                      width: 108,
+                      height: 108,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
@@ -147,11 +147,11 @@ class BudgetHeroOverview extends StatelessWidget {
                             curve: AppMotion.enter,
                             builder: (context, animatedVal, _) {
                               return CustomPaint(
-                                size: const Size(104, 104),
+                                size: const Size(108, 108),
                                 painter: _BudgetGaugePainter(
                                   progress: animatedVal,
                                   trackColor: colors.divider.withValues(
-                                    alpha: isDark ? 0.4 : 0.6,
+                                    alpha: isDark ? 0.35 : 0.5,
                                   ),
                                   progressColor: statusColor,
                                   primaryColor: colors.primary,
@@ -175,10 +175,11 @@ class BudgetHeroOverview extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                "used",
+                                "CAP",
                                 style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
                                   color: colors.textSecondary,
                                 ),
                               ),
@@ -203,7 +204,7 @@ class BudgetHeroOverview extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
 
-                          // Spent Amount
+                          // Spent Amount / Burned Volume
                           _FinancialMetricRow(
                             label: "Spent:",
                             value: currency.format(spentNum),
@@ -225,9 +226,9 @@ class BudgetHeroOverview extends StatelessWidget {
                                 : colors.danger,
                             isBold: true,
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
 
-                          // Hidden/subtle helper for exact test matching if needed
+                          // Subtle helper for exact test matching
                           Text(
                             "${overall.utilizationPercentage}% used",
                             style: TextStyle(
@@ -240,6 +241,99 @@ class BudgetHeroOverview extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+
+                const SizedBox(height: 14),
+
+                // Velocity Orbit Bar
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: colors.elevated.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                    border: Border.all(color: colors.cardBorder),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.speed_rounded, size: 14, color: statusColor),
+                              const SizedBox(width: 5),
+                              Text(
+                                "VELOCITY ORBIT",
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                  color: colors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              "PACE: ${isExceeded ? 'CRITICAL' : isApproaching ? 'ELEVATED' : 'NOMINAL'}",
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: statusColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      // Linear track with 80% threshold marker
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final barWidth = constraints.maxWidth;
+                          return Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                height: 6,
+                                width: barWidth,
+                                decoration: BoxDecoration(
+                                  color: colors.divider.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                              Container(
+                                height: 6,
+                                width: barWidth * progressRatio.clamp(0.0, 1.0),
+                                decoration: BoxDecoration(
+                                  color: statusColor,
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                              // 80% threshold line marker
+                              Positioned(
+                                left: barWidth * 0.8 - 1,
+                                top: -2,
+                                child: Container(
+                                  width: 2,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: colors.warning,
+                                    borderRadius: BorderRadius.circular(1),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
 
                 const SizedBox(height: 16),
@@ -396,6 +490,17 @@ class _BudgetGaugePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     canvas.drawCircle(center, radius, trackPaint);
+
+    // 80% Threshold Marker Tick on Track
+    final thresholdAngle = -math.pi / 2 + (2 * math.pi * 0.8);
+    final markerPaint = Paint()
+      ..color = const Color(0xFFFFB020)
+      ..style = PaintingStyle.fill;
+    final markerOffset = Offset(
+      center.dx + radius * math.cos(thresholdAngle),
+      center.dy + radius * math.sin(thresholdAngle),
+    );
+    canvas.drawCircle(markerOffset, 3.0, markerPaint);
 
     if (progress > 0) {
       // Active Progress Arc

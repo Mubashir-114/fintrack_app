@@ -13,6 +13,7 @@ import '../../core/widgets/custom_toast.dart';
 import '../../core/widgets/skeleton_loader.dart';
 import '../../providers/currency_provider.dart';
 import '../../providers/report_provider.dart';
+import '../../core/horizon/horizon.dart';
 import 'widgets/cashflow_tab_view.dart';
 import 'widgets/categories_tab_view.dart';
 import 'widgets/reports_date_range_bar.dart';
@@ -220,15 +221,59 @@ class _ReportsScreenState extends State<ReportsScreen>
   Widget build(BuildContext context) {
     final provider = context.watch<ReportProvider>();
     final colors = AppColors.of(context);
+    final tokens = HorizonThemeTokens.of(context);
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: tokens.canvas,
       appBar: AppBar(
-        title: const Text(
-          "Financial Reports",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 5,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: tokens.ionCyan,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: tokens.ionCyan.withValues(alpha: 0.6),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 5),
+                Flexible(
+                  child: Text(
+                    "INTELLIGENCE",
+                    style: HorizonTypography.labelCaps.copyWith(
+                      color: tokens.ionCyan,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 9,
+                      letterSpacing: 0.08 * 9,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              "Analytics Deck",
+              style: HorizonTypography.headlineSm.copyWith(
+                fontWeight: FontWeight.w700,
+                color: tokens.textHigh,
+              ),
+            ),
+          ],
         ),
-        backgroundColor: colors.background,
+        backgroundColor: tokens.canvas,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         actions: [
           // Export Popup Menu (PDF & CSV)
@@ -239,15 +284,15 @@ class _ReportsScreenState extends State<ReportsScreen>
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: colors.primary,
+                      color: tokens.ionCyan,
                     ),
                   )
-                : Icon(Icons.download_rounded, color: colors.textPrimary),
+                : Icon(Icons.download_rounded, color: tokens.textMedium),
             tooltip: "Export report",
-            color: colors.surface,
+            color: tokens.surface2,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: colors.cardBorder),
+              borderRadius: HorizonDimensions.borderDefault,
+              side: BorderSide(color: tokens.rimNeutral),
             ),
             onSelected: (action) {
               if (action == 'pdf') {
@@ -263,16 +308,15 @@ class _ReportsScreenState extends State<ReportsScreen>
                   children: [
                     Icon(
                       Icons.picture_as_pdf_rounded,
-                      color: colors.danger,
+                      color: tokens.outflow,
                       size: 18,
                     ),
                     const SizedBox(width: 10),
                     Text(
                       'Export PDF',
-                      style: TextStyle(
-                        fontSize: 13,
+                      style: HorizonTypography.bodySm.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: colors.textPrimary,
+                        color: tokens.textHigh,
                       ),
                     ),
                   ],
@@ -284,16 +328,15 @@ class _ReportsScreenState extends State<ReportsScreen>
                   children: [
                     Icon(
                       Icons.table_chart_rounded,
-                      color: colors.success,
+                      color: tokens.surplus,
                       size: 18,
                     ),
                     const SizedBox(width: 10),
                     Text(
                       'Export CSV',
-                      style: TextStyle(
-                        fontSize: 13,
+                      style: HorizonTypography.bodySm.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: colors.textPrimary,
+                        color: tokens.textHigh,
                       ),
                     ),
                   ],
@@ -318,31 +361,31 @@ class _ReportsScreenState extends State<ReportsScreen>
               // Refined Modern Tab Bar
               Container(
                 margin: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.md,
+                  horizontal: HorizonDimensions.marginMobile,
                 ),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: colors.divider.withValues(alpha: 0.5),
+                      color: tokens.rimNeutral,
                       width: 1,
                     ),
                   ),
                 ),
                 child: TabBar(
                   controller: _tabController,
-                  indicatorColor: colors.primary,
+                  indicatorColor: tokens.ionCyan,
                   indicatorWeight: 2.5,
                   indicatorSize: TabBarIndicatorSize.tab,
-                  labelColor: colors.primary,
-                  unselectedLabelColor: colors.textSecondary,
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    letterSpacing: -0.1,
+                  labelColor: tokens.ionCyan,
+                  unselectedLabelColor: tokens.textMedium,
+                  labelStyle: HorizonTypography.labelCaps.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    letterSpacing: 0.04 * 12,
                   ),
-                  unselectedLabelStyle: const TextStyle(
+                  unselectedLabelStyle: HorizonTypography.labelCaps.copyWith(
                     fontWeight: FontWeight.w500,
-                    fontSize: 13,
+                    fontSize: 12,
                   ),
                   tabs: const [
                     Tab(text: "Trends"),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../providers/budget_provider.dart';
 import '../../providers/report_provider.dart';
@@ -8,8 +9,9 @@ import '../../providers/currency_provider.dart';
 import '../../models/budget_model.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_dimensions.dart';
-import '../../core/widgets/skeleton_loader.dart';
 import '../../core/widgets/custom_toast.dart';
+import '../../core/horizon/horizon.dart';
+import '../analytics/widgets/fin_character.dart';
 import 'widgets/budget_month_selector.dart';
 import 'widgets/budget_hero_overview.dart';
 import 'widgets/category_budget_card.dart';
@@ -317,8 +319,8 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<BudgetProvider>();
     final currency = context.watch<CurrencyProvider>();
-    final theme = Theme.of(context);
     final colors = AppColors.of(context);
+    final tokens = HorizonThemeTokens.of(context);
     final selectedMonthName =
         DateFormat('MMMM').format(DateTime(2026, provider.selectedMonth));
 
@@ -390,49 +392,119 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
             : null);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: tokens.canvas,
       appBar: AppBar(
-        title: const Text(
+        backgroundColor: tokens.canvas,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
           "Budgets",
-          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: -0.3),
+          style: HorizonTypography.headlineSm.copyWith(
+            fontWeight: FontWeight.w700,
+            color: tokens.textHigh,
+          ),
         ),
         actions: [
           IconButton(
             tooltip: "Smart Suggestions",
-            icon: const Icon(Icons.lightbulb_outline_rounded),
+            icon: Icon(Icons.lightbulb_outline_rounded, color: tokens.textMedium, size: 20),
             onPressed: _showSuggestionsSheet,
           ),
           IconButton(
             tooltip: "Budget History",
-            icon: const Icon(Icons.history_rounded),
+            icon: Icon(Icons.history_rounded, color: tokens.textMedium, size: 20),
             onPressed: _showHistorySheet,
           ),
           IconButton(
             tooltip: "Select Month",
-            icon: const Icon(Icons.calendar_month_rounded),
+            icon: Icon(Icons.calendar_month_rounded, color: tokens.textMedium, size: 20),
             onPressed: _selectMonthYear,
           ),
-          AppDimensions.wSM,
+          const SizedBox(width: 4),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () => provider.loadAllBudgetData(forceRefresh: true),
-        color: colors.primary,
-        backgroundColor: colors.surface,
+        color: tokens.ionCyan,
+        backgroundColor: tokens.surface2,
         child: provider.isLoading && !hasBudgets && progress == null
             ? ListView(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.md,
-                  vertical: AppDimensions.sm,
+                  horizontal: HorizonDimensions.marginMobile,
+                  vertical: 8,
                 ),
-                children: List.generate(4, (index) => SkeletonLoader.card(height: 120)),
+                children: const [
+                  HorizonSkeletonTelemetryCard(),
+                  SizedBox(height: 12),
+                  HorizonSkeleton(width: double.infinity, height: 100),
+                  SizedBox(height: 12),
+                  HorizonSkeleton(width: double.infinity, height: 100),
+                ],
               )
             : ListView(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.md,
-                  vertical: AppDimensions.sm,
+                  horizontal: HorizonDimensions.marginMobile,
+                  vertical: 8,
                 ),
                 children: [
+                  // Telemetry Header Sub-bar
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2, bottom: 10),
+                    child: Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: tokens.ionCyan,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: tokens.ionCyan.withValues(alpha: 0.6),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              "FISCAL TELEMETRY",
+                              style: HorizonTypography.labelCaps.copyWith(
+                                color: tokens.ionCyan,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 10,
+                                letterSpacing: 0.08 * 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: tokens.surface2,
+                            borderRadius: HorizonDimensions.borderFull,
+                            border: Border.all(color: tokens.rimNeutral),
+                          ),
+                          child: Text(
+                            "REAL-TIME",
+                            style: HorizonTypography.labelCaps.copyWith(
+                              color: tokens.textMedium,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 9,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   // Compact Month & Year Selector Control
                   BudgetMonthSelector(
                     selectedMonth: provider.selectedMonth,
@@ -539,7 +611,7 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
                       ),
 
                     // Overall Monthly Budget Hero Overview
-                    if (overallModel != null && overallModel.hasBudgetsDefined)
+                    if (overallModel != null && overallModel.hasBudgetsDefined) ...[
                       BudgetHeroOverview(
                         overall: overallModel,
                         period: progress?.period ??
@@ -552,6 +624,91 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
                             ),
                         currency: currency,
                       ),
+                      const SizedBox(height: 12),
+
+                      // FIN Spending Telemetry Card
+                      HorizonSurface(
+                        tier: HorizonSurfaceTier.surface2,
+                        cornerAccentColor: tokens.luminousGold,
+                        padding: const EdgeInsets.all(14),
+                        onTap: () => context.push('/analytics'),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: tokens.surface1,
+                                borderRadius: HorizonDimensions.borderMD,
+                                border: Border.all(
+                                  color: tokens.luminousGold.withValues(alpha: 0.4),
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: const FinCharacter(size: 38),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "FIN // SPENDING TELEMETRY",
+                                        style: HorizonTypography.labelCaps.copyWith(
+                                          color: tokens.luminousGold,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                      Text(
+                                        "CYCLE D-${progress?.period.daysRemaining ?? 7}",
+                                        style: HorizonTypography.bodySm.copyWith(
+                                          color: tokens.textLow,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "Velocity is nominal at ${overallModel.utilizationPercentage}% consumption with ${progress?.period.daysRemaining ?? 7} days remaining. Fulfill remaining allocations to lock monthly savings target.",
+                                    style: HorizonTypography.bodySm.copyWith(
+                                      color: tokens.textHigh,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        "VIEW SIMULATION",
+                                        style: HorizonTypography.labelCaps.copyWith(
+                                          color: tokens.ionCyan,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Icon(
+                                        Icons.arrow_forward_rounded,
+                                        size: 12,
+                                        color: tokens.ionCyan,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
 
                     // In-App Alerts Banner
                     if (alerts != null && alerts.totalAlertsCount > 0)
@@ -608,7 +765,7 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
                             ),
                           ),
 
-                    const SizedBox(height: 80),
+                    const SizedBox(height: HorizonDimensions.dockClearance),
                   ] else ...[
                     // Engaging Empty State (No duplicate FAB is shown!)
                     BudgetEmptyState(
@@ -617,7 +774,7 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
                       onCreateBudget: () => _showAddEditSheet(),
                       onExploreSuggestions: _showSuggestionsSheet,
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: HorizonDimensions.dockClearance),
                   ],
                 ],
               ),
@@ -626,15 +783,20 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
       floatingActionButton: hasBudgets
           ? FloatingActionButton.extended(
               onPressed: () => _showAddEditSheet(),
-              backgroundColor: colors.primary,
-              foregroundColor: colors.isDark ? const Color(0xFF0B111A) : Colors.white,
+              backgroundColor: tokens.ionCyan,
+              foregroundColor: tokens.isDark ? Colors.black : Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
+                borderRadius: HorizonDimensions.borderDefault,
               ),
-              icon: const Icon(Icons.add_rounded, size: 22),
-              label: const Text(
+              icon: const Icon(Icons.add_rounded, size: 20),
+              label: Text(
                 "Add Budget",
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                style: HorizonTypography.labelCaps.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  letterSpacing: 0.08 * 11,
+                  color: tokens.isDark ? Colors.black : Colors.white,
+                ),
               ),
             )
           : null,
