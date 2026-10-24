@@ -19,6 +19,8 @@ import '../../core/constants/app_dimensions.dart';
 import '../../core/constants/app_motion.dart';
 import '../../core/widgets/skeleton_loader.dart';
 import '../../core/widgets/custom_toast.dart';
+import '../../core/horizon/horizon.dart';
+import '../analytics/widgets/fin_character.dart';
 
 /// Formats transaction date into a friendly, localized human-readable label.
 String formatFriendlyDate(String dateStr) {
@@ -698,12 +700,20 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
         provider.searchQuery != null ||
         provider.selectedDateRange != null;
 
+    final tokens = HorizonThemeTokens.of(context);
+
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: tokens.canvas,
       appBar: AppBar(
-        title: const Text(
+        backgroundColor: tokens.canvas,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
           "Transactions",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: HorizonTypography.headlineSm.copyWith(
+            fontWeight: FontWeight.w700,
+            color: tokens.textHigh,
+          ),
         ),
         actions: [
           IconButton(
@@ -851,11 +861,20 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddEditSheet(),
+        backgroundColor: tokens.ionCyan,
+        foregroundColor: tokens.isDark ? Colors.black : Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
+          borderRadius: HorizonDimensions.borderDefault,
         ),
         icon: const Icon(Icons.add_rounded, size: 24),
-        label: const Text("Add", style: TextStyle(fontWeight: FontWeight.bold)),
+        label: Text(
+          "Add",
+          style: HorizonTypography.labelCaps.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
+            color: tokens.isDark ? Colors.black : Colors.white,
+          ),
+        ),
       ),
     );
   }
@@ -1130,11 +1149,13 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
 
     final flowColor = isExpense ? colors.danger : colors.success;
 
+    final tokens = HorizonThemeTokens.of(context);
+
     return Container(
       decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border(top: BorderSide(color: colors.cardBorder, width: 1.0)),
+        color: tokens.surface2,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: tokens.rimNeutral, width: 1.0)),
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -1700,6 +1721,60 @@ class _AddEditTransactionSheetState extends State<AddEditTransactionSheet> {
                       ),
                     ),
                     maxLines: 2,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // FIN Live Envelope Telemetry Audit Card
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: tokens.surface1,
+                      borderRadius: HorizonDimensions.borderDefault,
+                      border: Border.all(color: tokens.rimNeutral),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: tokens.surface2,
+                            borderRadius: HorizonDimensions.borderSM,
+                            border: Border.all(
+                              color: tokens.ionCyan.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: const FinCharacter(size: 28),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "FIN // ENVELOPE AUDIT",
+                                style: HorizonTypography.labelCaps.copyWith(
+                                  color: tokens.luminousGold,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isExpense
+                                    ? "Review this expense and its account before saving."
+                                    : "Review this income and its account before saving.",
+                                style: HorizonTypography.bodySm.copyWith(
+                                  color: tokens.textMedium,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 20),
 
