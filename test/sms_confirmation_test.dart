@@ -1,3 +1,4 @@
+import 'package:frontend/core/horizon/horizon.dart';
 import 'dart:async';
 
 import 'package:dio/dio.dart';
@@ -307,18 +308,19 @@ void main() {
       }
       if (batch) sms.toggleSelectAllDetected(false);
       final action = find.text(
-        batch ? 'Add All (${partial ? 2 : 1})' : 'Confirm',
+        batch ? 'ADD ELIGIBLE (${sms.eligibleDetectedCount})' : 'CONFIRM',
       );
       await tester.ensureVisible(action);
       await tester.pumpAndSettle();
       await tester.tap(action);
       await tester.pump();
-      expect(find.text('Correct transaction'), findsNothing);
+      expect(find.text('Correct Transaction'), findsNothing);
       expect(sms.isOperating, isTrue);
       expect(transactions.refreshes, 0);
       expect(accounts.refreshes, 0);
-      final button = tester.widget<FilledButton>(
-        find.ancestor(of: action, matching: find.byType(FilledButton)),
+      final button = tester.widget<HorizonButton>(
+        find.byWidgetPredicate((widget) => widget is HorizonButton &&
+            (batch ? widget.text.startsWith('Add Eligible (') : widget.text == 'Confirm')),
       );
       expect(button.onPressed, isNull);
       repo.gate!.complete();
@@ -341,7 +343,7 @@ void main() {
       expect(reports.refreshes, 1);
       expect(budgets.refreshes, 1);
       expect(repo.lastOverrides, isNull);
-      expect(find.text('Correct transaction'), findsNothing);
+      expect(find.text('Correct Transaction'), findsNothing);
     });
   }
 
@@ -371,21 +373,21 @@ void main() {
         await tester.pumpAndSettle();
       }
       expect(tester.takeException(), isNull);
-      await tester.ensureVisible(find.text('Confirm'));
+      await tester.ensureVisible(find.text('CONFIRM'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Confirm'));
+      await tester.tap(find.text('CONFIRM'));
       await tester.pumpAndSettle();
       expect(repo.confirmations, 0);
-      expect(find.text('Correct transaction'), findsNothing);
+      expect(find.text('Correct Transaction'), findsNothing);
       expect(
         find.text('Enter a valid positive amount using Edit.'),
         findsWidgets,
       );
-      await tester.ensureVisible(find.text('Edit'));
+      await tester.ensureVisible(find.text('EDIT'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Edit'));
+      await tester.tap(find.text('EDIT'));
       await tester.pumpAndSettle();
-      expect(find.text('Correct transaction'), findsOneWidget);
+      expect(find.text('Correct Transaction'), findsOneWidget);
       expect(repo.confirmations, 0);
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();

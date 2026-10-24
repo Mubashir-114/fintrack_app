@@ -59,18 +59,21 @@ class SmsProvider extends ChangeNotifier {
   Map<int, String> get confirmationErrors =>
       Map.unmodifiable(_confirmationErrors);
 
-  /// Validation never supplies fallback values. Ownership and ledger duplicates
-  /// are still checked by the confirmation endpoint.
+  /// Validation incorporates explicit manual account, confident suggested account,
+  /// or designated default account fallback before failing.
   String? confirmationIssue(
     DetectedTransactionModel tx, {
     bool checkDuplicates = true,
+    int? fallbackDefaultAccountId,
   }) {
     if (!['suggested', 'detected'].contains(tx.status) ||
         tx.confirmedTransactionId != null) {
       return 'This transaction is no longer pending.';
     }
-    if ((tx.accountId ?? tx.suggestedAccountId ?? 0) <= 0 ||
-        (tx.accountId == null && tx.isAccountAmbiguous)) {
+    final resolvedAccId = tx.accountId ??
+        (tx.isAccountAmbiguous ? null : tx.suggestedAccountId) ??
+        fallbackDefaultAccountId;
+    if ((resolvedAccId ?? 0) <= 0) {
       return 'Choose an unambiguous account using Edit.';
     }
     final amount = double.tryParse(tx.amount);
@@ -114,7 +117,12 @@ class SmsProvider extends ChangeNotifier {
                   other.id < tx.id &&
                   other.smsHash == tx.smsHash &&
                   tx.smsHash.isNotEmpty &&
-                  confirmationIssue(other, checkDuplicates: false) == null,
+                  confirmationIssue(
+                        other,
+                        checkDuplicates: false,
+                        fallbackDefaultAccountId: fallbackDefaultAccountId,
+                      ) ==
+                      null,
             ))) {
       return 'Duplicate SMS candidate; review or reject it.';
     }
@@ -123,6 +131,15 @@ class SmsProvider extends ChangeNotifier {
 
   int get eligibleDetectedCount =>
       _detectedTransactions.where((tx) => confirmationIssue(tx) == null).length;
+
+  int eligibleCount({int? fallbackDefaultAccountId}) => _detectedTransactions
+      .where((tx) =>
+          confirmationIssue(
+            tx,
+            fallbackDefaultAccountId: fallbackDefaultAccountId,
+          ) ==
+          null)
+      .length;
 
   PermissionStatus? _permissionStatus;
   SmsImportResponse? _importResponse;
@@ -298,13 +315,13 @@ class SmsProvider extends ChangeNotifier {
       if (sessionGeneration != _sessionGeneration) return;
       _permissionStatus = status;
 
-      if (!status.isGranted) {
+      if (!status.isGranted && !status.isLimited) {
         final requestStatus = await _smsService.requestPermission();
         if (sessionGeneration != _sessionGeneration) return;
         _permissionStatus = requestStatus;
 
-        if (!requestStatus.isGranted) {
-          if (requestStatus.isPermanentlyDenied) {
+        if (!requestStatus.isGranted && !requestStatus.isLimited) {
+          if (requestStatus.isPermanentlyDenied || requestStatus.isRestricted) {
             _errorMessage =
                 'SMS permission permanently denied. Please enable it in system settings.';
           } else {
@@ -318,6 +335,13 @@ class SmsProvider extends ChangeNotifier {
       // 2. Read messages from inbox
       final parsedList = await _smsService.readAndParseSms();
       if (sessionGeneration != _sessionGeneration) return;
+
+      if (parsedList.isEmpty) {
+        _errorMessage =
+            'No eligible financial transaction SMS found on this device.';
+        notifyListeners();
+        return;
+      }
 
       final unique = {for (final item in parsedList) item.smsHash: item};
       final candidates = unique.values.toList();
@@ -364,6 +388,7 @@ class SmsProvider extends ChangeNotifier {
   Future<bool> confirmDetected(
     int id, {
     Map<String, dynamic>? overrides,
+    int? fallbackDefaultAccountId,
   }) async {
     if (_isOperating) return false;
     final candidate = _detectedTransactions
@@ -371,7 +396,10 @@ class SmsProvider extends ChangeNotifier {
         .firstOrNull;
     final issue = candidate == null
         ? 'Transaction is no longer pending.'
-        : confirmationIssue(candidate);
+        : confirmationIssue(
+            candidate,
+            fallbackDefaultAccountId: fallbackDefaultAccountId,
+          );
     if (issue != null) {
       _detectedErrorMessage = issue;
       notifyListeners();
@@ -383,7 +411,17 @@ class SmsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final res = await _smartRepo.confirmTransaction(id, overrides: overrides);
+      final effectiveOverrides = Map<String, dynamic>.from(overrides ?? {});
+      if (!effectiveOverrides.containsKey('account_id') &&
+          candidate!.accountId == null &&
+          (candidate.suggestedAccountId == null || candidate.isAccountAmbiguous) &&
+          fallbackDefaultAccountId != null) {
+        effectiveOverrides['account_id'] = fallbackDefaultAccountId;
+      }
+      final res = await _smartRepo.confirmTransaction(
+        id,
+        overrides: effectiveOverrides.isNotEmpty ? effectiveOverrides : null,
+      );
       if (operationSession != _sessionGeneration) return false;
       if (res.success) {
         _archivedDetectedTransactions.add(
@@ -492,7 +530,10 @@ class SmsProvider extends ChangeNotifier {
   }
 
   /// Add All snapshots all pending items independently of checkbox selection.
-  Future<bool> batchConfirmSelected({bool all = false}) async {
+  Future<bool> batchConfirmSelected({
+    bool all = false,
+    int? fallbackDefaultAccountId,
+  }) async {
     if (_isOperating) return false;
     final candidates = _detectedTransactions
         .where((tx) => all || _selectedDetectedIds.contains(tx.id))
@@ -506,7 +547,10 @@ class SmsProvider extends ChangeNotifier {
     final eligible = <DetectedTransactionModel>[];
     var skipped = 0;
     for (final tx in candidates) {
-      final issue = confirmationIssue(tx);
+      final issue = confirmationIssue(
+        tx,
+        fallbackDefaultAccountId: fallbackDefaultAccountId,
+      );
       if (issue == null) {
         eligible.add(tx);
       } else if (issue.startsWith('Duplicate') ||
@@ -524,7 +568,13 @@ class SmsProvider extends ChangeNotifier {
         final chunk = eligible.skip(start).take(100).toList();
         try {
           final res = await _smartRepo.batchConfirm([
-            for (final tx in chunk) {'id': tx.id},
+            for (final tx in chunk) {
+              'id': tx.id,
+              if (tx.accountId == null &&
+                  (tx.suggestedAccountId == null || tx.isAccountAmbiguous) &&
+                  fallbackDefaultAccountId != null)
+                'account_id': fallbackDefaultAccountId,
+            },
           ]);
           if (operationSession != _sessionGeneration) return false;
           final confirmed = res.data['confirmed'] as List? ?? [];

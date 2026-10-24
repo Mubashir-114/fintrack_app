@@ -62,9 +62,10 @@ class ParsedSmsTransaction {
 }
 
 class SmsParser {
-  // Regex to extract amount. Supports e.g. Rs 500, Rs. 500, INR 1,500.00
+  // Regex to extract amount across domestic and international currencies:
+  // Rs, INR, ₹, $, USD, €, EUR, £, GBP, AED, CAD, AUD, SGD
   static final RegExp _amountRegex = RegExp(
-    r'(?:Rs\.?|INR|\u20b9)\s*([0-9,]+(?:\.[0-9]+)?)',
+    r'(?:(?:Rs\.?|INR|\u20b9|\$|USD|€|EUR|£|GBP|AED|CAD|AUD|SGD)\s*([0-9,]+(?:\.[0-9]+)?)|([0-9,]+(?:\.[0-9]+)?)\s*(?:Rs\.?|INR|\u20b9|\$|USD|€|EUR|£|GBP|AED|CAD|AUD|SGD))',
     caseSensitive: false,
   );
 
@@ -125,11 +126,11 @@ class SmsParser {
     }
 
     // 1. Basic check: Does it look like a transaction SMS?
-    // It must contain currency keywords (Rs, INR) AND action keywords (debited, credited, transferred, received, etc.)
-    final hasAmountMarker =
-        bodyLower.contains('rs') ||
-        bodyLower.contains('inr') ||
-        body.contains('\u20b9');
+    // It must contain currency keywords (Rs, INR, $, USD, EUR, etc.) AND action keywords (debited, credited, transferred, received, etc.)
+    final hasAmountMarker = RegExp(
+      r'(?:rs\.?|inr|\u20b9|\$|usd|€|eur|£|gbp|aed|cad|aud|sgd)',
+      caseSensitive: false,
+    ).hasMatch(bodyLower);
     if (!hasAmountMarker) return null;
 
     final isDebit = _debitKeywords.any((kw) => bodyLower.contains(kw));
@@ -141,7 +142,7 @@ class SmsParser {
     final amountMatch = _amountRegex.firstMatch(body);
     if (amountMatch == null) return null;
 
-    final rawAmount = amountMatch.group(1)?.replaceAll(',', '');
+    final rawAmount = (amountMatch.group(1) ?? amountMatch.group(2))?.replaceAll(',', '');
     if (rawAmount == null) return null;
 
     final amount = double.tryParse(rawAmount);

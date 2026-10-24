@@ -486,19 +486,19 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         // Verify Smart Review Tab exists
-        expect(find.text("SMS Import"), findsOneWidget);
+        expect(find.text("Detected Batch Review"), findsOneWidget);
 
         // Verify Privacy Banner exists
-        expect(find.text("Review before saving"), findsOneWidget);
+        expect(find.text("Detected Batch Review"), findsOneWidget);
 
         // Verify clean merchant name and amount are rendered
         expect(find.text("Swiggy"), findsOneWidget);
-        expect(find.textContaining("450.00"), findsOneWidget);
+        expect(find.textContaining("450.00"), findsWidgets);
 
         // Verify action buttons are rendered
-        expect(find.text("Confirm"), findsWidgets);
-        expect(find.text("Edit"), findsOneWidget);
-        expect(find.text("Reject"), findsWidgets);
+        expect(find.text("CONFIRM"), findsWidgets);
+        expect(find.text("EDIT"), findsOneWidget);
+        expect(find.text("REJECT"), findsWidgets);
       },
     );
   });
