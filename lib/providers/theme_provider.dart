@@ -13,7 +13,7 @@ class ThemeProvider extends ChangeNotifier {
   static const String prefThemeCollectionKey = 'fintrack_theme_collection';
   static const String prefDisplayModeKey = 'fintrack_display_mode';
 
-  ThemeCollection _collection = ThemeCollection.graphiteChampagne;
+  ThemeCollection _collection = ThemeCollection.midnightAurora;
   AppDisplayMode _displayMode = AppDisplayMode.system;
   bool _isInitialized = false;
 
@@ -40,7 +40,7 @@ class ThemeProvider extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // 1. Theme collection (Default is Graphite & Champagne for new installs)
+      // 1. Theme collection (Default is Midnight Aurora for new installs)
       final savedCollection = prefs.getString(prefThemeCollectionKey);
       if (savedCollection != null) {
         _collection = ThemeCollection.fromKey(savedCollection);
@@ -48,6 +48,8 @@ class ThemeProvider extends ChangeNotifier {
         final cached = await CacheService.get('theme_collection');
         if (cached is String) {
           _collection = ThemeCollection.fromKey(cached);
+        } else {
+          _collection = ThemeCollection.midnightAurora;
         }
       }
 

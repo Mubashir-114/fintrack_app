@@ -17,9 +17,12 @@ class LivingWallet extends StatefulWidget {
   @visibleForTesting
   static Color brandAccentFor(ThemeCollection collection) =>
       switch (collection) {
-        ThemeCollection.graphiteChampagne => const Color(0xFFD6A668),
+        ThemeCollection.midnightAurora => const Color(0xFF75DEED),
         ThemeCollection.obsidianJade => const Color(0xFF38D5B0),
+        ThemeCollection.graphiteChampagne => const Color(0xFFD6A668),
         ThemeCollection.arcticBlue => const Color(0xFF4FA3F7),
+        ThemeCollection.ivorySand => const Color(0xFFD4A373),
+        ThemeCollection.amethystPulse => const Color(0xFFC084FC),
       };
 
   @override

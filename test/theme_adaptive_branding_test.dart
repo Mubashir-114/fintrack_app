@@ -127,9 +127,9 @@ void main() {
   });
 
   group('3. ThemeProvider Synchronization & Persistence', () {
-    test('Default install initializes with Graphite & Champagne', () {
+    test('Default install initializes with Midnight Aurora', () {
       final provider = ThemeProvider();
-      expect(provider.collection, ThemeCollection.graphiteChampagne);
+      expect(provider.collection, ThemeCollection.midnightAurora);
     });
 
     test(

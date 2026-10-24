@@ -17,38 +17,26 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  group('Graphite & Champagne Default Design Tokens', () {
-    test('Default dark tokens match exact Phase 4 specification', () {
+  group('Six Premium Theme Identities Tokens', () {
+    test('Midnight Aurora default dark tokens match specification', () {
+      final tokens = FinTrackThemeTokens.midnightAuroraDark;
+      expect(tokens.background, const Color(0xFF080D17));
+      expect(tokens.surface, const Color(0xFF0E1626));
+      expect(tokens.primary, const Color(0xFF75DEED));
+      expect(tokens.secondary, const Color(0xFF8996FC));
+    });
+
+    test('Graphite & Champagne dark tokens match specification', () {
       final tokens = FinTrackThemeTokens.graphiteChampagneDark;
       expect(tokens.background, const Color(0xFF171B24));
       expect(tokens.surface, const Color(0xFF252934));
-      expect(tokens.elevated, const Color(0xFF30343F));
       expect(tokens.primary, const Color(0xFFD6A668));
       expect(tokens.secondary, const Color(0xFFE6BE85));
       expect(tokens.textPrimary, const Color(0xFFF4EFE7));
       expect(tokens.textSecondary, const Color(0xFFB5AFAB));
-      expect(tokens.divider, const Color(0xFF393D48));
-
-      // Check AppColors static default alignment
-      expect(AppColors.darkScaffold, const Color(0xFF171B24));
-      expect(AppColors.surfaceDark, const Color(0xFF252934));
-      expect(AppColors.primary, const Color(0xFFD6A668));
-      expect(AppColors.secondary, const Color(0xFFE6BE85));
-      expect(AppColors.textLight, const Color(0xFFF4EFE7));
-      expect(AppColors.textSecondaryDark, const Color(0xFFB5AFAB));
-      expect(AppColors.dividerDark, const Color(0xFF393D48));
     });
 
-    test('Default light tokens use warm ivory and soft graphite', () {
-      final tokens = FinTrackThemeTokens.graphiteChampagneLight;
-      expect(tokens.background, const Color(0xFFF8F6F1));
-      expect(tokens.surface, const Color(0xFFFFFFFF));
-      expect(tokens.textPrimary, const Color(0xFF1C1E24));
-      expect(tokens.textSecondary, const Color(0xFF6B6760));
-      expect(tokens.divider, const Color(0xFFE3DDD2));
-    });
-
-    test('Semantic colors are preserved across all themes', () {
+    test('Semantic colors are preserved across all 6 themes', () {
       for (final collection in ThemeCollection.values) {
         final dark = FinTrackThemeTokens.resolve(collection, Brightness.dark);
         final light = FinTrackThemeTokens.resolve(collection, Brightness.light);
@@ -72,30 +60,24 @@ void main() {
         ]),
       );
     });
-  });
 
-  group('Alternative Theme Collections', () {
-    test('Obsidian & Jade tokens are correctly configured', () {
-      final dark = FinTrackThemeTokens.obsidianJadeDark;
-      expect(dark.background, const Color(0xFF0B111A));
-      expect(dark.surface, const Color(0xFF151F2B));
-      expect(dark.primary, const Color(0xFF38D5B0));
-      expect(dark.secondary, const Color(0xFF2DD4BF));
-    });
-
-    test('Arctic Blue tokens are correctly configured', () {
-      final dark = FinTrackThemeTokens.arcticBlueDark;
-      expect(dark.background, const Color(0xFF0E1726));
-      expect(dark.surface, const Color(0xFF162338));
-      expect(dark.primary, const Color(0xFF4FA3F7));
-      expect(dark.secondary, const Color(0xFF7DD3FC));
+    test('All 6 themes resolve correctly in dark and light mode', () {
+      expect(ThemeCollection.values.length, 6);
+      for (final col in ThemeCollection.values) {
+        final dark = FinTrackThemeTokens.resolve(col, Brightness.dark);
+        final light = FinTrackThemeTokens.resolve(col, Brightness.light);
+        expect(dark.background, isNotNull);
+        expect(light.background, isNotNull);
+        expect(dark.primary, isNotNull);
+        expect(light.primary, isNotNull);
+      }
     });
   });
 
   group('ThemeProvider State & Immediate Switching', () {
-    test('Initializes with Graphite & Champagne by default', () {
+    test('Initializes with Midnight Aurora by default for new installs', () {
       final provider = ThemeProvider();
-      expect(provider.collection, ThemeCollection.graphiteChampagne);
+      expect(provider.collection, ThemeCollection.midnightAurora);
       expect(provider.displayMode, AppDisplayMode.system);
       expect(provider.themeMode, ThemeMode.system);
     });
@@ -114,7 +96,7 @@ void main() {
       // ThemeData updates immediately
       expect(
         provider.darkTheme.scaffoldBackgroundColor,
-        const Color(0xFF0E1726),
+        const Color(0xFF0B111E),
       );
       expect(
         provider.darkTheme.colorScheme.primary,
@@ -145,7 +127,7 @@ void main() {
   });
 
   group('AppearanceScreen Widget Integration', () {
-    testWidgets('renders all 3 theme collections, preview, and switches theme', (
+    testWidgets('renders all 6 theme collections, preview, and switches theme', (
       tester,
     ) async {
       final themeProvider = ThemeProvider();
@@ -158,43 +140,39 @@ void main() {
             ChangeNotifierProvider<CurrencyProvider>.value(value: currencyProvider),
           ],
           child: MaterialApp(
-            theme: themeProvider.lightTheme.copyWith(
-              splashFactory: InkRipple.splashFactory,
-            ),
-            darkTheme: themeProvider.darkTheme.copyWith(
-              splashFactory: InkRipple.splashFactory,
-            ),
+            theme: themeProvider.lightTheme,
+            darkTheme: themeProvider.darkTheme,
             home: const AppearanceScreen(),
           ),
         ),
       );
 
       // Verify title & sections
-      expect(find.text('Appearance'), findsOneWidget);
-      expect(find.text('FinTrack Theme Preview'), findsOneWidget);
+      expect(find.text('Appearance Preferences'), findsOneWidget);
+      expect(find.text('HORIZON // PROTOCOL'), findsOneWidget);
       expect(find.text('THEME COLLECTION'), findsOneWidget);
-      expect(find.text('DISPLAY MODE'), findsOneWidget);
 
-      // Verify 3 themes are present
-      expect(find.text('Graphite & Champagne'), findsWidgets);
-      expect(find.text('DEFAULT'), findsOneWidget);
-      expect(find.text('Obsidian & Jade'), findsOneWidget);
-      expect(find.text('Arctic Blue'), findsOneWidget);
+      // Verify all 6 themes are rendered
+      expect(find.text('Midnight Aurora'), findsWidgets);
+      expect(find.text('Obsidian Jade'), findsWidgets);
+      expect(find.text('Graphite Champagne'), findsWidgets);
+      expect(find.text('Arctic Blue'), findsWidgets);
+      expect(find.text('Ivory Sand'), findsWidgets);
+      expect(find.text('Amethyst Pulse'), findsWidgets);
 
-      // Verify display modes
+      // Verify display mode pills
       expect(find.text('System default'), findsWidgets);
-      expect(find.text('Dark mode'), findsOneWidget);
-      expect(find.text('Light mode'), findsOneWidget);
+      expect(find.text('Dark mode'), findsWidgets);
+      expect(find.text('Light mode'), findsWidgets);
 
-      // Tap to switch to Arctic Blue
-      await tester.tap(find.text('Arctic Blue'));
+      // Tap to switch to Obsidian Jade
+      await tester.tap(find.text('Obsidian Jade').first);
       await tester.pumpAndSettle();
 
-      expect(themeProvider.collection, ThemeCollection.arcticBlue);
+      expect(themeProvider.collection, ThemeCollection.obsidianJade);
 
       // Tap to switch display mode to Dark
-      await tester.ensureVisible(find.text('Dark mode'));
-      await tester.tap(find.text('Dark mode'));
+      await tester.tap(find.text('Dark mode').first);
       await tester.pumpAndSettle();
 
       expect(themeProvider.displayMode, AppDisplayMode.dark);

@@ -13,8 +13,19 @@ class LauncherIconService {
 
   static Future<void> _pendingSync = Future<void>.value();
 
-  static String iconKeyFor(ThemeCollection collection) =>
-      collection.launcherIconKey;
+  static String iconKeyFor(ThemeCollection collection) {
+    switch (collection) {
+      case ThemeCollection.obsidianJade:
+        return 'obsidian_jade';
+      case ThemeCollection.arcticBlue:
+      case ThemeCollection.midnightAurora:
+      case ThemeCollection.amethystPulse:
+        return 'arctic_blue';
+      case ThemeCollection.graphiteChampagne:
+      case ThemeCollection.ivorySand:
+        return 'graphite_champagne';
+    }
+  }
 
   /// Serializes reconciliation so rapid theme changes cannot finish out of order.
   static Future<bool> synchronize(ThemeCollection collection) {

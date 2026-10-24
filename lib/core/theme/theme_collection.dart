@@ -1,23 +1,41 @@
 import 'package:flutter/material.dart';
 
-/// Available curated theme collections in FinTrack 2.0.
+/// Available curated theme collections in FinTrack // HORIZON.
 enum ThemeCollection {
-  graphiteChampagne(
-    displayName: 'Graphite & Champagne',
-    storageKey: 'graphite_champagne',
-    description: 'Warm graphite, champagne accents & soft gold highlights',
-    logoAssetPath: 'assets/branding/logo_graphite_champagne.png',
+  midnightAurora(
+    displayName: 'Midnight Aurora',
+    storageKey: 'midnight_aurora',
+    description: 'Deep navy, ion cyan & electric indigo telemetry',
+    logoAssetPath: 'assets/branding/logo_arctic_blue.png',
   ),
   obsidianJade(
-    displayName: 'Obsidian & Jade',
+    displayName: 'Obsidian Jade',
     storageKey: 'obsidian_jade',
-    description: 'Deep obsidian backdrop with vibrant jade & teal accents',
+    description: 'Charcoal black, emerald jade & soft teal accents',
     logoAssetPath: 'assets/branding/logo_obsidian_jade.png',
+  ),
+  graphiteChampagne(
+    displayName: 'Graphite Champagne',
+    storageKey: 'graphite_champagne',
+    description: 'Elegant graphite, champagne & muted gold highlights',
+    logoAssetPath: 'assets/branding/logo_graphite_champagne.png',
   ),
   arcticBlue(
     displayName: 'Arctic Blue',
     storageKey: 'arctic_blue',
-    description: 'Cool navy canvas with vivid arctic blue & cyan accents',
+    description: 'Cool white, ice blue & midnight blue precision',
+    logoAssetPath: 'assets/branding/logo_arctic_blue.png',
+  ),
+  ivorySand(
+    displayName: 'Ivory Sand',
+    storageKey: 'ivory_sand',
+    description: 'Warm ivory, sandstone & bronze financial accents',
+    logoAssetPath: 'assets/branding/logo_graphite_champagne.png',
+  ),
+  amethystPulse(
+    displayName: 'Amethyst Pulse',
+    storageKey: 'amethyst_pulse',
+    description: 'Deep plum, soft violet & lavender highlights',
     logoAssetPath: 'assets/branding/logo_arctic_blue.png',
   );
 
@@ -37,10 +55,10 @@ enum ThemeCollection {
   String get launcherIconKey => storageKey;
 
   static ThemeCollection fromKey(String? key) {
-    if (key == null) return ThemeCollection.graphiteChampagne;
+    if (key == null) return ThemeCollection.midnightAurora;
     return ThemeCollection.values.firstWhere(
       (e) => e.storageKey == key,
-      orElse: () => ThemeCollection.graphiteChampagne,
+      orElse: () => ThemeCollection.midnightAurora,
     );
   }
 }
@@ -57,13 +75,13 @@ enum AppDisplayMode {
     displayName: 'Dark mode',
     storageKey: 'dark',
     themeMode: ThemeMode.dark,
-    description: 'Rich graphite or dark tones optimized for OLED/night',
+    description: 'Rich dark tones optimized for OLED/night telemetry',
   ),
   light(
     displayName: 'Light mode',
     storageKey: 'light',
     themeMode: ThemeMode.light,
-    description: 'Warm ivory and crisp surfaces with high contrast',
+    description: 'Crisp surfaces and institutional high contrast',
   );
 
   const AppDisplayMode({

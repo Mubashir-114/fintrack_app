@@ -2,91 +2,99 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../constants/app_dimensions.dart';
-import 'theme_collection.dart';
+import '../horizon/theme/horizon_theme_tokens.dart';
+import '../horizon/tokens/horizon_dimensions.dart';
+import '../horizon/tokens/horizon_typography.dart';
 import 'fin_track_theme_tokens.dart';
+import 'theme_collection.dart';
 
+/// Single authoritative global theme factory for FinTrack // HORIZON.
+/// Completely bridges HorizonThemeTokens, FinTrackThemeTokens, Material-3 ThemeData,
+/// and accessible platform status/navigation bar styling.
 class AppTheme {
   AppTheme._();
 
   static ThemeData get lightTheme => buildTheme(
-    ThemeCollection.graphiteChampagne,
-    Brightness.light,
-  );
+        ThemeCollection.midnightAurora,
+        Brightness.light,
+      );
 
   static ThemeData get darkTheme => buildTheme(
-    ThemeCollection.graphiteChampagne,
-    Brightness.dark,
-  );
+        ThemeCollection.midnightAurora,
+        Brightness.dark,
+      );
 
   static ThemeData buildTheme(
     ThemeCollection collection,
     Brightness brightness,
   ) {
-    final tokens = FinTrackThemeTokens.resolve(collection, brightness);
-    final dark = brightness == Brightness.dark;
-    final foreground = tokens.textPrimary;
-    final muted = tokens.textSecondary;
-    final surface = tokens.surface;
-    final divider = tokens.divider;
+    final isDark = brightness == Brightness.dark;
+    final finTokens = FinTrackThemeTokens.resolve(collection, brightness);
+    final hTokens = HorizonThemeTokens.resolve(collection, brightness);
 
-    final onPrimary = collection == ThemeCollection.graphiteChampagne
-        ? (dark ? const Color(0xFF171B24) : Colors.white)
-        : (dark ? const Color(0xFF0B111A) : Colors.white);
-
-    final scheme = ColorScheme.fromSeed(
-      seedColor: tokens.primary,
+    final colorScheme = ColorScheme(
       brightness: brightness,
-      primary: tokens.primary,
-      onPrimary: onPrimary,
-      secondary: tokens.secondary,
-      surface: surface,
-      onSurface: foreground,
-      error: tokens.danger,
-      outline: divider,
+      primary: hTokens.ionCyan,
+      onPrimary: hTokens.onPrimary,
+      primaryContainer: isDark ? hTokens.surface3 : hTokens.surface2,
+      onPrimaryContainer: hTokens.textHigh,
+      secondary: hTokens.electricIndigo,
+      onSecondary: Colors.white,
+      secondaryContainer: isDark ? const Color(0xFF313EA0) : const Color(0xFFDFE0FF),
+      onSecondaryContainer: hTokens.textHigh,
+      tertiary: hTokens.luminousGold,
+      onTertiary: Colors.black,
+      tertiaryContainer: isDark ? const Color(0xFF74520C) : const Color(0xFFFFDEAB),
+      onTertiaryContainer: hTokens.textHigh,
+      error: hTokens.outflow,
+      onError: Colors.white,
+      errorContainer: isDark ? const Color(0xFF93000A) : const Color(0xFFFFDAD6),
+      onErrorContainer: hTokens.textHigh,
+      surface: hTokens.surface1,
+      onSurface: hTokens.textHigh,
+      onSurfaceVariant: hTokens.textMedium,
+      outline: hTokens.rimNeutral,
+      outlineVariant: hTokens.rimCyan,
+      shadow: Colors.black,
+      scrim: Colors.black,
+      inverseSurface: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF0E1626),
+      onInverseSurface: isDark ? const Color(0xFF0F172A) : const Color(0xFFF5F8FC),
+      inversePrimary: hTokens.ionCyan,
     );
 
-    final baseText = Typography.material2021().black.apply(
-      bodyColor: foreground,
-      displayColor: foreground,
-    );
-    final textTheme = baseText.copyWith(
-      displaySmall: baseText.displaySmall?.copyWith(
-        fontWeight: FontWeight.w800,
-        letterSpacing: -1.2,
-      ),
-      headlineMedium: baseText.headlineMedium?.copyWith(
-        fontWeight: FontWeight.w800,
-        letterSpacing: -0.8,
-      ),
-      headlineSmall: baseText.headlineSmall?.copyWith(
-        fontWeight: FontWeight.w800,
-        letterSpacing: -0.55,
-      ),
-      titleLarge: baseText.titleLarge?.copyWith(
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.35,
-      ),
-      titleMedium: baseText.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-      bodyMedium: baseText.bodyMedium?.copyWith(height: 1.35),
-      labelLarge: baseText.labelLarge?.copyWith(
-        fontWeight: FontWeight.w700,
-        letterSpacing: 0.15,
-      ),
+    final textTheme = HorizonTypography.createTextTheme(
+      hTokens.textHigh,
+      hTokens.textMedium,
+      hTokens.textLow,
     );
 
-    OutlineInputBorder inputBorder(Color color, [double width = 1]) =>
-        OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-          borderSide: BorderSide(color: color, width: width),
-        );
+    OutlineInputBorder createInputBorder(Color borderColor, [double width = 1]) {
+      return OutlineInputBorder(
+        borderRadius: HorizonDimensions.borderDefault,
+        borderSide: BorderSide(color: borderColor, width: width),
+      );
+    }
+
+    final systemOverlay = isDark
+        ? SystemUiOverlayStyle.light.copyWith(
+            statusBarColor: Colors.transparent,
+            systemNavigationBarColor: hTokens.canvas,
+            systemNavigationBarDividerColor: Colors.transparent,
+            systemNavigationBarIconBrightness: Brightness.light,
+          )
+        : SystemUiOverlayStyle.dark.copyWith(
+            statusBarColor: Colors.transparent,
+            systemNavigationBarColor: hTokens.canvas,
+            systemNavigationBarDividerColor: Colors.transparent,
+            systemNavigationBarIconBrightness: Brightness.dark,
+          );
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
-      colorScheme: scheme,
-      scaffoldBackgroundColor: tokens.background,
-      dividerColor: divider,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: hTokens.canvas,
+      dividerColor: hTokens.rowDivider,
       textTheme: textTheme,
       splashFactory: InkSparkle.splashFactory,
       visualDensity: VisualDensity.standard,
@@ -97,158 +105,171 @@ class AppTheme {
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
       ),
-      extensions: [tokens],
+      extensions: [
+        finTokens,
+        hTokens,
+      ],
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
         scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: foreground,
-        systemOverlayStyle: dark
-            ? SystemUiOverlayStyle.light
-            : SystemUiOverlayStyle.dark,
-        titleTextStyle: textTheme.titleLarge?.copyWith(color: foreground),
+        foregroundColor: hTokens.textHigh,
+        systemOverlayStyle: systemOverlay,
+        titleTextStyle: HorizonTypography.headlineSm.copyWith(
+          color: hTokens.textHigh,
+          fontWeight: FontWeight.w700,
+        ),
       ),
       cardTheme: CardThemeData(
-        color: surface,
+        color: hTokens.surface1,
         elevation: 0,
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-          side: BorderSide(color: divider.withValues(alpha: dark ? 0.72 : 0.9)),
+          borderRadius: HorizonDimensions.borderLG,
+          side: BorderSide(color: hTokens.rimNeutral),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: tokens.elevated,
+        fillColor: hTokens.surface1,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 17,
+          horizontal: HorizonDimensions.marginMobile,
+          vertical: 16,
         ),
-        border: inputBorder(divider),
-        enabledBorder: inputBorder(divider),
-        focusedBorder: inputBorder(tokens.primary, 1.7),
-        errorBorder: inputBorder(tokens.danger),
-        focusedErrorBorder: inputBorder(tokens.danger, 1.7),
-        labelStyle: TextStyle(color: muted, fontSize: 14),
-        hintStyle: TextStyle(color: muted, fontSize: 14),
-        errorMaxLines: 2,
+        border: createInputBorder(hTokens.rimNeutral),
+        enabledBorder: createInputBorder(hTokens.rimNeutral),
+        focusedBorder: createInputBorder(hTokens.ionCyan, 1.5),
+        errorBorder: createInputBorder(hTokens.outflow),
+        focusedErrorBorder: createInputBorder(hTokens.outflow, 1.5),
+        labelStyle: HorizonTypography.bodyMd.copyWith(color: hTokens.textMedium),
+        hintStyle: HorizonTypography.bodyMd.copyWith(color: hTokens.textLow),
+        prefixStyle: HorizonTypography.headlineSm.copyWith(
+          color: hTokens.ionCyan,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          backgroundColor: tokens.primary,
-          foregroundColor: onPrimary,
-          disabledBackgroundColor: tokens.primary.withValues(alpha: 0.35),
-          disabledForegroundColor: onPrimary.withValues(alpha: 0.5),
-          minimumSize: const Size(88, 52),
+          backgroundColor: hTokens.ionCyan,
+          foregroundColor: hTokens.onPrimary,
+          disabledBackgroundColor: hTokens.ionCyan.withValues(alpha: 0.35),
+          disabledForegroundColor: hTokens.onPrimary.withValues(alpha: 0.5),
+          minimumSize: const Size(88, HorizonDimensions.buttonHeight),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+            borderRadius: HorizonDimensions.borderDefault,
           ),
-          textStyle: textTheme.labelLarge?.copyWith(
+          textStyle: HorizonTypography.labelCaps.copyWith(
             fontWeight: FontWeight.w700,
-            color: onPrimary,
+            fontSize: 12,
+            letterSpacing: 1.0,
+            color: hTokens.onPrimary,
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: foreground,
-          minimumSize: const Size(88, 50),
-          side: BorderSide(color: divider),
+          foregroundColor: hTokens.textHigh,
+          backgroundColor: hTokens.surface2,
+          minimumSize: const Size(88, HorizonDimensions.buttonHeight),
+          side: BorderSide(color: hTokens.rimCyanActive),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+            borderRadius: HorizonDimensions.borderDefault,
+          ),
+          textStyle: HorizonTypography.bodyMd.copyWith(
+            fontWeight: FontWeight.w600,
+            color: hTokens.textHigh,
           ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: tokens.primary,
-          textStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          foregroundColor: hTokens.ionCyan,
+          textStyle: HorizonTypography.bodyMd.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         elevation: 3,
         focusElevation: 4,
         hoverElevation: 4,
-        backgroundColor: tokens.primary,
-        foregroundColor: onPrimary,
+        backgroundColor: hTokens.ionCyan,
+        foregroundColor: hTokens.onPrimary,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+          borderRadius: HorizonDimensions.borderMD,
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
           foregroundColor: WidgetStateProperty.resolveWith(
             (states) => states.contains(WidgetState.disabled)
-                ? muted.withValues(alpha: .45)
-                : foreground,
+                ? hTokens.textLow
+                : hTokens.textHigh,
           ),
           overlayColor: WidgetStatePropertyAll(
-            tokens.primary.withValues(alpha: .1),
+            hTokens.ionCyan.withValues(alpha: 0.1),
           ),
         ),
       ),
       tabBarTheme: TabBarThemeData(
-        labelColor: tokens.primary,
-        unselectedLabelColor: muted,
-        indicatorColor: tokens.primary,
-        dividerColor: divider,
-        labelStyle: textTheme.labelLarge,
-        unselectedLabelStyle: textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
+        labelColor: hTokens.ionCyan,
+        unselectedLabelColor: hTokens.textMedium,
+        indicatorColor: hTokens.ionCyan,
+        dividerColor: hTokens.rowDivider,
+        labelStyle: HorizonTypography.labelCaps.copyWith(fontWeight: FontWeight.w700),
+        unselectedLabelStyle: HorizonTypography.labelCaps.copyWith(fontWeight: FontWeight.w500),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: surface,
-        selectedColor: tokens.primary.withValues(alpha: 0.16),
-        side: BorderSide(color: divider),
+        backgroundColor: hTokens.surface1,
+        selectedColor: hTokens.surface2,
+        side: BorderSide(color: hTokens.rimNeutral),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
+          borderRadius: HorizonDimensions.borderDefault,
         ),
-        labelStyle: TextStyle(fontSize: 13, color: foreground),
-        secondaryLabelStyle: TextStyle(
-          fontSize: 13,
-          color: tokens.primary,
-          fontWeight: FontWeight.w700,
+        labelStyle: HorizonTypography.bodySm.copyWith(color: hTokens.textMedium),
+        secondaryLabelStyle: HorizonTypography.bodySm.copyWith(
+          color: hTokens.ionCyan,
+          fontWeight: FontWeight.w600,
         ),
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return tokens.primary;
+            return hTokens.ionCyan;
           }
-          return dark ? tokens.textSecondary : const Color(0xFF94A3B8);
+          return hTokens.textMedium;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return tokens.primary.withValues(alpha: 0.35);
+            return hTokens.ionCyan.withValues(alpha: 0.35);
           }
-          return divider;
+          return hTokens.rowDivider;
         }),
       ),
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
-              ? tokens.primary
+              ? hTokens.ionCyan
               : Colors.transparent,
         ),
-        checkColor: WidgetStatePropertyAll(onPrimary),
-        side: BorderSide(color: divider, width: 1.4),
+        checkColor: WidgetStatePropertyAll(hTokens.onPrimary),
+        side: BorderSide(color: hTokens.rimNeutral, width: 1.4),
       ),
       radioTheme: RadioThemeData(
         fillColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
-              ? tokens.primary
-              : muted,
+              ? hTokens.ionCyan
+              : hTokens.textMedium,
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: 70,
         elevation: 0,
-        backgroundColor: surface,
-        indicatorColor: tokens.primary.withValues(alpha: dark ? 0.18 : 0.12),
+        backgroundColor: hTokens.surface3,
+        indicatorColor: hTokens.ionCyan.withValues(alpha: isDark ? 0.20 : 0.14),
         indicatorShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -259,56 +280,71 @@ class AppTheme {
                 ? FontWeight.w700
                 : FontWeight.w500,
             color: states.contains(WidgetState.selected)
-                ? tokens.primary
-                : muted,
+                ? hTokens.ionCyan
+                : hTokens.textMedium,
           ),
         ),
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
             color: states.contains(WidgetState.selected)
-                ? tokens.primary
-                : muted,
+                ? hTokens.ionCyan
+                : hTokens.textMedium,
           ),
         ),
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: surface,
+        backgroundColor: hTokens.surface1,
         elevation: 0,
-        indicatorColor: tokens.primary.withValues(alpha: dark ? 0.18 : 0.12),
+        indicatorColor: hTokens.ionCyan.withValues(alpha: isDark ? 0.20 : 0.14),
         selectedLabelTextStyle: TextStyle(
-          color: tokens.primary,
+          color: hTokens.ionCyan,
           fontWeight: FontWeight.w700,
           fontSize: 11,
         ),
         unselectedLabelTextStyle: TextStyle(
-          color: muted,
+          color: hTokens.textMedium,
           fontSize: 11,
         ),
-        selectedIconTheme: IconThemeData(color: tokens.primary),
-        unselectedIconTheme: IconThemeData(color: muted),
+        selectedIconTheme: IconThemeData(color: hTokens.ionCyan),
+        unselectedIconTheme: IconThemeData(color: hTokens.textMedium),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: tokens.primary,
-        linearTrackColor: divider,
+        color: hTokens.ionCyan,
+        linearTrackColor: hTokens.surface3,
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: dark ? tokens.elevated : tokens.textPrimary,
-        contentTextStyle: TextStyle(color: dark ? tokens.textPrimary : surface),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        backgroundColor: isDark ? hTokens.surface3 : hTokens.surface4,
+        contentTextStyle: HorizonTypography.bodySm.copyWith(color: hTokens.textHigh),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: hTokens.rimNeutral),
+        ),
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: surface,
+        backgroundColor: hTokens.surface2,
+        elevation: 24,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+          borderRadius: HorizonDimensions.borderLG,
+          side: BorderSide(color: hTokens.rimCyan),
+        ),
       ),
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: surface,
-        modalBackgroundColor: surface,
+        backgroundColor: hTokens.surface3,
+        modalBackgroundColor: hTokens.surface3,
         showDragHandle: true,
+        elevation: 16,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(HorizonDimensions.radiusXL),
+          ),
         ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: hTokens.rowDivider,
+        thickness: 1,
+        space: 1,
       ),
     );
   }
