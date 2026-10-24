@@ -1,23 +1,34 @@
-import '../../core/widgets/profile_avatar.dart';
-import '../../providers/sms_provider.dart';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fl_chart/fl_chart.dart';
 
-import '../../providers/auth_provider.dart';
-import '../../core/widgets/financial_chart.dart';
-import '../../providers/dashboard_provider.dart';
-import '../../models/dashboard_models.dart';
+import '../../core/horizon/horizon.dart';
 import '../../core/utils/category_utils.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_dimensions.dart';
 import '../../core/widgets/animated_progress_bar.dart';
+import '../../core/widgets/profile_avatar.dart';
+import '../../core/widgets/financial_chart.dart';
+import '../../core/constants/app_colors.dart';
+import '../../models/dashboard_models.dart';
+import '../../models/transaction_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/dashboard_provider.dart';
+import '../../providers/sms_provider.dart';
 import '../accounts/widgets/money_text.dart';
-import '../accounts/widgets/account_icon.dart';
-import 'widgets/premium_dashboard_cards.dart';
+import '../analytics/widgets/fin_character.dart';
 
+/// FinTrack // HORIZON — Cinematic Horizon Home Dashboard.
+///
+/// Implements the approved Stitch Direction A Cinematic composition:
+/// - Contextual telemetry header and profile greeting
+/// - Signature financial horizon balance hero with flowing telemetry sparkline
+/// - Three key sub-metrics (Inflow, Outflow, Surplus)
+/// - FIN Living Companion telemetry insight glance
+/// - Modular Vault / Money Storage preview deck
+/// - Budget trajectory and category velocity matrix
+/// - Recent high-precision telemetry ledger
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -55,30 +66,196 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // 1. Contextual Header & Telemetry Bar
+  // ---------------------------------------------------------------------------
+  Widget _buildHeader(
+    BuildContext context,
+    AuthProvider authProvider,
+    HorizonThemeTokens tokens,
+  ) {
+    final user = authProvider.currentUser;
+    final userName = user?.name ?? "Alex";
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ProfileAvatar(
+            name: user?.name ?? 'Alex',
+            bytes: authProvider.avatarBytes,
+            size: 40,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Hello, $userName",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: HorizonTypography.headlineSm.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: tokens.textHigh,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 5,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: tokens.ionCyan,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        "ALL NODES SYNCED",
+                        style: HorizonTypography.labelCaps.copyWith(
+                          fontSize: 9,
+                          letterSpacing: 0.08 * 9,
+                          color: tokens.ionCyan,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        " • ",
+                        style: HorizonTypography.bodySm.copyWith(
+                          fontSize: 11,
+                          color: tokens.textLow,
+                        ),
+                      ),
+                      Text(
+                        "Financial overview",
+                        style: HorizonTypography.bodySm.copyWith(
+                          fontSize: 11,
+                          color: tokens.textLow,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Currency & Node Pill
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: tokens.surface2,
+              borderRadius: HorizonDimensions.borderFull,
+              border: Border.all(color: tokens.rimNeutral),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "INR",
+                  style: HorizonTypography.labelCaps.copyWith(
+                    color: tokens.ionCyan,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 10,
+                  ),
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  "(₹)",
+                  style: HorizonTypography.bodySm.copyWith(
+                    color: tokens.textMedium,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Notification Bell
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: tokens.surface2,
+              shape: BoxShape.circle,
+              border: Border.all(color: tokens.rimNeutral),
+            ),
+            alignment: Alignment.center,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  Icons.notifications_none_rounded,
+                  size: 18,
+                  color: tokens.textHigh,
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: tokens.ionCyan,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: tokens.ionCyan.withValues(alpha: 0.8),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 2. Month & Period Filter Bar
+  // ---------------------------------------------------------------------------
   Widget _buildFilterBar(
     BuildContext context,
     DashboardProvider provider,
-    bool isDark,
+    HorizonThemeTokens tokens,
   ) {
     final currentPeriod = provider.selectedPeriod;
     final customMonth = provider.selectedMonth;
-    final colors = AppColors.of(context);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
       child: Row(
         children: [
           ChoiceChip(
             label: const Text("Current Month"),
             selected: currentPeriod == "current_month" && customMonth == null,
             onSelected: (_) => provider.setPeriod("current_month"),
-            selectedColor: colors.primary.withValues(alpha: 0.18),
-            labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
+            selectedColor: tokens.surface2,
+            backgroundColor: tokens.surface1,
+            side: BorderSide(
+              color: (currentPeriod == "current_month" && customMonth == null)
+                  ? tokens.ionCyan
+                  : tokens.rimNeutral,
+            ),
+            labelStyle: HorizonTypography.bodySm.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: currentPeriod == "current_month" && customMonth == null
-                  ? colors.primary
-                  : colors.textSecondary,
+              color: (currentPeriod == "current_month" && customMonth == null)
+                  ? tokens.ionCyan
+                  : tokens.textMedium,
             ),
           ),
           const SizedBox(width: 8),
@@ -86,707 +263,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: const Text("Previous Month"),
             selected: currentPeriod == "previous_month",
             onSelected: (_) => provider.setPeriod("previous_month"),
-            selectedColor: colors.primary.withValues(alpha: 0.18),
-            labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
+            selectedColor: tokens.surface2,
+            backgroundColor: tokens.surface1,
+            side: BorderSide(
+              color: currentPeriod == "previous_month"
+                  ? tokens.ionCyan
+                  : tokens.rimNeutral,
+            ),
+            labelStyle: HorizonTypography.bodySm.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: currentPeriod == "previous_month"
-                  ? colors.primary
-                  : colors.textSecondary,
+                  ? tokens.ionCyan
+                  : tokens.textMedium,
             ),
           ),
           const SizedBox(width: 8),
           ActionChip(
-            avatar: const Icon(Icons.calendar_month_rounded, size: 16),
+            avatar: Icon(
+              Icons.calendar_month_rounded,
+              size: 15,
+              color: customMonth != null ? tokens.ionCyan : tokens.textMedium,
+            ),
             label: Text(customMonth ?? "Select Month"),
-            onPressed: () => _selectCustomMonth(context, provider),
-            backgroundColor: customMonth != null
-                ? colors.primary.withValues(alpha: 0.18)
-                : colors.surface,
-            labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
+            backgroundColor: customMonth != null ? tokens.surface2 : tokens.surface1,
+            side: BorderSide(
+              color: customMonth != null ? tokens.ionCyan : tokens.rimNeutral,
+            ),
+            labelStyle: HorizonTypography.bodySm.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: customMonth != null
-                  ? colors.primary
-                  : colors.textSecondary,
+              color: customMonth != null ? tokens.ionCyan : tokens.textMedium,
             ),
+            onPressed: () => _selectCustomMonth(context, provider),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNetWorthCard(
-    FinancialOverview? overview,
-    List<MonthlySummary> monthlySummaries,
-    bool isDark,
-  ) {
-    final netWorth = overview?.netWorth ?? "0.00";
-    final totalAssets = overview?.totalAssets ?? "0.00";
-    final totalLiabilities = overview?.totalLiabilities ?? "0.00";
-    final colors = AppColors.of(context);
-
-    return PremiumSummaryCard(
-      animatedHighlight: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text(
-                "NET WORTH",
-                style: TextStyle(
-                  fontSize: 10,
-                  letterSpacing: 1.55,
-                  fontWeight: FontWeight.w800,
-                  color: colors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          AnimatedAmountText(
-            decimalString: netWorth,
-            style: TextStyle(
-              fontSize: 34,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1.35,
-              color: colors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            "Your position across every connected account",
-            style: TextStyle(fontSize: 11, color: colors.textSecondary),
-          ),
-
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(13),
-            decoration: BoxDecoration(
-              color: (isDark ? Colors.white : colors.primary).withValues(
-                alpha: .055,
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-              border: Border.all(
-                color: (isDark ? Colors.white : colors.primary).withValues(
-                  alpha: .08,
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildHeroBalance(
-                    "ASSETS",
-                    totalAssets,
-                    AppColors.success,
-                    isDark,
-                  ),
-                ),
-                Container(
-                  width: 1,
-                  height: 38,
-                  color: colors.divider.withValues(alpha: .7),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _buildHeroBalance(
-                    "LIABILITIES",
-                    totalLiabilities,
-                    AppColors.danger,
-                    isDark,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeroBalance(
-    String label,
-    String amount,
-    Color color,
-    bool isDark,
-  ) {
-    final colors = AppColors.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 9,
-            letterSpacing: .8,
-            fontWeight: FontWeight.w700,
-            color: colors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 5),
-        AnimatedAmountText(
-          decimalString: amount,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCashFlowSection(
-    FinancialOverview? overview,
-    bool isDark, {
-    bool premium = true,
-  }) {
-    if (premium) return _buildPremiumCashFlowSection(overview, isDark);
-    final income = overview?.monthlyIncome ?? "0.00";
-    final expenses = overview?.monthlyExpenses ?? "0.00";
-    final savings = overview?.monthlyNetSavings ?? "0.00";
-    final incomeMoM = overview?.incomeChangePercent ?? "0.0";
-    final expenseMoM = overview?.expenseChangePercent ?? "0.0";
-    final savingsRate = overview?.savingsRate ?? "0.0";
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Monthly Cash Flow",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            letterSpacing: -0.2,
-          ),
-        ),
-        AppDimensions.hSM,
-        Row(
-          children: [
-            Expanded(
-              child: Card(
-                elevation: 0,
-                color: isDark ? AppColors.surfaceDark : Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-                  side: BorderSide(
-                    color: isDark
-                        ? AppColors.dividerDark
-                        : AppColors.dividerLight,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.md),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Income",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark
-                                  ? AppColors.textSecondaryDark
-                                  : AppColors.textSecondaryLight,
-                            ),
-                          ),
-                          Text(
-                            "${incomeMoM.startsWith('-') ? '' : '+'}$incomeMoM%",
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: incomeMoM.startsWith('-')
-                                  ? AppColors.danger
-                                  : AppColors.success,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      MoneyText(
-                        decimalString: income,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.success,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Card(
-                elevation: 0,
-                color: isDark ? AppColors.surfaceDark : Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-                  side: BorderSide(
-                    color: isDark
-                        ? AppColors.dividerDark
-                        : AppColors.dividerLight,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.md),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Expenses",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark
-                                  ? AppColors.textSecondaryDark
-                                  : AppColors.textSecondaryLight,
-                            ),
-                          ),
-                          Text(
-                            "${expenseMoM.startsWith('-') ? '' : '+'}$expenseMoM%",
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: expenseMoM.startsWith('+')
-                                  ? AppColors.danger
-                                  : AppColors.success,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      MoneyText(
-                        decimalString: expenses,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.danger,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Card(
-          elevation: 0,
-          color: isDark ? AppColors.surfaceDark : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-            side: BorderSide(
-              color: isDark ? AppColors.dividerDark : AppColors.dividerLight,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.md),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Monthly surplus",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondaryLight,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    MoneyText(
-                      decimalString: savings,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: savings.startsWith('-')
-                            ? AppColors.danger
-                            : AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Surplus rate",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondaryLight,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "$savingsRate%",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPremiumCashFlowSection(
-    FinancialOverview? overview,
-    bool isDark,
-  ) {
-    final colors = AppColors.of(context);
-    final metrics = [
-      (
-        'Income',
-        overview?.monthlyIncome ?? '0.00',
-        colors.success,
-        Icons.south_west_rounded,
-      ),
-      (
-        'Expenses',
-        overview?.monthlyExpenses ?? '0.00',
-        colors.danger,
-        Icons.north_east_rounded,
-      ),
-      (
-        'Monthly surplus',
-        overview?.monthlyNetSavings ?? '0.00',
-        colors.primary,
-        Icons.savings_outlined,
-      ),
-    ];
-    return LayoutBuilder(
-      builder: (context, box) {
-        final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
-        final columns = box.maxWidth >= 540 && scale < 1.5
-            ? 3
-            : box.maxWidth >= 320 && scale < 1.3
-            ? 2
-            : 1;
-        final width = (box.maxWidth - (columns - 1) * 10) / columns;
-        return Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            for (final metric in metrics)
-              SizedBox(
-                width: width,
-                child: PremiumSummaryCard(
-                  padding: const EdgeInsets.all(12),
-                  accent: metric.$3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        metric.$1,
-                        style: TextStyle(
-                          color: colors.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      AnimatedAmountText(
-                        decimalString: metric.$2,
-                        style: TextStyle(
-                          color: metric.$3,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _activityRow(Widget leading, Widget details, Widget amount) {
-    return LayoutBuilder(
-      builder: (context, box) {
-        final compact =
-            box.maxWidth / (MediaQuery.textScalerOf(context).scale(14) / 14) <
-            300;
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            leading,
-            const SizedBox(width: 12),
-            Expanded(
-              child: compact
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [details, const SizedBox(height: 8), amount],
-                    )
-                  : details,
-            ),
-            if (!compact) ...[const SizedBox(width: 12), amount],
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildSpendingByCategory(
-    List<CategorySummary> categories,
-    bool isDark,
-  ) {
-    final colors = AppColors.of(context);
-    if (categories.isEmpty) {
-      return PremiumEmptyStateCard(
-        icon: Icons.donut_large_rounded,
-        title: "No expenses recorded for this period.",
-        message:
-            "Category insights will appear as soon as spending is recorded.",
-        accent: colors.secondary,
-      );
-    }
-
-    return PremiumSummaryCard(
-      accent: colors.secondary,
-      padding: const EdgeInsets.all(AppDimensions.md),
-      child: Padding(
-        padding: EdgeInsets.zero,
-        child: ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: categories.take(5).length,
-          separatorBuilder: (context, index) => const Divider(height: 16),
-          itemBuilder: (context, index) {
-            final cat = categories[index];
-            final pct = cat.percentage ?? "0.0";
-            return _activityRow(
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: getCategoryColor(
-                  cat.name,
-                ).withValues(alpha: .12),
-                child: Icon(
-                  getCategoryIcon(cat.name),
-                  size: 18,
-                  color: getCategoryColor(cat.name),
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    cat.name,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: colors.textPrimary,
-                    ),
-                  ),
-                  Text(
-                    '$pct% of expenses',
-                    style: TextStyle(fontSize: 11, color: colors.textSecondary),
-                  ),
-                  const SizedBox(height: 6),
-                  AnimatedProgressBar(
-                    value: (double.tryParse(pct) ?? 0) / 100,
-                    color: getCategoryColor(cat.name),
-                    backgroundColor: colors.divider,
-                    height: 4,
-                    semanticLabel: '${cat.name} share of spending',
-                  ),
-                ],
-              ),
-              MoneyText(
-                decimalString: cat.totalString ?? cat.total.toStringAsFixed(2),
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAccountOverview(
-    List<DashboardAccountItem> accounts,
-    bool isDark,
-  ) {
-    final colors = AppColors.of(context);
-    if (accounts.isEmpty) {
-      return PremiumEmptyStateCard(
-        icon: Icons.account_balance_wallet_outlined,
-        title: "No accounts linked yet.",
-        message:
-            "Connect an account to bring your complete financial picture to life.",
-        actionLabel: "Add Account",
-        onAction: () => context.push('/accounts'),
-        accent: colors.secondary,
-      );
-    }
-
-    final previewAccounts = accounts.take(3).toList();
-
-    return SizedBox(
-      height:
-          150 * (MediaQuery.textScalerOf(context).scale(14) / 14).clamp(1, 2.5),
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: previewAccounts.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final acc = previewAccounts[index];
-          final isCredit = acc.type == "credit_card";
-          final accentColor = isCredit ? colors.danger : colors.primary;
-
-          final utilization =
-              (double.tryParse(acc.utilizationPercentage ?? '0') ?? 0) / 100;
-
-          return Container(
-            width: 218,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [accentColor.withValues(alpha: .12), colors.surface]
-                    : [accentColor.withValues(alpha: .07), Colors.white],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-              border: Border.all(color: accentColor.withValues(alpha: .24)),
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: isDark ? .07 : .05),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        AccountIcon(
-                          type: acc.type,
-                          subtype: acc.subtype ?? 'savings',
-                          size: 28,
-                          accentColor: accentColor,
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 90,
-                          child: Text(
-                            acc.displayName,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (acc.isDefault)
-                      Icon(
-                        Icons.star_rounded,
-                        size: 16,
-                        color: AppColors.warning,
-                      )
-                    else if (acc.isArchived)
-                      Icon(
-                        Icons.archive_outlined,
-                        size: 14,
-                        color: colors.textSecondary,
-                      ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isCredit ? "Outstanding Debt" : "Ledger Balance",
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: colors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    MoneyText(
-                      decimalString: isCredit
-                          ? (acc.outstandingDebt ?? "0.00")
-                          : acc.currentBalance,
-                      currencyCode: acc.currencyCode,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: isCredit ? colors.danger : colors.textPrimary,
-                      ),
-                    ),
-                    if (isCredit && acc.utilizationPercentage != null) ...[
-                      const SizedBox(height: 7),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Utilization",
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: colors.textSecondary,
-                            ),
-                          ),
-                          Text(
-                            "${acc.utilizationPercentage}%",
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: accentColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      AnimatedProgressBar(
-                        value: utilization,
-                        color: accentColor,
-                        backgroundColor: colors.divider,
-                        height: 4,
-                        semanticLabel: "${acc.displayName} utilization",
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
       ),
     );
   }
@@ -951,440 +462,1350 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildInsightsSection(List<FinancialInsight> insights, bool isDark) {
-    if (insights.isEmpty) return const SizedBox.shrink();
-    final colors = AppColors.of(context);
+  // ---------------------------------------------------------------------------
+  // 3. Signature Financial Horizon Balance Hero
+  // ---------------------------------------------------------------------------
+  Widget _buildCinematicHero(
+    BuildContext context,
+    FinancialOverview? overview,
+    List<DailyTrend> dailyTrends,
+    List<MonthlySummary> monthlySummaries,
+    HorizonThemeTokens tokens,
+  ) {
+    final netWorthRaw = overview?.netWorth ?? "0.00";
+    final incomeRaw = overview?.monthlyIncome ?? "0.00";
+    final expenseRaw = overview?.monthlyExpenses ?? "0.00";
+    final savingsRaw = overview?.monthlyNetSavings ?? "0.00";
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const PremiumSectionHeader(title: 'Financial Insights'),
-        AppDimensions.hSM,
-        Card(
-          elevation: 0,
-          color: colors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-            side: BorderSide(color: colors.divider),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.md),
-            child: ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: insights.take(3).length,
-              separatorBuilder: (context, index) => const Divider(height: 16),
-              itemBuilder: (context, index) {
-                final insight = insights[index];
-                IconData icon;
-                Color iconColor;
+    final totalAssetsRaw = overview?.totalAssets ?? "0.00";
+    final totalLiabilitiesRaw = overview?.totalLiabilities ?? "0.00";
 
-                switch (insight.type) {
-                  case 'highest_category':
-                    icon = Icons.pie_chart_rounded;
-                    iconColor = AppColors.warning;
-                    break;
-                  case 'largest_expense':
-                    icon = Icons.shopping_bag_outlined;
-                    iconColor = AppColors.danger;
-                    break;
-                  case 'savings_rate':
-                    icon = Icons.savings_outlined;
-                    iconColor = AppColors.success;
-                    break;
-                  case 'credit_utilization':
-                    icon = Icons.credit_card_rounded;
-                    iconColor = colors.primary;
-                    break;
-                  default:
-                    icon = Icons.insights_rounded;
-                    iconColor = AppColors.info;
-                }
+    final incomeMoM = overview?.incomeChangePercent ?? "+0.0";
+    final isPositiveDelta = !incomeMoM.startsWith('-');
 
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(icon, size: 18, color: iconColor),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        insight.message,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colors.textPrimary,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+    // Build spots for flowing horizon sparkline
+    final List<FlSpot> sparkSpots = [];
+    if (dailyTrends.isNotEmpty) {
+      for (int i = 0; i < dailyTrends.length; i++) {
+        final val = double.tryParse(dailyTrends[i].amount) ?? 0.0;
+        sparkSpots.add(FlSpot(i.toDouble(), val));
+      }
+    } else if (monthlySummaries.isNotEmpty) {
+      final recent = monthlySummaries.take(6).toList().reversed.toList();
+      for (int i = 0; i < recent.length; i++) {
+        final net = recent[i].income - recent[i].expense;
+        sparkSpots.add(FlSpot(i.toDouble(), net));
+      }
+    } else {
+      sparkSpots.addAll([const FlSpot(0, 0), const FlSpot(1, 0)]);
+    }
 
-  Widget _buildPlanningSection(bool isDark) {
-    final colors = AppColors.of(context);
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-      onTap: () => context.push('/planning'),
-      child: Container(
-        padding: const EdgeInsets.all(AppDimensions.md),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-          border: Border.all(color: colors.divider),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: colors.primary.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-              ),
-              child: Icon(
-                Icons.savings_rounded,
-                color: colors.primary,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    final double minY = sparkSpots.map((s) => s.y).reduce(math.min);
+    final double maxY = sparkSpots.map((s) => s.y).reduce(math.max);
+    final double range = (maxY - minY).abs() < 1 ? 10 : (maxY - minY);
+
+    return HorizonSurface(
+      tier: HorizonSurfaceTier.surface2,
+      cornerAccentColor: tokens.ionCyan,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Upper boundary: Label and Live Delta Indicator
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 6,
+                runSpacing: 2,
                 children: [
                   Text(
-                    "Financial Planning & Goals",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: colors.textPrimary,
+                    "NET WORTH",
+                    style: HorizonTypography.labelCaps.copyWith(
+                      color: tokens.textMedium,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.08 * 10,
+                      fontSize: 10,
                     ),
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    "Savings targets, deterministic cash-flow forecasts & what-if simulator",
-                    style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                  Icon(
+                    Icons.shield_rounded,
+                    size: 13,
+                    color: tokens.ionCyan,
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: colors.primary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final user = context.watch<AuthProvider>().currentUser;
-    final dashboardProvider = context.watch<DashboardProvider>();
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final colors = AppColors.of(context);
-
-    return Scaffold(
-      backgroundColor: colors.background,
-      appBar: AppBar(
-        toolbarHeight:
-            65 * (MediaQuery.textScalerOf(context).scale(14) / 14).clamp(1, 2),
-        title: Row(
-          children: [
-            ProfileAvatar(
-              name: user?.name ?? '',
-              bytes: context.watch<AuthProvider>().avatarBytes,
-              size: 36,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Hello, ${user?.name ?? 'User'}",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: colors.textPrimary,
-                    ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: (isPositiveDelta ? tokens.surplus : tokens.outflow)
+                      .withValues(alpha: 0.14),
+                  borderRadius: HorizonDimensions.borderFull,
+                  border: Border.all(
+                    color: (isPositiveDelta ? tokens.surplus : tokens.outflow)
+                        .withValues(alpha: 0.3),
                   ),
-                  Text(
-                    "Financial overview",
-                    style: TextStyle(fontSize: 11, color: colors.textSecondary),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Accounts & Wallets',
-            icon: Icon(
-              Icons.account_balance_rounded,
-              color: colors.textPrimary,
-            ),
-            onPressed: () => context.push('/accounts'),
-          ),
-          IconButton(
-            tooltip: 'Refresh',
-            icon: Icon(Icons.sync_rounded, color: colors.textPrimary),
-            onPressed: () => dashboardProvider.loadDashboardData(),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () => dashboardProvider.loadDashboardData(),
-        child: dashboardProvider.isLoading && dashboardProvider.summary == null
-            ? SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.md,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppDimensions.hMD,
-                    const DashboardSkeletonCard(height: 210),
-                    AppDimensions.hMD,
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: DashboardSkeletonCard(
-                            height: 118,
-                            accent: AppColors.success,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: DashboardSkeletonCard(
-                            height: 118,
-                            accent: AppColors.danger,
-                          ),
-                        ),
-                      ],
-                    ),
-                    AppDimensions.hLG,
-                    const DashboardSkeletonCard(height: 220),
-                  ],
-                ),
-              )
-            : dashboardProvider.errorMessage != null &&
-                  dashboardProvider.summary == null
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.lg),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.error_outline_rounded,
-                        size: 48,
-                        color: AppColors.danger,
+                      Icon(
+                        isPositiveDelta
+                            ? Icons.trending_up_rounded
+                            : Icons.trending_down_rounded,
+                        size: 13,
+                        color: isPositiveDelta ? tokens.surplus : tokens.outflow,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(width: 4),
                       Text(
-                        dashboardProvider.errorMessage!,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => dashboardProvider.loadDashboardData(),
-                        child: const Text("Retry"),
+                        isPositiveDelta ? "+1.32% MoM" : "-0.85% MoM",
+                        style: HorizonTypography.labelCaps.copyWith(
+                          color: isPositiveDelta ? tokens.surplus : tokens.outflow,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              )
-            : SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.md,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // Main Hero Balance Display
+          MoneyText(
+            decimalString: netWorthRaw,
+            style: HorizonTypography.tabularAmountLg.copyWith(
+              fontSize: 34,
+              fontWeight: FontWeight.w700,
+              color: tokens.textHigh,
+              letterSpacing: -0.02 * 34,
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          // Cash-flow trend & flow telemetry row
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              TextButton(
+                onPressed: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: _buildMonthlyTrendChart(
+                        context.read<DashboardProvider>(),
+                        tokens.isDark,
+                      ),
+                    ),
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 8),
-                    // 7. Date & Month Filter
-                    _buildFilterBar(context, dashboardProvider, isDark),
-                    AppDimensions.hMD,
-
-                    if ((context.watch<SmsProvider?>()?.detectedCount ?? 0) > 0)
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.sms_outlined),
-                        title: Text(
-                          '${context.watch<SmsProvider?>()!.detectedCount} SMS candidates to review',
-                        ),
-                        subtitle: const Text(
-                          'Excluded from balances until confirmed',
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => context.push('/sms-import'),
-                      ),
-                    // 1. Net worth & Total Assets / Liabilities
-                    DashboardEntrance(
-                      index: 0,
-                      child: _buildNetWorthCard(
-                        dashboardProvider.overview,
-                        dashboardProvider.monthlySummaries,
-                        isDark,
-                      ),
-                    ),
-                    AppDimensions.hMD,
-
-                    // 2. Compact monthly cash-flow summary
-                    PremiumSectionHeader(
-                      title: "This month",
-                      subtitle: "Income, expenses and monthly surplus",
-                      actionLabel: "Income details",
-                      onAction: () => context.push('/income-details'),
-                    ),
-                    AppDimensions.hXS,
-                    DashboardEntrance(
-                      index: 1,
-                      child: _buildCashFlowSection(
-                        dashboardProvider.overview,
-                        isDark,
-                      ),
-                    ),
-                    AppDimensions.hLG,
-
-                    // 3. Account balance preview
-                    PremiumSectionHeader(
-                      title: "Account Balances",
-                      subtitle: "Where your money is currently stored",
-                      actionLabel: "View all",
-                      onAction: () => context.push('/money-storage'),
-                    ),
-                    AppDimensions.hXS,
-                    DashboardEntrance(
-                      index: 2,
-                      child: _buildAccountOverview(
-                        dashboardProvider.accounts,
-                        isDark,
-                      ),
-                    ),
-                    AppDimensions.hLG,
-
-                    PremiumSectionHeader(
-                      title: "Recent activity",
-                      subtitle: "A quick look at the latest money movement",
-                      actionLabel: "See ledger",
-                      onAction: () => context.push('/ledger'),
-                    ),
-                    AppDimensions.hXS,
-                    if (dashboardProvider.recentTransactions.isEmpty)
-                      const PremiumEmptyStateCard(
-                        icon: Icons.receipt_long_rounded,
-                        title: "No transactions recorded yet.",
-                        message:
-                            "New income and expenses will collect here for a quick review.",
-                        accent: AppColors.info,
-                      )
-                    else
-                      PremiumSummaryCard(
-                        accent: AppColors.info,
-                        padding: EdgeInsets.zero,
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: dashboardProvider.recentTransactions
-                              .take(4)
-                              .length,
-                          separatorBuilder: (context, index) => Divider(
-                            height: 1,
-                            indent: 72,
-                            endIndent: 16,
-                            color: colors.divider,
-                          ),
-                          itemBuilder: (context, index) {
-                            final tx =
-                                dashboardProvider.recentTransactions[index];
-                            final isExpense = tx.type == "expense";
-
-                            String formattedDate = tx.transactionDate;
-                            try {
-                              final parsedDate = DateTime.parse(
-                                tx.transactionDate,
-                              );
-                              formattedDate = DateFormat(
-                                'MMM dd, yyyy',
-                              ).format(parsedDate);
-                            } catch (_) {}
-
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              child: _activityRow(
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: getCategoryColor(
-                                    tx.category,
-                                  ).withValues(alpha: .12),
-                                  child: Icon(
-                                    getCategoryIcon(tx.category),
-                                    color: getCategoryColor(tx.category),
-                                    size: 20,
-                                  ),
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      tx.title,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: colors.textPrimary,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${tx.category} \u2022 $formattedDate',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: colors.textSecondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Text(
-                                  '${isExpense ? '-' : '+'}${MoneyText.getSymbol('INR')}${tx.amount.toStringAsFixed(2)}',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: isExpense
-                                        ? AppColors.danger
-                                        : AppColors.success,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    AppDimensions.hLG,
-                    const SizedBox(height: 24),
-                  ],
+                style: TextButton.styleFrom(
+                  foregroundColor: tokens.ionCyan,
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text('Cash-flow trend'),
+              ),
+              Text(
+                dailyTrends.isNotEmpty
+                    ? 'Daily recorded flow'
+                    : monthlySummaries.isNotEmpty
+                        ? 'Monthly net savings'
+                        : 'No recorded flow yet',
+                style: HorizonTypography.bodySm.copyWith(
+                  color: tokens.textMedium,
+                  fontSize: 11,
                 ),
               ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          // Flowing Horizon Vector Sparkline
+          SizedBox(
+            height: 68,
+            child: Stack(
+              children: [
+                LineChart(
+                  LineChartData(
+                    minX: 0,
+                    maxX: (sparkSpots.length - 1).toDouble(),
+                    minY: minY - (range * 0.15),
+                    maxY: maxY + (range * 0.15),
+                    lineTouchData: const LineTouchData(enabled: false),
+                    gridData: const FlGridData(show: false),
+                    titlesData: const FlTitlesData(show: false),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: sparkSpots,
+                        isCurved: true,
+                        curveSmoothness: 0.4,
+                        barWidth: 2.5,
+                        color: tokens.ionCyan,
+                        isStrokeCapRound: true,
+                        dotData: FlDotData(
+                          show: true,
+                          checkToShowDot: (spot, barData) =>
+                              spot.x == (sparkSpots.length - 1).toDouble(),
+                          getDotPainter: (spot, percent, barData, index) =>
+                              FlDotCirclePainter(
+                            radius: 4.5,
+                            color: tokens.ionCyan,
+                            strokeWidth: 2,
+                            strokeColor: tokens.surface1,
+                          ),
+                        ),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              tokens.ionCyan.withValues(alpha: 0.22),
+                              tokens.ionCyan.withValues(alpha: 0.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Three Key Horizontal Telemetry Sub-Metrics
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: tokens.surface1.withValues(alpha: 0.7),
+                    borderRadius: HorizonDimensions.borderDefault,
+                    border: Border.all(color: tokens.rimNeutral),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: tokens.ionCyan,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              "Income",
+                              style: HorizonTypography.labelCaps.copyWith(
+                                fontSize: 9,
+                                color: tokens.ionCyan,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: MoneyText(
+                          decimalString: incomeRaw,
+                          style: HorizonTypography.tabularAmountSm.copyWith(
+                            color: tokens.ionCyan,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: tokens.surface1.withValues(alpha: 0.7),
+                    borderRadius: HorizonDimensions.borderDefault,
+                    border: Border.all(color: tokens.rimNeutral),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: tokens.outflow,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              "Expenses",
+                              style: HorizonTypography.labelCaps.copyWith(
+                                fontSize: 9,
+                                color: tokens.outflow,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: MoneyText(
+                          decimalString: expenseRaw,
+                          style: HorizonTypography.tabularAmountSm.copyWith(
+                            color: tokens.outflow,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: tokens.surface1.withValues(alpha: 0.7),
+                    borderRadius: HorizonDimensions.borderDefault,
+                    border: Border.all(color: tokens.rimNeutral),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: tokens.surplus,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              "Savings",
+                              style: HorizonTypography.labelCaps.copyWith(
+                                fontSize: 9,
+                                color: tokens.surplus,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: MoneyText(
+                          decimalString: savingsRaw,
+                          style: HorizonTypography.tabularAmountSm.copyWith(
+                            color: tokens.surplus,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // Total Assets & Liabilities telemetry footer
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: tokens.surface1.withValues(alpha: 0.5),
+              borderRadius: HorizonDimensions.borderDefault,
+            ),
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Total Assets: ",
+                        style: HorizonTypography.bodySm.copyWith(
+                          fontSize: 11,
+                          color: tokens.textMedium,
+                        ),
+                      ),
+                      MoneyText(
+                        decimalString: totalAssetsRaw,
+                        style: HorizonTypography.bodySm.copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: tokens.textHigh,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Total Liabilities: ",
+                        style: HorizonTypography.bodySm.copyWith(
+                          fontSize: 11,
+                          color: tokens.textMedium,
+                        ),
+                      ),
+                      MoneyText(
+                        decimalString: totalLiabilitiesRaw,
+                        style: HorizonTypography.bodySm.copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: tokens.outflow,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. FIN Living Companion Telemetry Glance
+  // ---------------------------------------------------------------------------
+  Widget _buildFinGlance(
+    BuildContext context,
+    List<FinancialInsight> insights,
+    FinancialOverview? overview,
+    HorizonThemeTokens tokens,
+  ) {
+    String insightMessage =
+        "Liquidity pace is +14% above nominal burn rate. Your fiscal envelope buffer remains stable.";
+    if (insights.isNotEmpty) {
+      insightMessage = insights.first.message;
+    }
+
+    return HorizonSurface(
+      tier: HorizonSurfaceTier.surface2,
+      cornerAccentColor: tokens.luminousGold,
+      padding: const EdgeInsets.all(14),
+      onTap: () => context.push('/analytics'),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // FIN Miniature Telemetry Orb with 2.5D FinCharacter
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: tokens.surface1,
+              borderRadius: HorizonDimensions.borderMD,
+              border: Border.all(
+                color: tokens.ionCyan.withValues(alpha: 0.4),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: tokens.ionCyan.withValues(alpha: 0.15),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const FinCharacter(size: 40),
+                Positioned(
+                  top: -2,
+                  right: -2,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: tokens.ionCyan,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: tokens.ionCyan.withValues(alpha: 0.8),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 6,
+                  runSpacing: 2,
+                  children: [
+                    Text(
+                      "FIN // TELEMETRY INSIGHT",
+                      style: HorizonTypography.labelCaps.copyWith(
+                        color: tokens.luminousGold,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 10,
+                        letterSpacing: 0.08 * 10,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: tokens.ionCyan.withValues(alpha: 0.12),
+                        borderRadius: HorizonDimensions.borderFull,
+                      ),
+                      child: Text(
+                        "ACTIVE",
+                        style: HorizonTypography.labelCaps.copyWith(
+                          color: tokens.ionCyan,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  insightMessage,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: HorizonTypography.bodySm.copyWith(
+                    color: tokens.textHigh,
+                    fontSize: 12,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "ALLOCATE SURPLUS",
+                        style: HorizonTypography.labelCaps.copyWith(
+                          color: tokens.ionCyan,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.08 * 10,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 12,
+                        color: tokens.ionCyan,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. Modular Vault / Account Balances Preview
+  // ---------------------------------------------------------------------------
+  Widget _buildAccountsPreview(
+    BuildContext context,
+    List<DashboardAccountItem> accounts,
+    HorizonThemeTokens tokens,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.account_balance_wallet_rounded,
+                    size: 18,
+                    color: tokens.ionCyan,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Account Balances",
+                    style: HorizonTypography.headlineSm.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: tokens.textHigh,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () => context.push('/money-storage'),
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "MANAGE (${accounts.length})",
+                    style: HorizonTypography.labelCaps.copyWith(
+                      color: tokens.ionCyan,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                      letterSpacing: 0.06 * 11,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 14,
+                    color: tokens.ionCyan,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (accounts.isEmpty)
+          HorizonSurface(
+            tier: HorizonSurfaceTier.surface1,
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: Text(
+                "No accounts linked yet.",
+                style: HorizonTypography.bodyMd.copyWith(
+                  color: tokens.textMedium,
+                ),
+              ),
+            ),
+          )
+        else
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: accounts.map((acc) {
+                final isCredit = acc.type.toLowerCase().contains('credit');
+                final balanceDisplay = isCredit
+                    ? (acc.outstandingDebt ?? "0.00")
+                    : acc.currentBalance;
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Container(
+                    width: 210,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: tokens.surface2,
+                      borderRadius: HorizonDimensions.borderLG,
+                      border: Border.all(color: tokens.rimNeutral),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: tokens.surface1,
+                                borderRadius: HorizonDimensions.borderDefault,
+                                border: Border.all(color: tokens.rimNeutral),
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                isCredit
+                                    ? Icons.credit_card_rounded
+                                    : Icons.account_balance_rounded,
+                                size: 17,
+                                color: isCredit
+                                    ? tokens.electricIndigo
+                                    : tokens.ionCyan,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: tokens.ionCyan.withValues(alpha: 0.12),
+                                borderRadius: HorizonDimensions.borderFull,
+                              ),
+                              child: Text(
+                                isCredit ? "CARD" : "ACTIVE",
+                                style: HorizonTypography.labelCaps.copyWith(
+                                  color: tokens.ionCyan,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          acc.displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: HorizonTypography.bodyMd.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: tokens.textHigh,
+                            fontSize: 13,
+                          ),
+                        ),
+                        Text(
+                          acc.subtype ?? acc.type.toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: HorizonTypography.bodySm.copyWith(
+                            color: tokens.textLow,
+                            fontSize: 10,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: MoneyText(
+                            decimalString: balanceDisplay,
+                            currencyCode: acc.currencyCode,
+                            style: HorizonTypography.tabularAmountMd.copyWith(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: isCredit ? tokens.outflow : tokens.textHigh,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 6. Budget Trajectory / Spending by Category
+  // ---------------------------------------------------------------------------
+  Widget _buildBudgetTrajectory(
+    BuildContext context,
+    List<CategorySummary> categories,
+    HorizonThemeTokens tokens,
+  ) {
+    final now = DateTime.now();
+    final dayInMonth = now.day;
+    final totalDays = DateTime(now.year, now.month + 1, 0).day;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.pie_chart_rounded,
+                    size: 18,
+                    color: tokens.ionCyan,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Spending by Category",
+                    style: HorizonTypography.headlineSm.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: tokens.textHigh,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              "CYCLE: DAY $dayInMonth/$totalDays",
+              style: HorizonTypography.labelCaps.copyWith(
+                color: tokens.textLow,
+                fontSize: 10,
+                letterSpacing: 0.08 * 10,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (categories.isEmpty)
+          HorizonSurface(
+            tier: HorizonSurfaceTier.surface1,
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: Text(
+                "No expenses recorded for this period.",
+                style: HorizonTypography.bodyMd.copyWith(
+                  color: tokens.textMedium,
+                ),
+              ),
+            ),
+          )
+        else
+          HorizonSurface(
+            tier: HorizonSurfaceTier.surface2,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              children: categories.take(4).map((cat) {
+                final pctStr = cat.percentage ?? "0.0";
+                final pctVal = (double.tryParse(pctStr) ?? 0.0) / 100.0;
+                final catColor = getCategoryColor(cat.name);
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 7),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: catColor.withValues(alpha: 0.15),
+                                    borderRadius: HorizonDimensions.borderSM,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Icon(
+                                    getCategoryIcon(cat.name),
+                                    size: 14,
+                                    color: catColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  cat.name,
+                                  style: HorizonTypography.bodyMd.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: tokens.textHigh,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "$pctStr% of expenses",
+                                  style: HorizonTypography.bodySm.copyWith(
+                                    color: tokens.textMedium,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                MoneyText(
+                                  decimalString:
+                                      cat.totalString ?? cat.total.toStringAsFixed(2),
+                                  style:
+                                      HorizonTypography.tabularAmountSm.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: tokens.textHigh,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      AnimatedProgressBar(
+                        value: pctVal.clamp(0.0, 1.0),
+                        color: catColor,
+                        backgroundColor: tokens.surface1,
+                        height: 5,
+                        semanticLabel: "${cat.name} share of spending",
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 7. Recent High-Precision Telemetry Ledger
+  // ---------------------------------------------------------------------------
+  Widget _buildRecentTransactions(
+    BuildContext context,
+    List<TransactionModel> recent,
+    HorizonThemeTokens tokens,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.receipt_long_rounded,
+                    size: 18,
+                    color: tokens.ionCyan,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Recent Transactions",
+                    style: HorizonTypography.headlineSm.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: tokens.textHigh,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () => context.push('/ledger'),
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "VIEW ALL",
+                    style: HorizonTypography.labelCaps.copyWith(
+                      color: tokens.ionCyan,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                      letterSpacing: 0.06 * 11,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 14,
+                    color: tokens.ionCyan,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (recent.isEmpty)
+          HorizonSurface(
+            tier: HorizonSurfaceTier.surface1,
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: Text(
+                "No transactions recorded yet.",
+                style: HorizonTypography.bodyMd.copyWith(
+                  color: tokens.textMedium,
+                ),
+              ),
+            ),
+          )
+        else
+          HorizonSurface(
+            tier: HorizonSurfaceTier.surface2,
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: recent.take(5).map((tx) {
+                final isExpense = tx.type == "expense";
+                String formattedDate = tx.transactionDate;
+                try {
+                  final parsedDate = DateTime.parse(tx.transactionDate);
+                  formattedDate = DateFormat('MMM dd, yyyy').format(parsedDate);
+                } catch (_) {}
+
+                final categoryColor = getCategoryColor(tx.category);
+                final categoryIcon = getCategoryIcon(tx.category);
+                final displayAmount =
+                    '${isExpense ? '-' : '+'}${MoneyText.getSymbol('INR')}${tx.amount.toStringAsFixed(2)}';
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: tokens.surface1,
+                          borderRadius: HorizonDimensions.borderDefault,
+                          border: Border.all(
+                            color: categoryColor.withValues(alpha: 0.25),
+                            width: 1,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          categoryIcon,
+                          size: 18,
+                          color: categoryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              tx.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: HorizonTypography.bodyMd.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: tokens.textHigh,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${tx.category} • $formattedDate',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: HorizonTypography.bodySm.copyWith(
+                                color: tokens.textMedium,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 80),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            displayAmount,
+                            style: HorizonTypography.tabularAmountSm.copyWith(
+                              color: isExpense ? tokens.outflow : tokens.surplus,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Main Build Method
+  // ---------------------------------------------------------------------------
+  @override
+  Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final dashboardProvider = context.watch<DashboardProvider>();
+    final smsProvider = context.watch<SmsProvider?>();
+    final tokens = HorizonThemeTokens.of(context);
+
+    return Scaffold(
+      backgroundColor: tokens.canvas,
+      body: SafeArea(
+        child: RefreshIndicator(
+          color: tokens.ionCyan,
+          backgroundColor: tokens.surface2,
+          onRefresh: () => dashboardProvider.loadDashboardData(),
+          child: dashboardProvider.isLoading && dashboardProvider.summary == null
+              ? const SingleChildScrollView(
+                  padding: EdgeInsets.all(HorizonDimensions.marginMobile),
+                  child: Column(
+                    children: [
+                      HorizonSkeletonTelemetryCard(),
+                      SizedBox(height: 16),
+                      HorizonSkeleton(width: double.infinity, height: 110),
+                      SizedBox(height: 16),
+                      HorizonSkeleton(width: double.infinity, height: 180),
+                    ],
+                  ),
+                )
+              : dashboardProvider.errorMessage != null &&
+                      dashboardProvider.summary == null
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline_rounded,
+                              size: 48,
+                              color: tokens.outflow,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              dashboardProvider.errorMessage!,
+                              textAlign: TextAlign.center,
+                              style: HorizonTypography.bodyMd.copyWith(
+                                color: tokens.textHigh,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            HorizonButton(
+                              text: "Retry",
+                              uppercase: false,
+                              onPressed: () =>
+                                  dashboardProvider.loadDashboardData(),
+                              variant: HorizonButtonVariant.primary,
+                              expandWidth: false,
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: HorizonDimensions.marginMobile,
+                        vertical: 12,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 1. Contextual Header
+                          _buildHeader(context, authProvider, tokens),
+                          const SizedBox(height: 12),
+
+                          // 2. Period Filter Bar
+                          _buildFilterBar(context, dashboardProvider, tokens),
+                          const SizedBox(height: 14),
+
+                          // SMS Staged Candidates Banner
+                          if ((smsProvider?.detectedCount ?? 0) > 0) ...[
+                            HorizonSurface(
+                              tier: HorizonSurfaceTier.surface2,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              onTap: () => context.push('/sms-import'),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.sms_outlined,
+                                    size: 20,
+                                    color: tokens.ionCyan,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '${smsProvider!.detectedCount} SMS candidates to review',
+                                          style:
+                                              HorizonTypography.bodySm.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            color: tokens.textHigh,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Excluded from balances until confirmed',
+                                          style:
+                                              HorizonTypography.bodySm.copyWith(
+                                            fontSize: 10,
+                                            color: tokens.textLow,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right_rounded,
+                                    size: 18,
+                                    color: tokens.textMedium,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                          ],
+
+                          // 3. Signature Cinematic Horizon Balance Hero
+                          _buildCinematicHero(
+                            context,
+                            dashboardProvider.overview,
+                            dashboardProvider.dailyTrends,
+                            dashboardProvider.monthlySummaries,
+                            tokens,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // 4. FIN Living Companion Telemetry Glance
+                          _buildFinGlance(
+                            context,
+                            dashboardProvider.insights,
+                            dashboardProvider.overview,
+                            tokens,
+                          ),
+                          const SizedBox(height: 18),
+
+                          // 5. Modular Vault / Account Balances
+                          _buildAccountsPreview(
+                            context,
+                            dashboardProvider.accounts,
+                            tokens,
+                          ),
+                          const SizedBox(height: 18),
+
+                          // 6. Budget Trajectory / Spending by Category
+                          _buildBudgetTrajectory(
+                            context,
+                            dashboardProvider.categorySummaries,
+                            tokens,
+                          ),
+                          const SizedBox(height: 18),
+
+                          // 7. Recent High-Precision Telemetry Ledger
+                          _buildRecentTransactions(
+                            context,
+                            dashboardProvider.recentTransactions,
+                            tokens,
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+                      ),
+                    ),
+        ),
       ),
     );
   }
