@@ -44,7 +44,9 @@ class _TransferScreenState extends State<TransferScreen> {
     if (_sourceAccountId == null || _destinationAccountId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please select both source and destination accounts'),
+          content: const Text(
+            'Please select both source and destination accounts',
+          ),
           backgroundColor: tokens.danger,
         ),
       );
@@ -53,7 +55,9 @@ class _TransferScreenState extends State<TransferScreen> {
     if (_sourceAccountId == _destinationAccountId) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Source and destination accounts must be different'),
+          content: const Text(
+            'Source and destination accounts must be different',
+          ),
           backgroundColor: tokens.danger,
         ),
       );
@@ -63,7 +67,8 @@ class _TransferScreenState extends State<TransferScreen> {
     setState(() => _isSubmitting = true);
 
     final provider = context.read<AccountProvider>();
-    final key = 'tr-${DateTime.now().millisecondsSinceEpoch}-$_sourceAccountId-$_destinationAccountId';
+    final key =
+        'tr-${DateTime.now().millisecondsSinceEpoch}-$_sourceAccountId-$_destinationAccountId';
     final dateStr =
         '${_transferDate.year}-${_transferDate.month.toString().padLeft(2, '0')}-${_transferDate.day.toString().padLeft(2, '0')}';
 
@@ -72,7 +77,9 @@ class _TransferScreenState extends State<TransferScreen> {
       destinationAccountId: _destinationAccountId!,
       amount: _amountController.text.trim(),
       transferDate: dateStr,
-      note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+      note: _noteController.text.trim().isEmpty
+          ? null
+          : _noteController.text.trim(),
       clientTransferKey: key,
     );
 
@@ -100,13 +107,15 @@ class _TransferScreenState extends State<TransferScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final accounts = context.watch<AccountProvider>().accounts.where((a) => a.isActive).toList();
+    final accounts = context
+        .watch<AccountProvider>()
+        .accounts
+        .where((a) => a.isActive)
+        .toList();
     final tokens = AppColors.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Transfer Funds'),
-      ),
+      appBar: AppBar(title: const Text('Transfer Funds')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimensions.md),
         child: Form(
@@ -116,6 +125,7 @@ class _TransferScreenState extends State<TransferScreen> {
             children: [
               // Source account dropdown
               DropdownButtonFormField<int>(
+                isExpanded: true,
                 initialValue: _sourceAccountId,
                 decoration: const InputDecoration(
                   labelText: 'From Account',
@@ -124,7 +134,11 @@ class _TransferScreenState extends State<TransferScreen> {
                 items: accounts.map((acc) {
                   return DropdownMenuItem<int>(
                     value: acc.id,
-                    child: Text('${acc.displayName} (${acc.type})'),
+                    child: Text(
+                      '${acc.displayName} (${acc.type})',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   );
                 }).toList(),
                 onChanged: (val) {
@@ -135,34 +149,45 @@ class _TransferScreenState extends State<TransferScreen> {
                     }
                   });
                 },
-                validator: (val) => val == null ? 'Please select source account' : null,
+                validator: (val) =>
+                    val == null ? 'Please select source account' : null,
               ),
               const SizedBox(height: 16),
 
               // Destination account dropdown
               DropdownButtonFormField<int>(
+                isExpanded: true,
                 initialValue: _destinationAccountId,
                 decoration: const InputDecoration(
                   labelText: 'To Account',
                   prefixIcon: Icon(Icons.move_to_inbox_rounded),
                 ),
-                items: accounts.where((acc) => acc.id != _sourceAccountId).map((acc) {
+                items: accounts.where((acc) => acc.id != _sourceAccountId).map((
+                  acc,
+                ) {
                   return DropdownMenuItem<int>(
                     value: acc.id,
-                    child: Text('${acc.displayName} (${acc.type})'),
+                    child: Text(
+                      '${acc.displayName} (${acc.type})',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   );
                 }).toList(),
                 onChanged: (val) {
                   setState(() => _destinationAccountId = val);
                 },
-                validator: (val) => val == null ? 'Please select destination account' : null,
+                validator: (val) =>
+                    val == null ? 'Please select destination account' : null,
               ),
               const SizedBox(height: 16),
 
               // Amount input
               TextFormField(
                 controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: const InputDecoration(
                   labelText: 'Amount (INR)',
                   prefixIcon: Icon(Icons.currency_rupee_rounded),
@@ -173,7 +198,9 @@ class _TransferScreenState extends State<TransferScreen> {
                     return 'Please enter amount';
                   }
                   final trimmed = val.trim();
-                  if (!RegExp(r'^(0|[1-9]\d*)(\.\d{1,2})?$').hasMatch(trimmed)) {
+                  if (!RegExp(
+                    r'^(0|[1-9]\d*)(\.\d{1,2})?$',
+                  ).hasMatch(trimmed)) {
                     return 'Enter a valid decimal (e.g. 500.00)';
                   }
                   if (trimmed == '0' || trimmed == '0.00' || trimmed == '0.0') {
@@ -242,7 +269,9 @@ class _TransferScreenState extends State<TransferScreen> {
                         ),
                       )
                     : const Icon(Icons.swap_horiz_rounded),
-                label: Text(_isSubmitting ? 'Transferring...' : 'Transfer Funds'),
+                label: Text(
+                  _isSubmitting ? 'Transferring...' : 'Transfer Funds',
+                ),
               ),
             ],
           ),

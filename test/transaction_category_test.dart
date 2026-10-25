@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:frontend/models/category_model.dart';
 import 'package:frontend/models/transaction_model.dart';
+import 'package:frontend/core/horizon/components/horizon_pressable.dart';
 import 'package:frontend/core/utils/category_utils.dart';
 import 'package:frontend/core/utils/decimal_money.dart';
 import 'package:frontend/providers/transaction_provider.dart';
@@ -211,7 +212,7 @@ void main() {
 
         // Title & Action
         expect(find.text('New Transaction'), findsOneWidget);
-        expect(find.text('ADD TRANSACTION'), findsOneWidget);
+        expect(find.text('ADD EXPENSE'), findsOneWidget);
 
         // Mode indicator
         expect(find.text('Expense'), findsWidgets);
@@ -221,8 +222,16 @@ void main() {
         // Default selected expense category is Food (id: 3)
         expect(find.text('Food'), findsWidgets);
         expect(find.byKey(const ValueKey('cat_chip_3')), findsOneWidget);
+        expect(
+          tester
+              .widget<HorizonPressable>(
+                find.byKey(const ValueKey('cat_chip_3')),
+              )
+              .selected,
+          isTrue,
+        );
 
-        // Healthcare is also available in Expense mode
+        // Healthcare is also available in Expense mode without opening a menu
         expect(find.byKey(const ValueKey('cat_chip_7')), findsOneWidget);
       },
     );
