@@ -1,34 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../providers/budget_provider.dart';
 import '../../providers/report_provider.dart';
 import '../../providers/currency_provider.dart';
 import '../../models/budget_model.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_dimensions.dart';
 import '../../core/widgets/custom_toast.dart';
 import '../../core/horizon/horizon.dart';
-import '../analytics/widgets/fin_character.dart';
+import 'widgets/budget_header.dart';
 import 'widgets/budget_month_selector.dart';
 import 'widgets/budget_hero_overview.dart';
+import 'widgets/fin_budget_insight.dart';
 import 'widgets/category_budget_card.dart';
 import 'widgets/budget_savings_card.dart';
+import 'widgets/budget_alert_summary.dart';
 import 'widgets/budget_alerts_banner.dart';
 import 'widgets/budget_empty_state.dart';
+import 'widgets/add_budget_action.dart';
 import 'widgets/add_edit_budget_sheet.dart';
 import 'widgets/smart_suggestions_sheet.dart';
 import 'widgets/budget_history_sheet.dart';
 
-// Re-export sheet widgets so existing imports or test references remain functional
-export 'widgets/add_edit_budget_sheet.dart' show AddEditBudgetDialog, AddEditBudgetSheet;
+// Re-export sheet widgets and components so existing imports or test references remain functional
+export 'widgets/add_edit_budget_sheet.dart' show AddEditBudgetDialog, AddEditBudgetSheet, AddBudgetComposer;
 export 'widgets/smart_suggestions_sheet.dart' show SmartSuggestionsBottomSheet, SmartSuggestionsSheet;
 export 'widgets/budget_history_sheet.dart' show BudgetHistoryBottomSheet, BudgetHistorySheet;
+export 'widgets/monthly_budget_hero.dart' show MonthlyBudgetHero;
+export 'widgets/budget_hero_overview.dart' show BudgetHeroOverview;
+export 'widgets/category_budget_row.dart' show CategoryBudgetRow;
+export 'widgets/category_budget_card.dart' show CategoryBudgetCard;
+export 'widgets/budget_alert_summary.dart' show BudgetAlertSummary;
+export 'widgets/budget_alerts_banner.dart' show BudgetAlertsBanner;
+export 'widgets/budget_empty_state.dart' show BudgetEmptyState;
+export 'widgets/budget_month_selector.dart' show BudgetMonthSelector, BudgetMonthControl;
+export 'widgets/add_budget_action.dart' show AddBudgetAction;
 
-/// FinTrack 2.0 Budgets Screen — THE LIVING BUDGET.
-/// A premium, interactive and animated financial planning experience.
+/// FinTrack HORIZON — Budgets Screen.
+///
+/// A premium, open financial planning experience with typography-driven hierarchy,
+/// signature animated budget arc, and contextual companion guidance.
 class BudgetsListScreen extends StatefulWidget {
   const BudgetsListScreen({super.key});
 
@@ -59,20 +70,21 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
     showDialog(
       context: context,
       builder: (ctx) {
-        final colors = AppColors.of(ctx);
+        final tokens = HorizonThemeTokens.of(ctx);
+
         return AlertDialog(
-          backgroundColor: colors.surface,
+          backgroundColor: tokens.surface1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(HorizonDimensions.radiusLG),
+            side: BorderSide(color: tokens.rimNeutral),
+          ),
           title: Text(
             "Monthly Savings Target",
-            style: TextStyle(
+            style: HorizonTypography.headlineSm.copyWith(
               fontWeight: FontWeight.bold,
               letterSpacing: -0.2,
-              color: colors.textPrimary,
+              color: tokens.textHigh,
             ),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-            side: BorderSide(color: colors.cardBorder),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -80,21 +92,21 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
             children: [
               Text(
                 "Set a net savings target (Income - Expenses) for this month.",
-                style: TextStyle(fontSize: 13, color: colors.textSecondary),
+                style: HorizonTypography.bodySm.copyWith(color: tokens.textMedium),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: controller,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
+                style: TextStyle(color: tokens.textHigh, fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
                   labelText: "Target Amount",
                   prefixText: "₹ ",
                   filled: true,
-                  fillColor: colors.elevated,
+                  fillColor: tokens.surface2,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                    borderSide: BorderSide(color: colors.cardBorder),
+                    borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                    borderSide: BorderSide(color: tokens.rimNeutral),
                   ),
                 ),
               ),
@@ -103,7 +115,7 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text("CANCEL", style: TextStyle(color: colors.textSecondary)),
+              child: Text("CANCEL", style: TextStyle(color: tokens.textMedium)),
             ),
             if (currentTarget.isNotEmpty)
               TextButton(
@@ -112,7 +124,7 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
                   Navigator.pop(ctx);
                   CustomToast.showSuccess(context, "Savings target cleared");
                 },
-                child: Text("CLEAR", style: TextStyle(color: colors.danger)),
+                child: Text("CLEAR", style: TextStyle(color: tokens.outflow)),
               ),
             ElevatedButton(
               onPressed: () {
@@ -124,10 +136,10 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: colors.primary,
-                foregroundColor: colors.isDark ? const Color(0xFF0B111A) : Colors.white,
+                backgroundColor: tokens.ionCyan,
+                foregroundColor: tokens.isDark ? Colors.black : Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                  borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
                 ),
               ),
               child: const Text("SET TARGET"),
@@ -176,21 +188,21 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
       builder: (ctx) {
         int tempMonth = provider.selectedMonth;
         int tempYear = provider.selectedYear;
-        final colors = AppColors.of(ctx);
+        final tokens = HorizonThemeTokens.of(ctx);
 
         return AlertDialog(
-          backgroundColor: colors.surface,
+          backgroundColor: tokens.surface1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(HorizonDimensions.radiusLG),
+            side: BorderSide(color: tokens.rimNeutral),
+          ),
           title: Text(
             "Select Month & Year",
-            style: TextStyle(
+            style: HorizonTypography.headlineSm.copyWith(
               fontWeight: FontWeight.bold,
               letterSpacing: -0.2,
-              color: colors.textPrimary,
+              color: tokens.textHigh,
             ),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-            side: BorderSide(color: colors.cardBorder),
           ),
           content: StatefulBuilder(
             builder: (context, setDialogState) {
@@ -199,13 +211,14 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
                 children: [
                   DropdownButtonFormField<int>(
                     initialValue: tempMonth,
-                    dropdownColor: colors.surface,
+                    dropdownColor: tokens.surface2,
                     decoration: InputDecoration(
                       labelText: "Month",
                       filled: true,
-                      fillColor: colors.elevated,
+                      fillColor: tokens.surface2,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                        borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                        borderSide: BorderSide(color: tokens.rimNeutral),
                       ),
                     ),
                     items: List.generate(12, (i) => i + 1)
@@ -221,13 +234,14 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
                   const SizedBox(height: 16),
                   DropdownButtonFormField<int>(
                     initialValue: tempYear,
-                    dropdownColor: colors.surface,
+                    dropdownColor: tokens.surface2,
                     decoration: InputDecoration(
                       labelText: "Year",
                       filled: true,
-                      fillColor: colors.elevated,
+                      fillColor: tokens.surface2,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                        borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                        borderSide: BorderSide(color: tokens.rimNeutral),
                       ),
                     ),
                     items: List.generate(10, (i) => DateTime.now().year - 2 + i)
@@ -247,7 +261,7 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text("CANCEL", style: TextStyle(color: colors.textSecondary)),
+              child: Text("CANCEL", style: TextStyle(color: tokens.textMedium)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -255,11 +269,11 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
                 provider.changeDate(tempMonth, tempYear);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: colors.primary,
-                foregroundColor: colors.isDark ? const Color(0xFF0B111A) : Colors.white,
+                backgroundColor: tokens.ionCyan,
+                foregroundColor: tokens.isDark ? Colors.black : Colors.white,
                 minimumSize: const Size(90, 40),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                  borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
                 ),
               ),
               child: const Text("SELECT"),
@@ -271,25 +285,25 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
   }
 
   void _confirmDelete(BudgetCategoryProgressModel b) {
+    final tokens = HorizonThemeTokens.of(context);
     showDialog(
       context: context,
       builder: (ctx) {
-        final colors = AppColors.of(ctx);
         return AlertDialog(
-          backgroundColor: colors.surface,
-          title: Text("Delete Budget", style: TextStyle(color: colors.textPrimary)),
+          backgroundColor: tokens.surface1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(HorizonDimensions.radiusLG),
+            side: BorderSide(color: tokens.rimNeutral),
+          ),
+          title: Text("Delete Budget", style: HorizonTypography.headlineSm.copyWith(color: tokens.textHigh)),
           content: Text(
             "Are you sure you want to delete the budget limit for ${b.category}?",
-            style: TextStyle(color: colors.textSecondary),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-            side: BorderSide(color: colors.cardBorder),
+            style: HorizonTypography.bodyMd.copyWith(color: tokens.textMedium),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text("CANCEL", style: TextStyle(color: colors.textSecondary)),
+              child: Text("CANCEL", style: TextStyle(color: tokens.textMedium)),
             ),
             TextButton(
               onPressed: () async {
@@ -307,7 +321,7 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
                   );
                 }
               },
-              child: Text("DELETE", style: TextStyle(color: colors.danger, fontWeight: FontWeight.bold)),
+              child: Text("DELETE", style: TextStyle(color: tokens.outflow, fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -319,7 +333,6 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<BudgetProvider>();
     final currency = context.watch<CurrencyProvider>();
-    final colors = AppColors.of(context);
     final tokens = HorizonThemeTokens.of(context);
     final selectedMonthName =
         DateFormat('MMMM').format(DateTime(2026, provider.selectedMonth));
@@ -391,414 +404,244 @@ class _BudgetsListScreenState extends State<BudgetsListScreen> {
               )
             : null);
 
+    final periodModel = progress?.period ??
+        const BudgetPeriodModel(
+          daysInMonth: 30,
+          daysElapsed: 15,
+          daysRemaining: 15,
+          isCurrentPeriod: true,
+          estimationMethod: "Linear Daily Burn-Rate",
+        );
+
     return Scaffold(
       backgroundColor: tokens.canvas,
-      appBar: AppBar(
-        backgroundColor: tokens.canvas,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          "Budgets",
-          style: HorizonTypography.headlineSm.copyWith(
-            fontWeight: FontWeight.w700,
-            color: tokens.textHigh,
-          ),
-        ),
-        actions: [
-          IconButton(
-            tooltip: "Smart Suggestions",
-            icon: Icon(Icons.lightbulb_outline_rounded, color: tokens.textMedium, size: 20),
-            onPressed: _showSuggestionsSheet,
-          ),
-          IconButton(
-            tooltip: "Budget History",
-            icon: Icon(Icons.history_rounded, color: tokens.textMedium, size: 20),
-            onPressed: _showHistorySheet,
-          ),
-          IconButton(
-            tooltip: "Select Month",
-            icon: Icon(Icons.calendar_month_rounded, color: tokens.textMedium, size: 20),
-            onPressed: _selectMonthYear,
-          ),
-          const SizedBox(width: 4),
-        ],
+      appBar: BudgetHeader(
+        onSuggestions: _showSuggestionsSheet,
+        onHistory: _showHistorySheet,
+        onSelectMonth: _selectMonthYear,
       ),
       body: RefreshIndicator(
         onRefresh: () => provider.loadAllBudgetData(forceRefresh: true),
         color: tokens.ionCyan,
         backgroundColor: tokens.surface2,
-        child: provider.isLoading && !hasBudgets && progress == null
-            ? ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: HorizonDimensions.marginMobile,
-                  vertical: 8,
-                ),
-                children: const [
-                  HorizonSkeletonTelemetryCard(),
-                  SizedBox(height: 12),
-                  HorizonSkeleton(width: double.infinity, height: 100),
-                  SizedBox(height: 12),
-                  HorizonSkeleton(width: double.infinity, height: 100),
-                ],
-              )
-            : ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: HorizonDimensions.marginMobile,
-                  vertical: 8,
-                ),
-                children: [
-                  // Telemetry Header Sub-bar
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2, bottom: 10),
-                    child: Wrap(
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: tokens.ionCyan,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: tokens.ionCyan.withValues(alpha: 0.6),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              "FISCAL TELEMETRY",
-                              style: HorizonTypography.labelCaps.copyWith(
-                                color: tokens.ionCyan,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 10,
-                                letterSpacing: 0.08 * 10,
-                              ),
-                            ),
-                          ],
-                        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: provider.isLoading && !hasBudgets && progress == null
+                ? ListView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: HorizonDimensions.marginMobile,
+                      vertical: 8,
+                    ),
+                    children: const [
+                      HorizonSkeleton(width: double.infinity, height: 180),
+                      SizedBox(height: 12),
+                      HorizonSkeleton(width: double.infinity, height: 90),
+                      SizedBox(height: 12),
+                      HorizonSkeleton(width: double.infinity, height: 90),
+                    ],
+                  )
+                : ListView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: HorizonDimensions.marginMobile,
+                      vertical: 8,
+                    ),
+                    children: [
+                      // Month Navigation Bar
+                      BudgetMonthSelector(
+                        selectedMonth: provider.selectedMonth,
+                        selectedYear: provider.selectedYear,
+                        isLoading: provider.isLoading,
+                        onPreviousMonth: _handlePreviousMonth,
+                        onNextMonth: _handleNextMonth,
+                        onTapMonth: _selectMonthYear,
+                      ),
+
+                      // Meaningful Error State when initial load fails with no budgets
+                      if (provider.errorMessage != null && !hasBudgets) ...[
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+                          padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: tokens.surface2,
-                            borderRadius: HorizonDimensions.borderFull,
+                            color: tokens.surface1,
+                            borderRadius: BorderRadius.circular(HorizonDimensions.radiusLG),
                             border: Border.all(color: tokens.rimNeutral),
                           ),
-                          child: Text(
-                            "REAL-TIME",
-                            style: HorizonTypography.labelCaps.copyWith(
-                              color: tokens.textMedium,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 9,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Compact Month & Year Selector Control
-                  BudgetMonthSelector(
-                    selectedMonth: provider.selectedMonth,
-                    selectedYear: provider.selectedYear,
-                    isLoading: provider.isLoading,
-                    onPreviousMonth: _handlePreviousMonth,
-                    onNextMonth: _handleNextMonth,
-                    onTapMonth: _selectMonthYear,
-                  ),
-
-                  // Meaningful Error State when refreshing fails with no budgets defined
-                  if (provider.errorMessage != null && !hasBudgets) ...[
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: colors.surface,
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-                        border: Border.all(color: colors.cardBorder),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: colors.danger.withValues(alpha: 0.12),
-                            ),
-                            child: Icon(Icons.cloud_off_rounded, size: 32, color: colors.danger),
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            "Unable to Load Budgets",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: colors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            provider.errorMessage ??
-                                "A network issue occurred while loading budget records.",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 12, color: colors.textSecondary),
-                          ),
-                          const SizedBox(height: 18),
-                          ElevatedButton.icon(
-                            onPressed: () => provider.loadAllBudgetData(forceRefresh: true),
-                            icon: const Icon(Icons.refresh_rounded, size: 16),
-                            label: const Text("Retry"),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: colors.primary,
-                              foregroundColor: colors.isDark ? const Color(0xFF0B111A) : Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: tokens.outflow.withValues(alpha: 0.12),
+                                ),
+                                child: Icon(Icons.cloud_off_rounded, size: 32, color: tokens.outflow),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ]
-                  // Populated Budgets View
-                  else if (hasBudgets) ...[
-                    // Non-intrusive warning banner if background update reported error
-                    if (provider.errorMessage != null)
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: colors.danger.withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                          border: Border.all(color: colors.danger.withValues(alpha: 0.25)),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.warning_amber_rounded, size: 16, color: colors.danger),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                provider.errorMessage!,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: colors.danger,
-                                  fontWeight: FontWeight.w600,
+                              const SizedBox(height: 14),
+                              Text(
+                                "Unable to Load Budgets",
+                                style: HorizonTypography.headlineSm.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: tokens.textHigh,
                                 ),
                               ),
-                            ),
-                            TextButton(
-                              onPressed: () => provider.loadAllBudgetData(forceRefresh: true),
-                              child: Text(
-                                "RETRY",
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: colors.danger,
-                                ),
+                              const SizedBox(height: 6),
+                              Text(
+                                provider.errorMessage ??
+                                    "A network issue occurred while loading budget records.",
+                                textAlign: TextAlign.center,
+                                style: HorizonTypography.bodySm.copyWith(color: tokens.textMedium),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                    // Overall Monthly Budget Hero Overview
-                    if (overallModel != null && overallModel.hasBudgetsDefined) ...[
-                      BudgetHeroOverview(
-                        overall: overallModel,
-                        period: progress?.period ??
-                            const BudgetPeriodModel(
-                              daysInMonth: 30,
-                              daysElapsed: 15,
-                              daysRemaining: 15,
-                              isCurrentPeriod: true,
-                              estimationMethod: "Linear Daily Burn-Rate",
-                            ),
-                        currency: currency,
-                      ),
-                      const SizedBox(height: 12),
-
-                      // FIN Spending Telemetry Card
-                      HorizonSurface(
-                        tier: HorizonSurfaceTier.surface2,
-                        cornerAccentColor: tokens.luminousGold,
-                        padding: const EdgeInsets.all(14),
-                        onTap: () => context.push('/analytics'),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: tokens.surface1,
-                                borderRadius: HorizonDimensions.borderMD,
-                                border: Border.all(
-                                  color: tokens.luminousGold.withValues(alpha: 0.4),
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: const FinCharacter(size: 38),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "FIN // SPENDING TELEMETRY",
-                                        style: HorizonTypography.labelCaps.copyWith(
-                                          color: tokens.luminousGold,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 10,
-                                        ),
-                                      ),
-                                      Text(
-                                        "CYCLE D-${progress?.period.daysRemaining ?? 7}",
-                                        style: HorizonTypography.bodySm.copyWith(
-                                          color: tokens.textLow,
-                                          fontSize: 10,
-                                        ),
-                                      ),
-                                    ],
+                              const SizedBox(height: 18),
+                              ElevatedButton.icon(
+                                onPressed: () => provider.loadAllBudgetData(forceRefresh: true),
+                                icon: const Icon(Icons.refresh_rounded, size: 16),
+                                label: const Text("Retry"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: tokens.ionCyan,
+                                  foregroundColor: tokens.isDark ? Colors.black : Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "Velocity is nominal at ${overallModel.utilizationPercentage}% consumption with ${progress?.period.daysRemaining ?? 7} days remaining. Fulfill remaining allocations to lock monthly savings target.",
-                                    style: HorizonTypography.bodySm.copyWith(
-                                      color: tokens.textHigh,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ]
+                      // Populated Budgets View
+                      else if (hasBudgets) ...[
+                        // Non-intrusive warning banner if background update reported error
+                        if (provider.errorMessage != null)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: tokens.outflow.withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                              border: Border.all(color: tokens.outflow.withValues(alpha: 0.25)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.warning_amber_rounded, size: 16, color: tokens.outflow),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    provider.errorMessage!,
+                                    style: TextStyle(
                                       fontSize: 12,
+                                      color: tokens.outflow,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        "VIEW SIMULATION",
-                                        style: HorizonTypography.labelCaps.copyWith(
-                                          color: tokens.ionCyan,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Icon(
-                                        Icons.arrow_forward_rounded,
-                                        size: 12,
-                                        color: tokens.ionCyan,
-                                      ),
-                                    ],
+                                ),
+                                TextButton(
+                                  onPressed: () => provider.loadAllBudgetData(forceRefresh: true),
+                                  child: Text(
+                                    "RETRY",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: tokens.outflow,
+                                    ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-
-                    // In-App Alerts Banner
-                    if (alerts != null && alerts.totalAlertsCount > 0)
-                      BudgetAlertsBanner(alerts: alerts),
-
-                    // Net Savings Progress Card
-                    if (progress?.savings != null)
-                      BudgetSavingsCard(
-                        savings: progress!.savings,
-                        currency: currency,
-                        onEditTarget: _showSavingsTargetDialog,
-                      ),
-
-                    // Section Header: Categories
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4, bottom: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Category Budgets (${categoryBudgets.length})",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.2,
-                              color: colors.textPrimary,
+                                ),
+                              ],
                             ),
                           ),
-                          TextButton.icon(
-                            onPressed: _showSuggestionsSheet,
-                            icon: Icon(Icons.auto_awesome_rounded, size: 15, color: colors.secondary),
-                            label: Text(
-                              "Suggestions",
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: colors.secondary,
-                              ),
-                            ),
+
+                        // Monthly Budget Hero Overview
+                        if (overallModel != null && overallModel.hasBudgetsDefined) ...[
+                          BudgetHeroOverview(
+                            overall: overallModel,
+                            period: periodModel,
+                            currency: currency,
+                          ),
+
+                          // Lighter Contextual FIN Insight
+                          FinBudgetInsight(
+                            overall: overallModel,
+                            period: periodModel,
+                            currency: currency,
+                            onViewSuggestions: _showSuggestionsSheet,
                           ),
                         ],
-                      ),
-                    ),
 
-                    // Category Budgets List with living animated cards
-                    if (categoryBudgets.isNotEmpty)
-                      ...categoryBudgets.asMap().entries.map(
-                            (entry) => CategoryBudgetCard(
-                              index: entry.key,
-                              budget: entry.value,
-                              currency: currency,
-                              onEdit: () => _showAddEditSheet(entry.value),
-                              onDelete: () => _confirmDelete(entry.value),
-                            ),
+                        // Compact In-App Alerts Banner
+                        if (alerts != null && alerts.totalAlertsCount > 0)
+                          BudgetAlertSummary(alerts: alerts),
+
+                        // Net Savings Progress Strip
+                        if (progress?.savings != null)
+                          BudgetSavingsCard(
+                            savings: progress!.savings,
+                            currency: currency,
+                            onEditTarget: _showSavingsTargetDialog,
                           ),
 
-                    const SizedBox(height: HorizonDimensions.dockClearance),
-                  ] else ...[
-                    // Engaging Empty State (No duplicate FAB is shown!)
-                    BudgetEmptyState(
-                      selectedMonthName: selectedMonthName,
-                      selectedYear: provider.selectedYear,
-                      onCreateBudget: () => _showAddEditSheet(),
-                      onExploreSuggestions: _showSuggestionsSheet,
-                    ),
-                    const SizedBox(height: HorizonDimensions.dockClearance),
-                  ],
-                ],
-              ),
+                        // Section Header: Categories
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6, bottom: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Category Budgets (${categoryBudgets.length})",
+                                style: HorizonTypography.headlineSm.copyWith(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.2,
+                                  color: tokens.textHigh,
+                                ),
+                              ),
+                              TextButton.icon(
+                                onPressed: _showSuggestionsSheet,
+                                icon: Icon(Icons.auto_awesome_rounded, size: 14, color: tokens.ionCyan),
+                                label: Text(
+                                  "Suggestions",
+                                  style: HorizonTypography.labelCaps.copyWith(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: tokens.ionCyan,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Modern Flat Category Budget Rows
+                        if (categoryBudgets.isNotEmpty)
+                          ...categoryBudgets.asMap().entries.map(
+                                (entry) => CategoryBudgetCard(
+                                  index: entry.key,
+                                  budget: entry.value,
+                                  currency: currency,
+                                  onEdit: () => _showAddEditSheet(entry.value),
+                                  onDelete: () => _confirmDelete(entry.value),
+                                ),
+                              ),
+
+                        const SizedBox(height: HorizonDimensions.dockClearance),
+                      ] else ...[
+                        // Engaging Empty State (No duplicate FAB is shown!)
+                        BudgetEmptyState(
+                          selectedMonthName: selectedMonthName,
+                          selectedYear: provider.selectedYear,
+                          onCreateBudget: () => _showAddEditSheet(),
+                          onExploreSuggestions: _showSuggestionsSheet,
+                        ),
+                        const SizedBox(height: HorizonDimensions.dockClearance),
+                      ],
+                    ],
+                  ),
+          ),
+        ),
       ),
       // Contextual Floating Action Button: Shown ONLY when budgets exist
       floatingActionButton: hasBudgets
-          ? FloatingActionButton.extended(
-              onPressed: () => _showAddEditSheet(),
-              backgroundColor: tokens.ionCyan,
-              foregroundColor: tokens.isDark ? Colors.black : Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: HorizonDimensions.borderDefault,
-              ),
-              icon: const Icon(Icons.add_rounded, size: 20),
-              label: Text(
-                "Add Budget",
-                style: HorizonTypography.labelCaps.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 11,
-                  letterSpacing: 0.08 * 11,
-                  color: tokens.isDark ? Colors.black : Colors.white,
-                ),
-              ),
-            )
+          ? AddBudgetAction(onPressed: () => _showAddEditSheet())
           : null,
     );
   }

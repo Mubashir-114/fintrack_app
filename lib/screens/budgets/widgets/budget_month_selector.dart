@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_dimensions.dart';
-import '../../../core/constants/app_motion.dart';
+import '../../../core/horizon/horizon.dart';
+import '../../../core/horizon/components/horizon_pressable.dart';
 
-/// Compact, elegant month & year selector for FinTrack Budgets.
-/// Replaces the oversized card with a sleek `‹   OCTOBER 2026   ›` control,
-/// with animated month transitions and quick date picker dialog access.
+typedef BudgetMonthControl = BudgetMonthSelector;
+
+/// FinTrack HORIZON — Modern Month & Year Selection Bar.
+///
+/// Features compact `‹   OCTOBER 2026   ›` control, tactile press feedback,
+/// and fast date picker modal trigger.
 class BudgetMonthSelector extends StatelessWidget {
   const BudgetMonthSelector({
     super.key,
@@ -33,149 +35,100 @@ class BudgetMonthSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final reduceMotion = MediaQuery.disableAnimationsOf(context);
-
-    final monthName = DateFormat(
-      'MMMM',
-    ).format(DateTime(selectedYear, selectedMonth)).toUpperCase();
-    final dateKey = ValueKey('$selectedMonth-$selectedYear');
+    final tokens = HorizonThemeTokens.of(context);
+    final monthName = DateFormat('MMMM').format(DateTime(selectedYear, selectedMonth));
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-        border: Border.all(color: colors.cardBorder, width: 1.0),
-        boxShadow: [
-          BoxShadow(
-            color: colors.primary.withValues(alpha: isDark ? 0.04 : 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        color: tokens.surface1,
+        borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+        border: Border.all(color: tokens.rimNeutral),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Row(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              child: Row(
-                children: [
-                  // Previous Month Button
-                  Semantics(
-                    label: 'Previous month',
-                    button: true,
-                    child: IconButton(
-                      icon: const Icon(Icons.chevron_left_rounded, size: 22),
-                      color: colors.textSecondary,
-                      tooltip: "Previous Month",
-                      splashRadius: 20,
-                      onPressed: onPreviousMonth,
-                    ),
-                  ),
-
-                  // Month & Year Display (Tap to open picker)
-                  Expanded(
-                    child: InkWell(
-                      onTap: onTapMonth,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusMD,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 8,
-                        ),
-                        child: Wrap(
-                          alignment: WrapAlignment.center,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 8,
-                          runSpacing: 4,
-                          children: [
-                            Icon(
-                              Icons.calendar_month_rounded,
-                              size: 16,
-                              color: colors.primary,
-                            ),
-                            AnimatedSwitcher(
-                              duration: reduceMotion
-                                  ? Duration.zero
-                                  : AppMotion.quick,
-                              transitionBuilder: (child, animation) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: const Offset(0.0, 0.2),
-                                      end: Offset.zero,
-                                    ).animate(animation),
-                                    child: child,
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                "$monthName $selectedYear",
-                                key: dateKey,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.8,
-                                  color: colors.textPrimary,
-                                ),
-                              ),
-                            ),
-                            if (_isCurrentMonth) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: colors.primary.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  "NOW",
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.5,
-                                    color: colors.primary,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Next Month Button
-                  Semantics(
-                    label: 'Next month',
-                    button: true,
-                    child: IconButton(
-                      icon: const Icon(Icons.chevron_right_rounded, size: 22),
-                      color: colors.textSecondary,
-                      tooltip: "Next Month",
-                      splashRadius: 20,
-                      onPressed: onNextMonth,
-                    ),
-                  ),
-                ],
+            // Previous Month Button
+            Semantics(
+              label: 'Previous month',
+              button: true,
+              child: IconButton(
+                icon: const Icon(Icons.chevron_left_rounded, size: 22),
+                color: tokens.textMedium,
+                tooltip: "Previous Month",
+                onPressed: onPreviousMonth,
               ),
             ),
-            if (isLoading)
-              LinearProgressIndicator(
-                minHeight: 2,
-                backgroundColor: colors.divider,
-                color: colors.primary,
+
+            // Month & Year Display (Tap to open picker)
+            Expanded(
+              child: HorizonPressable(
+                label: "Select month and year: $monthName $selectedYear",
+                onPressed: onTapMonth,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.calendar_month_rounded,
+                          size: 15,
+                          color: tokens.ionCyan,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          "$monthName $selectedYear",
+                          style: HorizonTypography.bodyMd.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                            letterSpacing: 0.2,
+                            color: tokens.textHigh,
+                          ),
+                        ),
+                        if (_isCurrentMonth) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: tokens.ionCyan.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(HorizonDimensions.radiusSM),
+                              border: Border.all(
+                                color: tokens.ionCyan.withValues(alpha: 0.3),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Text(
+                              "CURRENT",
+                              style: HorizonTypography.labelCaps.copyWith(
+                                fontSize: 8,
+                                fontWeight: FontWeight.w800,
+                                color: tokens.ionCyan,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
               ),
+            ),
+
+            // Next Month Button
+            Semantics(
+              label: 'Next month',
+              button: true,
+              child: IconButton(
+                icon: const Icon(Icons.chevron_right_rounded, size: 22),
+                color: tokens.textMedium,
+                tooltip: "Next Month",
+                onPressed: onNextMonth,
+              ),
+            ),
           ],
         ),
       ),

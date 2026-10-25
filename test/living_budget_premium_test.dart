@@ -8,10 +8,6 @@ import 'package:frontend/providers/budget_provider.dart';
 import 'package:frontend/providers/currency_provider.dart';
 import 'package:frontend/providers/report_provider.dart';
 import 'package:frontend/screens/budgets/budgets_list_screen.dart';
-import 'package:frontend/screens/budgets/widgets/budget_empty_state.dart';
-import 'package:frontend/screens/budgets/widgets/budget_hero_overview.dart';
-import 'package:frontend/screens/budgets/widgets/budget_month_selector.dart';
-import 'package:frontend/screens/budgets/widgets/category_budget_card.dart';
 import 'package:frontend/core/services/cache_service.dart';
 
 class MockBudgetProvider extends BudgetProvider {

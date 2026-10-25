@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_dimensions.dart';
+import '../../../core/horizon/horizon.dart';
+import '../../../core/horizon/components/horizon_pressable.dart';
 import '../../../core/utils/category_utils.dart';
 import '../../../core/widgets/custom_toast.dart';
 import '../../../models/budget_model.dart';
@@ -12,9 +12,15 @@ import '../../../providers/budget_provider.dart';
 import '../../../providers/currency_provider.dart';
 import '../../../providers/report_provider.dart';
 
-/// Premium adaptive bottom sheet for creating or editing category budgets.
-/// Features category selection with contextual icons, prominent amount entry,
-/// quick presets, keyboard handling, and sticky accessible actions.
+/// Aliases for reusable naming
+typedef AddBudgetComposer = AddEditBudgetSheet;
+typedef AddEditBudgetDialog = AddEditBudgetSheet;
+
+/// FinTrack HORIZON — Modern Budget Composer Sheet.
+///
+/// Features the oversized amount hero with integrated currency symbol,
+/// a modern category selector with configured status indication,
+/// lighter quick amount actions, and smooth keyboard handling.
 class AddEditBudgetSheet extends StatefulWidget {
   const AddEditBudgetSheet({
     super.key,
@@ -127,7 +133,7 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
         final monthName = DateFormat('MMMM').format(DateTime(2026, _selectedMonth));
         CustomToast.showError(
           context,
-          "${category.name} budget already exists for $monthName $_selectedYear. Edit the existing budget card instead.",
+          "${category.name} already has a budget for $monthName $_selectedYear",
         );
         return;
       }
@@ -165,21 +171,32 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
     final cb = widget.categoryBudget;
     if (cb == null) return;
 
+    final tokens = HorizonThemeTokens.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogCtx) {
-        final colors = AppColors.of(dialogCtx);
         return AlertDialog(
-          title: const Text("Delete Budget"),
-          content: Text("Are you sure you want to delete the budget limit for ${cb.category}?"),
+          backgroundColor: tokens.surface1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(HorizonDimensions.radiusLG),
+            side: BorderSide(color: tokens.rimNeutral),
+          ),
+          title: Text(
+            "Delete Budget",
+            style: HorizonTypography.headlineSm.copyWith(color: tokens.textHigh),
+          ),
+          content: Text(
+            "Are you sure you want to delete the budget limit for ${cb.category}?",
+            style: HorizonTypography.bodyMd.copyWith(color: tokens.textMedium),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogCtx, false),
-              child: const Text("CANCEL"),
+              child: Text("CANCEL", style: TextStyle(color: tokens.textMedium)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(dialogCtx, true),
-              child: Text("DELETE", style: TextStyle(color: colors.danger)),
+              child: Text("DELETE", style: TextStyle(color: tokens.outflow, fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -206,9 +223,18 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
     final isEditing = widget.categoryBudget != null;
     final provider = context.watch<BudgetProvider>();
     final currency = context.watch<CurrencyProvider>();
-    final colors = AppColors.of(context);
+    final tokens = HorizonThemeTokens.of(context);
     final expenseCategories = CategoryModel.getExpenseCategories();
     final monthName = DateFormat('MMMM').format(DateTime(2026, _selectedMonth));
+
+    final budgetedIds = <int>{
+      ...provider.budgetStatuses.map((b) => b.categoryId),
+      if (provider.progress != null)
+        ...provider.progress!.categoryBudgets.map((b) => b.categoryId),
+      ...provider.budgets
+          .where((b) => b.month == _selectedMonth && b.year == _selectedYear)
+          .map((b) => b.categoryId),
+    };
 
     final selectedCategory = expenseCategories.firstWhere(
       (c) => c.id == _selectedCategoryId,
@@ -217,8 +243,9 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
 
     return Container(
       decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        color: tokens.surface1,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(HorizonDimensions.radiusXL)),
+        border: Border(top: BorderSide(color: tokens.rimNeutral)),
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -226,12 +253,12 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
       child: SafeArea(
         top: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Top drag handle
                 Center(
@@ -239,7 +266,7 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: colors.divider,
+                      color: tokens.surface3,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -255,40 +282,47 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                       children: [
                         Text(
                           isEditing ? "Edit Budget Limit" : "Add Budget Limit",
-                          style: TextStyle(
-                            fontSize: 18,
+                          style: HorizonTypography.headlineSm.copyWith(
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.3,
-                            color: colors.textPrimary,
+                            color: tokens.textHigh,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           "Target Period: $monthName $_selectedYear",
-                          style: TextStyle(
+                          style: HorizonTypography.bodySm.copyWith(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: colors.textSecondary,
+                            color: tokens.textMedium,
                           ),
                         ),
                       ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded),
-                      color: colors.textSecondary,
+                    HorizonPressable(
+                      label: "Close composer",
                       onPressed: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: tokens.surface2,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.close_rounded, size: 18, color: tokens.textMedium),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
 
-                // Category Selector
+                // Category Section Header
                 Text(
                   "Expense Category",
-                  style: TextStyle(
+                  style: HorizonTypography.labelMd.copyWith(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: colors.textSecondary,
+                    color: tokens.textMedium,
+                    letterSpacing: 0.2,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -298,70 +332,56 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
-                      color: colors.elevated,
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                      border: Border.all(color: colors.cardBorder),
+                      color: tokens.surface2,
+                      borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                      border: Border.all(color: tokens.rimNeutral),
                     ),
                     child: Row(
                       children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: getCategoryColor(selectedCategory.name).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            getCategoryIcon(selectedCategory.name),
-                            size: 18,
-                            color: getCategoryColor(selectedCategory.name),
-                          ),
+                        Icon(
+                          getCategoryIcon(selectedCategory.name),
+                          size: 18,
+                          color: tokens.ionCyan,
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Text(
                           selectedCategory.name,
-                          style: TextStyle(
-                            fontSize: 14,
+                          style: HorizonTypography.bodyMd.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: colors.textPrimary,
+                            color: tokens.textHigh,
                           ),
                         ),
-                        const Spacer(),
-                        Icon(Icons.lock_outline_rounded, size: 16, color: colors.textSecondary),
                       ],
                     ),
                   )
                 else
-                  // Interactive dropdown with icons when creating
+                  // Modern Category Dropdown with Configured badging
                   DropdownButtonFormField<int>(
                     initialValue: _selectedCategoryId,
-                    dropdownColor: colors.surface,
+                    isExpanded: true,
+                    dropdownColor: tokens.surface2,
+                    icon: Icon(Icons.keyboard_arrow_down_rounded, color: tokens.textMedium),
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: colors.elevated,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      fillColor: tokens.surface2,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                        borderSide: BorderSide(color: colors.cardBorder),
+                        borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                        borderSide: BorderSide(color: tokens.rimNeutral),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                        borderSide: BorderSide(color: colors.cardBorder),
+                        borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                        borderSide: BorderSide(color: tokens.rimNeutral),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                        borderSide: BorderSide(color: colors.primary, width: 1.5),
+                        borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                        borderSide: BorderSide(color: tokens.ionCyan),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     ),
                     items: expenseCategories.map((c) {
-                      final cColor = getCategoryColor(c.name);
-                      final isAlreadyBudgeted = !isEditing &&
-                          (provider.budgetStatuses.any((b) => b.categoryId == c.id) ||
-                              (provider.progress?.categoryBudgets.any((b) => b.categoryId == c.id) ?? false) ||
-                              provider.budgets.any((b) =>
-                                  b.categoryId == c.id &&
-                                  b.month == _selectedMonth &&
-                                  b.year == _selectedYear));
+                      final isConfigured = budgetedIds.contains(c.id);
+                      final catColor = getCategoryColor(c.name);
+
                       return DropdownMenuItem<int>(
                         value: c.id,
                         child: Row(
@@ -370,35 +390,34 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                               width: 26,
                               height: 26,
                               decoration: BoxDecoration(
-                                color: cColor.withValues(alpha: 0.14),
+                                color: catColor.withValues(alpha: 0.14),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: Icon(getCategoryIcon(c.name), size: 15, color: cColor),
+                              child: Icon(getCategoryIcon(c.name), size: 15, color: catColor),
                             ),
                             const SizedBox(width: 10),
                             Text(
                               c.name,
-                              style: TextStyle(
+                              style: HorizonTypography.bodyMd.copyWith(
+                                color: tokens.textHigh,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: colors.textPrimary,
                               ),
                             ),
-                            if (isAlreadyBudgeted) ...[
-                              const SizedBox(width: 8),
+                            if (isConfigured) ...[
+                              const Spacer(),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: colors.elevated,
+                                  color: tokens.warning.withValues(alpha: 0.14),
                                   borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: colors.cardBorder),
                                 ),
                                 child: Text(
                                   "Configured",
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: colors.textSecondary,
+                                  style: HorizonTypography.labelCaps.copyWith(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                    color: tokens.warning,
                                   ),
                                 ),
                               ),
@@ -410,141 +429,157 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                     onChanged: (val) {
                       if (val != null) setState(() => _selectedCategoryId = val);
                     },
-                    validator: (val) {
-                      if (val == null) return "Select a category";
-                      if (!isEditing) {
-                        final isAlreadyBudgeted = provider.budgetStatuses.any((b) => b.categoryId == val) ||
-                            (provider.progress?.categoryBudgets.any((b) => b.categoryId == val) ?? false) ||
-                            provider.budgets.any((b) =>
-                                b.categoryId == val &&
-                                b.month == _selectedMonth &&
-                                b.year == _selectedYear);
-                        if (isAlreadyBudgeted) {
-                          final name = CategoryModel.getNameById(val);
-                          return "$name already has a budget for $monthName $_selectedYear";
-                        }
-                      }
-                      return null;
-                    },
                   ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 24),
 
-                // Amount Entry Field
+                // Budget Limit Amount Hero
                 Text(
-                  "Limit Amount (${currency.currencyCode})",
-                  style: TextStyle(
+                  "Budget limit",
+                  style: HorizonTypography.labelMd.copyWith(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: colors.textSecondary,
+                    color: tokens.textMedium,
+                    letterSpacing: 0.2,
                   ),
                 ),
                 const SizedBox(height: 8),
 
-                TextFormField(
-                  controller: _amountController,
-                  focusNode: _amountFocusNode,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: colors.textPrimary,
-                  ),
-                  decoration: InputDecoration(
-                    prefixText: '${currency.currencySymbol} ',
-                    prefixStyle: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: colors.primary,
-                    ),
-                    filled: true,
-                    fillColor: colors.elevated,
-                    hintText: "0.00",
-                    hintStyle: TextStyle(color: colors.textSecondary.withValues(alpha: 0.5)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                      borderSide: BorderSide(color: colors.cardBorder),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                      borderSide: BorderSide(color: colors.cardBorder),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                      borderSide: BorderSide(color: colors.primary, width: 1.5),
+                Container(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: tokens.ionCyan,
+                        width: 1.5,
+                      ),
                     ),
                   ),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return "Amount is required";
-                    }
-                    final parsed = double.tryParse(val.trim());
-                    if (parsed == null || parsed <= 0) {
-                      return "Enter a valid budget limit";
-                    }
-                    return null;
-                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        currency.currencySymbol,
+                        style: HorizonTypography.displayHero.copyWith(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w600,
+                          color: tokens.ionCyan,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          key: const ValueKey('budget-amount-field'),
+                          controller: _amountController,
+                          focusNode: _amountFocusNode,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          style: HorizonTypography.displayHero.copyWith(
+                            fontSize: 38,
+                            fontWeight: FontWeight.w800,
+                            color: tokens.textHigh,
+                            letterSpacing: -1.0,
+                            fontFeatures: HorizonTypography.tabularFigures,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: "0",
+                            hintStyle: HorizonTypography.displayHero.copyWith(
+                              fontSize: 38,
+                              color: tokens.textLow,
+                            ),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return "Please enter a budget amount";
+                            }
+                            final numVal = double.tryParse(val.trim());
+                            if (numVal == null || numVal <= 0) {
+                              return "Budget must be greater than zero";
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
-                // Quick Presets Row (+₹1k, +₹2k, +₹5k, +₹10k)
+                // Lighter Amount Shortcuts (+₹1,000, +₹2,000, +₹5,000, +₹10,000)
                 Wrap(
                   spacing: 8,
+                  runSpacing: 8,
                   children: [
-                    _PresetChip(label: "+₹1,000", onTap: () => _addQuickPreset(1000)),
-                    _PresetChip(label: "+₹2,000", onTap: () => _addQuickPreset(2000)),
-                    _PresetChip(label: "+₹5,000", onTap: () => _addQuickPreset(5000)),
-                    _PresetChip(label: "+₹10,000", onTap: () => _addQuickPreset(10000)),
+                    for (final increment in [1000.0, 2000.0, 5000.0, 10000.0])
+                      HorizonPressable(
+                        label: "Add ${currency.format(increment)}",
+                        onPressed: () => _addQuickPreset(increment),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: tokens.surface2,
+                            borderRadius: BorderRadius.circular(HorizonDimensions.radiusSM),
+                            border: Border.all(color: tokens.rimNeutral),
+                          ),
+                          child: Text(
+                            "+${currency.format(increment)}",
+                            style: HorizonTypography.labelCaps.copyWith(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: tokens.textHigh,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
 
-                // Sticky Action Buttons
+                // Actions: Save Button (and Delete if editing)
                 Row(
                   children: [
                     if (isEditing) ...[
-                      OutlinedButton(
-                        onPressed: provider.isActionLoading ? null : _delete,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: colors.danger,
-                          side: BorderSide(color: colors.danger.withValues(alpha: 0.5)),
-                          minimumSize: const Size(48, 46),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
+                      HorizonPressable(
+                        label: "Delete budget",
+                        onPressed: _delete,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: tokens.outflow.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                            border: Border.all(color: tokens.outflow.withValues(alpha: 0.3)),
                           ),
+                          child: Icon(Icons.delete_outline_rounded, color: tokens.outflow, size: 20),
                         ),
-                        child: const Icon(Icons.delete_outline_rounded, size: 20),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                     ],
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: provider.isActionLoading ? null : _submit,
+                        onPressed: provider.isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: colors.primary,
-                          foregroundColor: colors.isDark ? const Color(0xFF0B111A) : Colors.white,
-                          minimumSize: const Size.fromHeight(46),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-                          ),
+                          backgroundColor: tokens.ionCyan,
+                          foregroundColor: tokens.isDark ? Colors.black : Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                          ),
                         ),
-                        child: provider.isActionLoading
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: colors.isDark ? const Color(0xFF0B111A) : Colors.white,
-                                ),
-                              )
-                            : Text(
-                                isEditing ? "UPDATE BUDGET" : "SAVE BUDGET",
-                                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-                              ),
+                        child: Text(
+                          isEditing ? "UPDATE BUDGET" : "SAVE BUDGET",
+                          style: HorizonTypography.labelCaps.copyWith(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                            color: tokens.isDark ? Colors.black : Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -554,54 +589,6 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _PresetChip extends StatelessWidget {
-  const _PresetChip({required this.label, required this.onTap});
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: colors.elevated,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colors.divider),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: colors.textSecondary,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Backward compatibility wrapper for existing tests or dialog invocations.
-class AddEditBudgetDialog extends StatelessWidget {
-  const AddEditBudgetDialog({super.key, this.categoryBudget});
-
-  final BudgetCategoryProgressModel? categoryBudget;
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: AddEditBudgetSheet(categoryBudget: categoryBudget),
     );
   }
 }

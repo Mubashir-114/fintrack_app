@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/constants/app_colors.dart';
-import '../../../core/widgets/fin_surface.dart';
-import '../../../core/widgets/animated_progress_bar.dart';
+import '../../../core/horizon/horizon.dart';
+import '../../../core/horizon/components/horizon_pressable.dart';
 import '../../../models/budget_model.dart';
 import '../../../providers/currency_provider.dart';
+import 'animated_budget_progress.dart';
 
-/// Elegant savings target goal card for FinTrack Budgets.
-/// Shows net savings progress, income/target comparison, and milestone celebration feedback.
+/// FinTrack HORIZON — Modern Net Savings Progress Strip.
+///
+/// Clean, tonal surface displaying net savings progress against target or income.
 class BudgetSavingsCard extends StatelessWidget {
   const BudgetSavingsCard({
     super.key,
@@ -22,7 +23,7 @@ class BudgetSavingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final tokens = HorizonThemeTokens.of(context);
 
     final incomeNum = double.tryParse(savings.totalIncome) ?? 0.0;
     final netSavingsNum = double.tryParse(savings.netSavings) ?? 0.0;
@@ -33,157 +34,133 @@ class BudgetSavingsCard extends StatelessWidget {
         ? (netSavingsNum / targetNum).clamp(0.0, 1.0)
         : 0.0;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: FinSurface(
-        padding: EdgeInsets.zero,
-        accent: isAchieved && targetNum > 0 ? colors.success : colors.secondary,
-        emphasized: true,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final statusColor = isAchieved && targetNum > 0 ? tokens.surplus : tokens.electricIndigo;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: tokens.surface1,
+        borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+        border: Border.all(color: tokens.rimNeutral),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header Row: Title & Action
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Header Row: Icon, Title, and Action
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 8,
-                runSpacing: 8,
+              Row(
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: colors.secondary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.savings_rounded,
-                          size: 18,
-                          color: colors.secondary,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Net Savings Progress",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.2,
-                          color: colors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  TextButton(
-                    onPressed: onEditTarget,
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      minimumSize: const Size(60, 30),
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(HorizonDimensions.radiusSM),
                     ),
-                    child: Text(
-                      targetNum > 0 ? "Edit Target" : "Set Target",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: colors.primary,
-                      ),
-                    ),
+                    alignment: Alignment.center,
+                    child: Icon(Icons.savings_rounded, size: 16, color: statusColor),
                   ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // Financial Metrics: Net Saved vs Target / Income
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                spacing: 12,
-                runSpacing: 6,
-                children: [
+                  const SizedBox(width: 10),
                   Text(
-                    "Net Saved: ${currency.format(netSavingsNum)}",
-                    style: TextStyle(
-                      fontSize: 13,
+                    "Net Savings Progress",
+                    style: HorizonTypography.bodyMd.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: netSavingsNum >= 0
-                          ? colors.success
-                          : colors.danger,
+                      fontSize: 13,
+                      color: tokens.textHigh,
                     ),
                   ),
-                  if (targetNum > 0)
-                    Text(
-                      "Target: ${currency.format(targetNum)}",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: colors.textSecondary,
-                      ),
-                    )
-                  else
-                    Text(
-                      "Income: ${currency.format(incomeNum)}",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: colors.textSecondary,
-                      ),
-                    ),
                 ],
               ),
-
-              if (targetNum > 0) ...[
-                const SizedBox(height: 10),
-                AnimatedProgressBar(
-                  value: progressVal,
-                  backgroundColor: colors.divider,
-                  color: isAchieved ? colors.success : colors.primary,
-                  height: 7,
-                  semanticLabel: 'Savings target achieved',
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "${savings.progressPercentage ?? '0.0'}% achieved",
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: isAchieved ? colors.success : colors.primary,
-                      ),
+              HorizonPressable(
+                label: targetNum > 0 ? "Edit savings target" : "Set savings target",
+                onPressed: onEditTarget,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Text(
+                    targetNum > 0 ? "Edit Target" : "Set Target",
+                    style: HorizonTypography.labelCaps.copyWith(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: tokens.ionCyan,
+                      letterSpacing: 0.4,
                     ),
-                    if (isAchieved)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colors.success.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          "GOAL REACHED ✨",
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.4,
-                            color: colors.success,
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
-              ],
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: 10),
+
+          // Amounts: Net Saved vs Target / Income
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Net Saved: ${currency.format(netSavingsNum)}",
+                style: HorizonTypography.bodySm.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                  color: netSavingsNum >= 0 ? tokens.surplus : tokens.outflow,
+                  fontFeatures: HorizonTypography.tabularFigures,
+                ),
+              ),
+              Text(
+                targetNum > 0
+                    ? "Target: ${currency.format(targetNum)}"
+                    : "Income: ${currency.format(incomeNum)}",
+                style: HorizonTypography.bodySm.copyWith(
+                  fontSize: 11,
+                  color: tokens.textMedium,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+
+          if (targetNum > 0) ...[
+            const SizedBox(height: 8),
+            AnimatedBudgetProgress(
+              progressRatio: progressVal,
+              color: isAchieved ? tokens.surplus : tokens.electricIndigo,
+              trackColor: tokens.surface3.withValues(alpha: 0.7),
+              height: 4.0,
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "${savings.progressPercentage ?? '0.0'}% achieved",
+                  style: HorizonTypography.bodySm.copyWith(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: isAchieved ? tokens.surplus : tokens.electricIndigo,
+                  ),
+                ),
+                if (isAchieved)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: tokens.surplus.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      "GOAL REACHED ✨",
+                      style: HorizonTypography.labelCaps.copyWith(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.4,
+                        color: tokens.surplus,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }

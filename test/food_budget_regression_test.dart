@@ -11,7 +11,6 @@ import 'package:frontend/providers/budget_provider.dart';
 import 'package:frontend/providers/currency_provider.dart';
 import 'package:frontend/providers/report_provider.dart';
 import 'package:frontend/screens/budgets/budgets_list_screen.dart';
-import 'package:frontend/screens/budgets/widgets/category_budget_card.dart';
 
 class MockBudgetProvider extends BudgetProvider {
   BudgetProgressResponseModel? _simProgress;
