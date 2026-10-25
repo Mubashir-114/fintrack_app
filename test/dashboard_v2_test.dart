@@ -384,7 +384,7 @@ void main() {
         // Section 6: Recent Transactions
         expect(find.text('Recent Transactions'), findsOneWidget);
         expect(find.text('BigBasket Run'), findsOneWidget);
-        expect(find.text('-₹1500.00'), findsOneWidget);
+        expect(find.text('-₹1,500.00'), findsOneWidget);
       },
     );
 
