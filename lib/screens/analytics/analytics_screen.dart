@@ -1335,6 +1335,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         return "FIN needs clarification";
       case FinCharacterState.error:
         return "FIN encountered an issue";
+      case FinCharacterState.docked:
+        return "FIN is resting docked";
       case FinCharacterState.idle:
         return "FIN is ready to help";
     }

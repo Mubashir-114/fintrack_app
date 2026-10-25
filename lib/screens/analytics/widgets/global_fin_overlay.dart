@@ -58,7 +58,8 @@ class GlobalFinOverlay extends StatefulWidget {
     '/budgets',
     '/reports',
     '/planning',
-    '/profile',
+    // `/profile` renders FIN inside its identity hero, so the edge peek is
+    // omitted there to avoid a second, viewport-clipped FIN over the identity.
     '/profile/fin',
     '/accounts',
   }.contains(location);

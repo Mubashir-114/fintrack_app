@@ -357,6 +357,19 @@ class _Pose {
       chestPulse: 0.4,
       floatOffset: 0.0,
     ),
+    FinCharacterState.docked => const _Pose(
+      head: 0.05,
+      torso: 0.0,
+      shoulderL: -0.05,
+      elbowL: -0.05,
+      shoulderR: 0.05,
+      elbowR: 0.05,
+      eyeArc: 0.85,
+      eyeOpenness: 0.18,
+      leafSway: -0.02,
+      chestPulse: 0.25,
+      floatOffset: 2.0,
+    ),
     FinCharacterState.idle => const _Pose(),
   };
 

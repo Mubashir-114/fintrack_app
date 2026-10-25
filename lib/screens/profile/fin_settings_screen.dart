@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/horizon/horizon.dart';
-import '../../models/companion_model.dart';
 import '../../providers/analytics_provider.dart';
-import '../analytics/widgets/fin_character.dart';
+import 'widgets/fin/fin_companion_widgets.dart';
 
+/// FinTrack HORIZON — Redesigned FIN Companion Settings Screen.
+///
+/// Presents FIN as a living, moving, integrated companion with:
+/// - A dedicated living character stage with ambient glow and live motion preview
+/// - Clear operational presence badges and interactive guidance thoughts
+/// - Tactile presence and edge placement controls
+/// - Responsive guidance frequency selector
+/// - Trustworthy, structured data boundary & privacy panel
+/// - Tactile save preferences action bar
 class FinSettingsScreen extends StatefulWidget {
   const FinSettingsScreen({super.key});
 
@@ -15,10 +23,10 @@ class FinSettingsScreen extends StatefulWidget {
 
 class _FinSettingsScreenState extends State<FinSettingsScreen> {
   final List<String> _quotes = [
-    "I'm here to help you spot spending patterns and keep budgets on track!",
-    "Tip: Review your envelopes during the month to track spending.",
-    "FIN analyzes your authorized saved records on the FinTrack backend.",
-    "Need a customized category alert? Just adjust your envelope thresholds.",
+    "I'm here to help you spot spending patterns and keep envelopes on track!",
+    "Tip: Review your envelope limits mid-month to stay ahead of pace.",
+    "FIN analyzes only your authorized saved records on the FinTrack backend.",
+    "Need a custom alert? Just adjust your threshold settings anytime.",
   ];
 
   int _quoteIndex = 0;
@@ -27,6 +35,7 @@ class _FinSettingsScreenState extends State<FinSettingsScreen> {
   bool _isDeactivated = false;
   String _placement = 'Right Edge'; // 'Right Edge', 'Left Edge', 'Dock Trigger'
   String _frequency = 'standard'; // 'standard', 'minimal'
+  FinMotionState _currentMotion = FinMotionState.idle;
 
   @override
   void initState() {
@@ -34,7 +43,10 @@ class _FinSettingsScreenState extends State<FinSettingsScreen> {
     final prefs = context.read<AnalyticsProvider>().companionPreferences;
     _showOnHome = prefs.showAcrossApp;
     _showOnBudgets = prefs.showAcrossApp;
-    _placement = prefs.edgePosition.toLowerCase() == 'left' ? 'Left Edge' : 'Right Edge';
+    _isDeactivated = !prefs.showAcrossApp;
+    _placement = prefs.edgePosition.toLowerCase() == 'left'
+        ? 'Left Edge'
+        : 'Right Edge';
     _frequency = prefs.proactiveHints ? 'standard' : 'minimal';
   }
 
@@ -42,6 +54,48 @@ class _FinSettingsScreenState extends State<FinSettingsScreen> {
     setState(() {
       _quoteIndex = (_quoteIndex + 1) % _quotes.length;
     });
+  }
+
+  void _handleResetPosition(AnalyticsProvider provider, HorizonThemeTokens tokens) {
+    provider.restoreFinNow();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Position reset to standard anchor',
+          style: HorizonTypography.bodySm.copyWith(color: tokens.textHigh),
+        ),
+        backgroundColor: tokens.surface3,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _savePreferences(AnalyticsProvider provider, HorizonThemeTokens tokens) {
+    final prefs = provider.companionPreferences;
+    final newPosition = _placement == 'Left Edge' ? 'left' : 'right';
+    final updated = prefs.copyWith(
+      showAcrossApp: !_isDeactivated && (_showOnHome || _showOnBudgets),
+      edgePosition: newPosition,
+      proactiveHints: _frequency == 'standard',
+    );
+    provider.updateCompanionPreferences(updated);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.task_alt, color: tokens.ionCyan, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              'Preferences Synchronized',
+              style: HorizonTypography.bodySm.copyWith(color: tokens.textHigh),
+            ),
+          ],
+        ),
+        backgroundColor: tokens.surface3,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -65,18 +119,20 @@ class _FinSettingsScreenState extends State<FinSettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'HORIZON // PROTOCOL',
+              'FINTRACK HORIZON',
               style: HorizonTypography.labelCaps.copyWith(
                 color: tokens.ionCyan,
-                letterSpacing: 1.5,
+                letterSpacing: 1.2,
+                fontSize: 10,
               ),
             ),
             Text(
-              'FIN COMPANION SETTINGS',
+              'Companion Settings',
               style: HorizonTypography.headlineSm.copyWith(
                 color: tokens.textHigh,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.2,
+                fontSize: 18,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -93,715 +149,152 @@ class _FinSettingsScreenState extends State<FinSettingsScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(
-          HorizonDimensions.marginMobile,
-          HorizonDimensions.spaceSM,
-          HorizonDimensions.marginMobile,
-          HorizonDimensions.dockClearance + 32,
-        ),
-        children: [
-          // ── 1. Interactive Character Showcase Card ───────────────────────
-          HorizonSurface(
-            tier: HorizonSurfaceTier.surface1,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // Atmospheric ambient glow
-                Positioned(
-                  top: -20,
-                  right: -20,
-                  child: Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: tokens.ionCyan.withValues(alpha: 0.08),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: -10,
-                  left: -10,
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: tokens.luminousGold.withValues(alpha: 0.06),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Column(
-                    children: [
-                      // Companion Type Badge (overflow proof)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: tokens.surface3,
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: tokens.rimNeutral),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: tokens.ionCyan,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                'FIN COMPANION · FINANCIAL GUIDE',
-                                style: HorizonTypography.labelCaps.copyWith(
-                                  color: tokens.ionCyan,
-                                  letterSpacing: 1.0,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth >= 720;
+          final double horizontalPadding = isTablet
+              ? (constraints.maxWidth - 680) / 2
+              : HorizonDimensions.marginMobile;
 
-                      // Dynamic Speech Bubble with pointing beak
-                      GestureDetector(
-                        onTap: _cycleQuote,
-                        child: Stack(
-                          alignment: Alignment.bottomCenter,
-                          clipBehavior: Clip.none,
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: tokens.surface3,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: tokens.rimNeutral),
-                              ),
-                              child: Text(
-                                '"${_quotes[_quoteIndex]}"',
-                                textAlign: TextAlign.center,
-                                style: HorizonTypography.bodySm.copyWith(
-                                  color: tokens.textMedium,
-                                  fontStyle: FontStyle.italic,
-                                  height: 1.3,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Full-Body 2.5D FIN Companion Illustration / Rig
-                      GestureDetector(
-                        onTap: _cycleQuote,
-                        child: Column(
-                          children: [
-                            FinCharacter(
-                              size: 140,
-                              state: FinCharacterState.idle,
-                              animationsEnabled: prefs.animationsEnabled,
-                              animationActive: true,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Telemetry Status Line
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.verified_user, color: tokens.ionCyan, size: 16),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'AUTHORIZED SAVED RECORDS',
-                                  style: HorizonTypography.labelCaps.copyWith(
-                                    color: tokens.ionCyan,
-                                    letterSpacing: 1.0,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              'v2.4 Telemetry',
-                              style: HorizonTypography.tabularAmountSm.copyWith(
-                                color: tokens.textMedium,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          return SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              HorizonDimensions.spaceSM,
+              horizontalPadding,
+              HorizonDimensions.dockClearance + 32,
             ),
-          ),
-          const SizedBox(height: HorizonDimensions.spaceLG),
-
-          // ── 2. Visibility Controls ───────────────────────────────────────
-          Text(
-            'VISIBILITY & PRESENCE',
-            style: HorizonTypography.labelCaps.copyWith(
-              color: tokens.textMedium,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          HorizonSurface(
-            tier: HorizonSurfaceTier.surface2,
-            padding: const EdgeInsets.all(HorizonDimensions.marginMobile),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Toggle 1: Home Dashboard
-                Row(
+              // ── 1. FIN Companion Hero (Living Preview Stage) ────────────────
+              FinCompanionHero(
+                currentMotion: _isDeactivated ? FinMotionState.docked : _currentMotion,
+                onMotionChanged: (motion) => setState(() => _currentMotion = motion),
+                isActive: !_isDeactivated,
+                isDocked: _placement == 'Dock Trigger' || _currentMotion == FinMotionState.docked,
+                placement: _placement,
+                currentQuote: _quotes[_quoteIndex],
+                quoteIndex: _quoteIndex,
+                totalQuotes: _quotes.length,
+                onCycleQuote: _cycleQuote,
+                animationsEnabled: prefs.animationsEnabled,
+              ),
+              const SizedBox(height: HorizonDimensions.spaceLG),
+
+              // ── 2. Presence & Visibility ────────────────────────────────────
+              _buildSectionHeader(tokens, 'PRESENCE & VISIBILITY'),
+              const SizedBox(height: 8),
+              HorizonSurface(
+                tier: HorizonSurfaceTier.surface2,
+                padding: const EdgeInsets.all(HorizonDimensions.marginMobile),
+                child: Column(
                   children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: tokens.surface3,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(Icons.dashboard_outlined, color: tokens.ionCyan, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Show FIN on Home Dashboard',
-                            style: HorizonTypography.bodyMd.copyWith(
-                              color: tokens.textHigh,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            'Real-time daily telemetry and balance summaries',
-                            style: HorizonTypography.bodySm.copyWith(
-                              color: tokens.textMedium,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Switch(
+                    FinPresenceToggleRow(
+                      icon: Icons.dashboard_outlined,
+                      iconColor: tokens.ionCyan,
+                      title: 'Show FIN on Home Dashboard',
+                      subtitle: 'Daily balance highlights and proactive spending pacing',
                       value: _showOnHome,
-                      activeThumbColor: tokens.ionCyan,
-                      onChanged: (val) => setState(() => _showOnHome = val),
+                      onChanged: _isDeactivated
+                          ? null
+                          : (val) => setState(() => _showOnHome = val),
                     ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Divider(height: 1, color: tokens.rimNeutral),
-                ),
-
-                // Toggle 2: Budgets & Envelopes
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: tokens.surface3,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(Icons.mail_outline, color: tokens.electricIndigo, size: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(height: 1, color: tokens.rimNeutral),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Show FIN in Budgets & Envelopes',
-                            style: HorizonTypography.bodyMd.copyWith(
-                              color: tokens.textHigh,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            'Category pacing and rollover advice',
-                            style: HorizonTypography.bodySm.copyWith(
-                              color: tokens.textMedium,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Switch(
+                    FinPresenceToggleRow(
+                      icon: Icons.mail_outline,
+                      iconColor: tokens.electricIndigo,
+                      title: 'Show FIN in Budgets & Envelopes',
+                      subtitle: 'Envelope pacing, category limits, and rollover advice',
                       value: _showOnBudgets,
-                      activeThumbColor: tokens.ionCyan,
-                      onChanged: (val) => setState(() => _showOnBudgets = val),
+                      onChanged: _isDeactivated
+                          ? null
+                          : (val) => setState(() => _showOnBudgets = val),
                     ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Divider(height: 1, color: tokens.rimNeutral),
-                ),
-
-                // Module: Hide FIN Completely
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: tokens.surface1,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: tokens.rimNeutral),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Icon(Icons.visibility_off_outlined, color: tokens.outflow, size: 20),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(
-                                    'Hide FIN Completely',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: HorizonTypography.bodyMd.copyWith(
-                                      color: tokens.textHigh,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: tokens.surface3,
-                              foregroundColor: _isDeactivated ? tokens.ionCyan : tokens.outflow,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                side: BorderSide(color: _isDeactivated ? tokens.ionCyan : tokens.outflow.withValues(alpha: 0.4)),
-                              ),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isDeactivated = !_isDeactivated;
-                                if (_isDeactivated) {
-                                  _showOnHome = false;
-                                  _showOnBudgets = false;
-                                  provider.visualController.dismissFloating();
-                                } else {
-                                  _showOnHome = true;
-                                  _showOnBudgets = true;
-                                  provider.restoreFinNow();
-                                }
-                              });
-                            },
-                            child: Text(
-                              _isDeactivated ? 'RESTORE' : 'DEACTIVATE',
-                              style: HorizonTypography.labelCaps.copyWith(
-                                color: _isDeactivated ? tokens.ionCyan : tokens.outflow,
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Deactivates all interactive FIN widgets. You can restore FIN at any time from this screen.',
-                        style: HorizonTypography.bodySm.copyWith(
-                          color: tokens.textMedium,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: HorizonDimensions.spaceLG),
-
-          // ── 3. Layout & Calibration ──────────────────────────────────────
-          Text(
-            'LAYOUT & CALIBRATION',
-            style: HorizonTypography.labelCaps.copyWith(
-              color: tokens.textMedium,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          HorizonSurface(
-            tier: HorizonSurfaceTier.surface2,
-            padding: const EdgeInsets.all(HorizonDimensions.marginMobile),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Screen Placement Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Screen Placement',
-                      style: HorizonTypography.bodyMd.copyWith(
-                        color: tokens.textHigh,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(height: 1, color: tokens.rimNeutral),
                     ),
-                    Text(
-                      _placement.toUpperCase(),
-                      style: HorizonTypography.labelCaps.copyWith(
-                        color: tokens.ionCyan,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // 3 Segmented buttons
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: tokens.canvas,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      for (final mode in ['Right Edge', 'Left Edge', 'Dock Trigger'])
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => _placement = mode),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              decoration: BoxDecoration(
-                                color: _placement == mode ? tokens.surface3 : Colors.transparent,
-                                borderRadius: BorderRadius.circular(6),
-                                border: _placement == mode ? Border.all(color: tokens.rimCyan) : null,
-                              ),
-                              child: Text(
-                                mode,
-                                textAlign: TextAlign.center,
-                                style: HorizonTypography.labelCaps.copyWith(
-                                  color: _placement == mode ? tokens.ionCyan : tokens.textMedium,
-                                  fontWeight: _placement == mode ? FontWeight.w700 : FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                // Reset position button row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Repositioned accidentally?',
-                            style: HorizonTypography.bodySm.copyWith(
-                              color: tokens.textHigh,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Text(
-                            'Return avatar to standard anchor point',
-                            style: HorizonTypography.bodySm.copyWith(
-                              color: tokens.textMedium,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: tokens.textHigh,
-                        side: BorderSide(color: tokens.rimNeutral),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      onPressed: () {
-                        provider.restoreFinNow();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Position reset to standard anchor', style: HorizonTypography.bodySm),
-                            backgroundColor: tokens.surface3,
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
+                    FinDeactivateCard(
+                      isDeactivated: _isDeactivated,
+                      onToggle: () {
+                        setState(() {
+                          _isDeactivated = !_isDeactivated;
+                          if (_isDeactivated) {
+                            _showOnHome = false;
+                            _showOnBudgets = false;
+                            _currentMotion = FinMotionState.docked;
+                            provider.visualController.dismissFloating();
+                          } else {
+                            _showOnHome = true;
+                            _showOnBudgets = true;
+                            _currentMotion = FinMotionState.idle;
+                            provider.restoreFinNow();
+                          }
+                        });
                       },
-                      icon: Icon(Icons.restart_alt, size: 16, color: tokens.textHigh),
-                      label: Text(
-                        'RESET POSITION',
-                        style: HorizonTypography.labelCaps.copyWith(color: tokens.textHigh),
-                      ),
                     ),
                   ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Divider(height: 1, color: tokens.rimNeutral),
-                ),
-
-                // Contextual Guidance Frequency
-                Text(
-                  'Contextual Guidance Frequency',
-                  style: HorizonTypography.bodyMd.copyWith(
-                    color: tokens.textHigh,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    // Option 1: Helpful Insights
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _frequency = 'standard'),
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: tokens.surface1,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: _frequency == 'standard' ? tokens.ionCyan : tokens.rimNeutral,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Helpful Insights',
-                                    style: HorizonTypography.bodyMd.copyWith(
-                                      color: tokens.textHigh,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: _frequency == 'standard' ? tokens.ionCyan : tokens.surface3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Active suggestions on recurring spends and envelopes.',
-                                style: HorizonTypography.bodySm.copyWith(
-                                  color: tokens.textMedium,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Option 2: Minimal
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _frequency = 'minimal'),
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: tokens.surface1,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: _frequency == 'minimal' ? tokens.ionCyan : tokens.rimNeutral,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Minimal',
-                                    style: HorizonTypography.bodyMd.copyWith(
-                                      color: tokens.textHigh,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: _frequency == 'minimal' ? tokens.ionCyan : tokens.surface3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Alerts only during critical threshold overruns.',
-                                style: HorizonTypography.bodySm.copyWith(
-                                  color: tokens.textMedium,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: HorizonDimensions.spaceLG),
-
-          // ── 4. Zero-Cloud Data Boundary Card ─────────────────────────────
-          HorizonSurface(
-            tier: HorizonSurfaceTier.surface1,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: tokens.luminousGold.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.security, size: 16, color: tokens.luminousGold),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'FIN DATA BOUNDARIES',
-                      style: HorizonTypography.labelCaps.copyWith(
-                        color: tokens.luminousGold,
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'FIN analyzes your authorized saved records on the FinTrack backend. Outbound guards block financial data from external model providers. FIN cannot connect to your bank or independently read your SMS inbox.',
-                  style: HorizonTypography.bodySm.copyWith(
-                    color: tokens.textMedium,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: tokens.ionCyan,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'DETERMINISTIC BACKEND ANALYSIS',
-                      style: HorizonTypography.labelCaps.copyWith(
-                        color: tokens.textMedium,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: HorizonDimensions.spaceLG),
-
-          // ── 5. Save Preferences Action Button ────────────────────────────
-          SizedBox(
-            height: 48,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: tokens.ionCyan,
-                foregroundColor: tokens.canvas,
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: () {
-                final newPosition = _placement == 'Left Edge' ? 'left' : 'right';
-                final updated = prefs.copyWith(
-                  showAcrossApp: !_isDeactivated && (_showOnHome || _showOnBudgets),
-                  edgePosition: newPosition,
-                  proactiveHints: _frequency == 'standard',
-                );
-                provider.updateCompanionPreferences(updated);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: [
-                        Icon(Icons.task_alt, color: tokens.ionCyan, size: 18),
-                        const SizedBox(width: 8),
-                        Text('Preferences Synchronized', style: HorizonTypography.bodySm),
-                      ],
-                    ),
-                    backgroundColor: tokens.surface3,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-              icon: Icon(Icons.tune, size: 20, color: tokens.canvas),
-              label: Text(
-                'SAVE PREFERENCES',
-                style: HorizonTypography.headlineSm.copyWith(
-                  color: tokens.canvas,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.0,
+              const SizedBox(height: HorizonDimensions.spaceLG),
+
+              // ── 3. Placement & Screen Docking ───────────────────────────────
+              _buildSectionHeader(tokens, 'PLACEMENT & DOCKING'),
+              const SizedBox(height: 8),
+              HorizonSurface(
+                tier: HorizonSurfaceTier.surface2,
+                padding: const EdgeInsets.all(HorizonDimensions.marginMobile),
+                child: FinPlacementSelector(
+                  placement: _placement,
+                  onPlacementChanged: (mode) => setState(() => _placement = mode),
+                  onResetPosition: () => _handleResetPosition(provider, tokens),
                 ),
               ),
-            ),
+              const SizedBox(height: HorizonDimensions.spaceLG),
+
+              // ── 4. Guidance Frequency ───────────────────────────────────────
+              _buildSectionHeader(tokens, 'GUIDANCE FREQUENCY'),
+              const SizedBox(height: 8),
+              HorizonSurface(
+                tier: HorizonSurfaceTier.surface2,
+                padding: const EdgeInsets.all(HorizonDimensions.marginMobile),
+                child: FinGuidanceStyleCard(
+                  frequency: _frequency,
+                  onFrequencyChanged: (freq) => setState(() => _frequency = freq),
+                ),
+              ),
+              const SizedBox(height: HorizonDimensions.spaceLG),
+
+              // ── 5. Data Boundaries & Privacy Panel ─────────────────────────
+              FinDataBoundaryPanel(),
+              const SizedBox(height: HorizonDimensions.spaceLG + 4),
+
+              // ── 6. Save Preferences Action Bar ──────────────────────────────
+              FinSavePreferencesBar(
+                onSave: () => _savePreferences(provider, tokens),
+              ),
+            ],
           ),
-        ],
+        );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(HorizonThemeTokens tokens, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title,
+        style: HorizonTypography.labelCaps.copyWith(
+          color: tokens.textMedium,
+          letterSpacing: 1.2,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

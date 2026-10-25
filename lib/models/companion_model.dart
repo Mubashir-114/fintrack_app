@@ -18,7 +18,8 @@ enum FinCharacterState {
   caution,
   confused,
   emptyData,
-  error;
+  error,
+  docked;
 
   static FinCharacterState fromString(String? value) {
     if (value == null) return FinCharacterState.idle;
@@ -50,6 +51,10 @@ enum FinCharacterState {
         return FinCharacterState.emptyData;
       case 'error':
         return FinCharacterState.error;
+      case 'docked':
+      case 'resting':
+      case 'hidden':
+        return FinCharacterState.docked;
       case 'idle':
       default:
         return FinCharacterState.idle;
