@@ -72,3 +72,10 @@ credentials*.json
 .ssh/
 .aws/
 secrets/
+
+# Third-party agent tool state
+.agents/
+skills-lock.json
+
+# Temporary test captures
+docs/improvements/**/screenshots/
