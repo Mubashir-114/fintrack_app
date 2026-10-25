@@ -231,7 +231,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      final amount = find.text(r'$210,000.00');
+      final amount = find.text('₹2,10,000.00');
       expect(amount, findsOneWidget);
       expect(tester.getSize(amount).height, lessThan(24));
       expect(tester.takeException(), isNull);

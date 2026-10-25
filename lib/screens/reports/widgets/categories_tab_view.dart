@@ -30,11 +30,15 @@ class CategoriesTabView extends StatefulWidget {
   State<CategoriesTabView> createState() => _CategoriesTabViewState();
 }
 
-class _CategoriesTabViewState extends State<CategoriesTabView> {
+class _CategoriesTabViewState extends State<CategoriesTabView>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   int? _selectedCategoryIndex;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final colors = AppColors.of(context);
     final reports = widget.categoryReports;
 
@@ -120,8 +124,8 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          _WrappingSummaryRow(
+            spacing: 12,
             children: [
               Text(
                 "Expense Distribution",
@@ -229,8 +233,8 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                _WrappingSummaryRow(
+                  spacing: 8,
                   children: [
                     Text(
                       cat.category,
@@ -670,8 +674,8 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        _WrappingSummaryRow(
+          spacing: 12,
           children: [
             Text(
               "Budget Tracking Status",
@@ -731,8 +735,8 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Header Row: Category & Status Badge
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  _WrappingSummaryRow(
+                    spacing: 8,
                     children: [
                       Row(
                         children: [
@@ -779,8 +783,8 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
                   const SizedBox(height: 10),
 
                   // Spending vs Budget Figures
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  _WrappingSummaryRow(
+                    spacing: 8,
                     children: [
                       Text(
                         hasBudget
@@ -843,4 +847,23 @@ class _CategoriesTabViewState extends State<CategoriesTabView> {
       ],
     );
   }
+}
+
+/// Keep the original full-width row alignment, wrapping only at tight widths.
+class _WrappingSummaryRow extends StatelessWidget {
+  const _WrappingSummaryRow({required this.children, required this.spacing});
+  final List<Widget> children;
+  final double spacing;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    child: Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: spacing,
+      runSpacing: 6,
+      children: children,
+    ),
+  );
 }

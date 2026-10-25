@@ -16,6 +16,8 @@ import '../../models/transaction_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/dashboard_provider.dart';
+import '../../providers/currency_provider.dart';
+import '../../core/utils/money_formatter.dart';
 import '../../providers/sms_provider.dart';
 import '../accounts/widgets/money_text.dart';
 import 'widgets/dashboard_account_row.dart';
@@ -98,6 +100,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     AuthProvider authProvider,
     HorizonThemeTokens tokens,
   ) {
+    final currencyCode =
+        context.watch<CurrencyProvider?>()?.currencyCode ?? 'INR';
     final user = authProvider.currentUser;
     final userName = user?.name ?? "Alex";
 
@@ -185,7 +189,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           // Currency badge — informational, not a control.
           Semantics(
-            label: 'Display currency: Indian Rupee',
+            label: 'Display currency: $currencyCode',
             excludeSemantics: true,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -198,7 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "INR",
+                    currencyCode,
                     style: HorizonTypography.labelCaps.copyWith(
                       color: tokens.ionCyan,
                       fontWeight: FontWeight.w700,
@@ -207,7 +211,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(width: 3),
                   Text(
-                    "(₹)",
+                    "(${MoneyFormatter.getSymbol(currencyCode)})",
                     style: HorizonTypography.bodySm.copyWith(
                       color: tokens.textMedium,
                       fontSize: 10,
@@ -234,6 +238,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildMonthlyTrendChart(DashboardProvider provider, bool isDark) {
+    final currencyCode =
+        context.watch<CurrencyProvider?>()?.currencyCode ?? 'INR';
     final colors = AppColors.of(context);
     final largeText = MediaQuery.textScalerOf(context).scale(10) > 13;
     final summaries = provider.monthlySummaries
@@ -270,7 +276,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return FinancialChart(
       description:
-          'Monthly income and expenses, zero baseline. ${summaries.map((item) => '${item.month}: income ${MoneyText.format(item.income.toStringAsFixed(2), 'INR')}, expense ${MoneyText.format(item.expense.toStringAsFixed(2), 'INR')}').join('; ')}',
+          'Monthly income and expenses, zero baseline. ${summaries.map((item) => '${item.month}: income ${MoneyText.format(item.income.toStringAsFixed(2), currencyCode)}, expense ${MoneyText.format(item.expense.toStringAsFixed(2), currencyCode)}').join('; ')}',
       child: Container(
         height: 220,
         padding: const EdgeInsets.only(top: 16, right: 16, left: 16, bottom: 8),
@@ -287,7 +293,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ? "Income"
                         : "Expense";
                     return LineTooltipItem(
-                      "$type: ₹${spot.y.toStringAsFixed(2)}",
+                      "$type: ${MoneyFormatter.amount(spot.y, currencyCode: currencyCode)}",
                       TextStyle(
                         color: colors.textPrimary,
                         fontWeight: FontWeight.bold,
@@ -356,10 +362,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     meta: meta,
                     space: 6,
                     child: Text(
-                      NumberFormat.compactCurrency(
-                        symbol: '\u20B9',
-                        decimalDigits: 0,
-                      ).format(value),
+                      MoneyFormatter.compact(value, currencyCode),
                       maxLines: 1,
                       softWrap: false,
                       style: TextStyle(

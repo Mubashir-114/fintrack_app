@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/currency_provider.dart';
+import '../../../core/utils/money_formatter.dart';
 
 import '../../../core/horizon/horizon.dart';
 import '../../../core/utils/category_utils.dart';
@@ -77,7 +80,7 @@ class DashboardRecentRow extends StatelessWidget {
                           : Alignment.centerRight,
                       child: Text(
                         '${isExpense ? '-' : '+'}'
-                        '${HorizonFormatters.formatInr(transaction.amount, showSign: false)}',
+                        '${MoneyFormatter.amount(transaction.amount, currencyCode: context.watch<CurrencyProvider?>()?.currencyCode ?? 'INR')}',
                         style: HorizonTypography.tabularAmountSm.copyWith(
                           color: isExpense ? tokens.outflow : tokens.surplus,
                           fontWeight: FontWeight.w700,

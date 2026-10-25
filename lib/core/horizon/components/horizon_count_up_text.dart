@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../tokens/horizon_formatters.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/currency_provider.dart';
+import '../../utils/money_formatter.dart';
 import '../tokens/horizon_motion.dart';
 
 /// Animated financial readout.
@@ -29,12 +31,16 @@ class HorizonCountUpAmount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currencyCode =
+        context.watch<CurrencyProvider?>()?.currencyCode ?? 'INR';
+    String format(num value) => MoneyFormatter.amount(
+      value,
+      currencyCode: currencyCode,
+      decimalDigits: decimalDigits,
+    );
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     if (reduceMotion) {
-      return Text(
-        HorizonFormatters.formatInr(amount, decimalDigits: decimalDigits),
-        style: style,
-      );
+      return Text(format(amount), style: style);
     }
 
     // Keyed on the amount so a period switch replays the count-up.
@@ -43,10 +49,7 @@ class HorizonCountUpAmount extends StatelessWidget {
       tween: Tween<double>(begin: 0, end: amount),
       duration: duration,
       curve: curve,
-      builder: (context, value, _) => Text(
-        HorizonFormatters.formatInr(value, decimalDigits: decimalDigits),
-        style: style,
-      ),
+      builder: (context, value, _) => Text(format(value), style: style),
     );
   }
 }

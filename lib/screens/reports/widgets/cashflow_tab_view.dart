@@ -123,7 +123,9 @@ class CashflowTabView extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: catColor.withValues(alpha: isDark ? 0.2 : 0.12),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: catColor.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: catColor.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Icon(catIcon, color: catColor, size: 22),
                     ),
@@ -152,7 +154,10 @@ class CashflowTabView extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: (isExpense ? colors.danger : colors.success)
                             .withValues(alpha: 0.14),
@@ -174,12 +179,24 @@ class CashflowTabView extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Details Grid
-                _buildDetailRow("Amount", "${isExpense ? '-' : '+'}${currency.format(item.amount)}", colors,
-                    valueColor: isExpense ? colors.danger : colors.success),
+                _buildDetailRow(
+                  "Amount",
+                  "${isExpense ? '-' : '+'}${currency.format(item.amount)}",
+                  colors,
+                  valueColor: isExpense ? colors.danger : colors.success,
+                ),
                 const SizedBox(height: 12),
-                _buildDetailRow("Recorded Date", _formatFriendlyTimestamp(item.date), colors),
+                _buildDetailRow(
+                  "Recorded Date",
+                  _formatFriendlyTimestamp(item.date),
+                  colors,
+                ),
                 const SizedBox(height: 12),
-                _buildDetailRow("Cumulative Cash Flow", currency.format(item.runningBalance), colors),
+                _buildDetailRow(
+                  "Cumulative Cash Flow",
+                  currency.format(item.runningBalance),
+                  colors,
+                ),
                 const SizedBox(height: 8),
                 Text(
                   "* Cumulative Cash Flow represents the period's net ledger sum, not a live bank balance.",
@@ -206,7 +223,10 @@ class CashflowTabView extends StatelessWidget {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text("Close", style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      "Close",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ],
@@ -228,10 +248,7 @@ class CashflowTabView extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: colors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 12, color: colors.textSecondary),
         ),
         Text(
           value,
@@ -260,7 +277,8 @@ class CashflowTabView extends StatelessWidget {
             EmptyState(
               icon: Icons.receipt_long_rounded,
               title: "No cash-flow entries",
-              description: "No ledger transactions were recorded in the selected date range.",
+              description:
+                  "No ledger transactions were recorded in the selected date range.",
             ),
           ],
         ),
@@ -271,18 +289,20 @@ class CashflowTabView extends StatelessWidget {
     final grouped = <String, List<CashflowReport>>{};
     for (final report in cashflowReports) {
       final parsed = DateTime.tryParse(report.date);
-      final key = parsed != null ? DateFormat('yyyy-MM-dd').format(parsed) : report.date;
+      final key = parsed != null
+          ? DateFormat('yyyy-MM-dd').format(parsed)
+          : report.date;
       grouped.putIfAbsent(key, () => []).add(report);
     }
 
     // Sort date keys in reverse-chronological order (newest dates first)
-    final sortedKeys = grouped.keys.toList()
-      ..sort((a, b) => b.compareTo(a));
+    final sortedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return RefreshIndicator(
       onRefresh: onRefresh,
       color: colors.primary,
       child: ListView.builder(
+        key: const PageStorageKey('reports_cashflow_scroll'),
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.md,
@@ -310,7 +330,12 @@ class CashflowTabView extends StatelessWidget {
             children: [
               // Date Group Header
               Padding(
-                padding: const EdgeInsets.only(top: 12.0, bottom: 8.0, left: 4.0, right: 4.0),
+                padding: const EdgeInsets.only(
+                  top: 12.0,
+                  bottom: 8.0,
+                  left: 4.0,
+                  right: 4.0,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -362,7 +387,9 @@ class CashflowTabView extends StatelessWidget {
                               margin: const EdgeInsets.only(top: 18),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: isExpense ? colors.danger : colors.success,
+                                color: isExpense
+                                    ? colors.danger
+                                    : colors.success,
                                 border: Border.all(
                                   color: colors.surface,
                                   width: 2,
@@ -387,7 +414,9 @@ class CashflowTabView extends StatelessWidget {
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
                             color: colors.surface,
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusMD,
+                            ),
                             border: Border.all(color: colors.cardBorder),
                           ),
                           child: Material(
@@ -399,7 +428,9 @@ class CashflowTabView extends StatelessWidget {
                                 colors,
                                 currency,
                               ),
-                              borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.radiusMD,
+                              ),
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -417,14 +448,19 @@ class CashflowTabView extends StatelessWidget {
                                         ),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: Icon(catIcon, color: catColor, size: 17),
+                                      child: Icon(
+                                        catIcon,
+                                        color: catColor,
+                                        size: 17,
+                                      ),
                                     ),
                                     const SizedBox(width: 10),
 
                                     // Title & Category Metadata
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             item.title,
@@ -453,15 +489,19 @@ class CashflowTabView extends StatelessWidget {
 
                                     // Amount & Cumulative Indicator
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           "${isExpense ? '-' : '+'}${currency.format(item.amount)}",
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 13,
-                                            color: isExpense ? colors.danger : colors.success,
+                                            color: isExpense
+                                                ? colors.danger
+                                                : colors.success,
                                             letterSpacing: -0.2,
                                           ),
                                         ),

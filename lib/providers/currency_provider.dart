@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
+import '../core/utils/money_formatter.dart';
 
 class CurrencyProvider extends ChangeNotifier {
   static const String _prefKey = 'user_currency_code';
 
-  String _currencyCode = 'USD';
-  String _currencySymbol = '\$';
+  String _currencyCode = 'INR';
 
   String get currencyCode => _currencyCode;
-  String get currencySymbol => _currencySymbol;
-  String get selectedCurrencyString => '$_currencyCode ($_currencySymbol)';
+  String get currencySymbol => MoneyFormatter.getSymbol(_currencyCode);
+  String get selectedCurrencyString => '$_currencyCode ($currencySymbol)';
 
   static const Map<String, String> currencySymbols = {
     'USD': '\$',
@@ -29,7 +28,6 @@ class CurrencyProvider extends ChangeNotifier {
       final savedCode = prefs.getString(_prefKey);
       if (savedCode != null && currencySymbols.containsKey(savedCode)) {
         _currencyCode = savedCode;
-        _currencySymbol = currencySymbols[savedCode]!;
         notifyListeners();
       }
     } catch (_) {}
@@ -38,7 +36,6 @@ class CurrencyProvider extends ChangeNotifier {
   Future<void> setCurrency(String code) async {
     if (!currencySymbols.containsKey(code)) return;
     _currencyCode = code;
-    _currencySymbol = currencySymbols[code]!;
     notifyListeners();
 
     try {
@@ -47,7 +44,17 @@ class CurrencyProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
-  String format(double amount) {
-    return NumberFormat.currency(symbol: _currencySymbol, decimalDigits: 2).format(amount);
-  }
+  String format(
+    num amount, {
+    bool decimalDigits = true,
+    bool showSign = false,
+  }) => MoneyFormatter.amount(
+    amount,
+    currencyCode: _currencyCode,
+    decimalDigits: decimalDigits,
+    showSign: showSign,
+  );
+
+  String formatCompact(num amount) =>
+      MoneyFormatter.compact(amount, _currencyCode);
 }

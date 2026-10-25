@@ -38,6 +38,7 @@ class _ReportsScreenState extends State<ReportsScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<ReportProvider>().loadAllReports();
     });
   }
@@ -365,10 +366,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                 ),
                 decoration: BoxDecoration(
                   border: Border(
-                    bottom: BorderSide(
-                      color: tokens.rimNeutral,
-                      width: 1,
-                    ),
+                    bottom: BorderSide(color: tokens.rimNeutral, width: 1),
                   ),
                 ),
                 child: TabBar(
@@ -378,6 +376,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                   indicatorSize: TabBarIndicatorSize.tab,
                   labelColor: tokens.ionCyan,
                   unselectedLabelColor: tokens.textMedium,
+                  labelPadding: const EdgeInsets.symmetric(horizontal: 8),
                   labelStyle: HorizonTypography.labelCaps.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
@@ -404,6 +403,9 @@ class _ReportsScreenState extends State<ReportsScreen>
           ? _buildErrorState(provider.errorMessage!, colors)
           : TabBarView(
               controller: _tabController,
+              // Primary page swipes belong to the app shell. Subtabs remain
+              // available through the TabBar; charts arbitrate their own touch.
+              physics: const NeverScrollableScrollPhysics(),
               children: [
                 TrendsTabView(
                   summary: provider.summary,

@@ -6,7 +6,10 @@ import '../repositories/report_repository.dart';
 import '../core/utils/pdf_exporter.dart';
 
 class ReportProvider extends ChangeNotifier {
-  final ReportRepository _repository = ReportRepository();
+  ReportProvider({ReportRepository? repository})
+    : _repository = repository ?? ReportRepository();
+
+  final ReportRepository _repository;
 
   bool _isLoading = false;
   bool _isExporting = false;
@@ -101,7 +104,8 @@ class ReportProvider extends ChangeNotifier {
           loadGeneration != _loadGeneration) {
         return;
       }
-      _errorMessage = e.response?.data["message"] ?? e.message ?? "Failed to load reports";
+      _errorMessage =
+          e.response?.data["message"] ?? e.message ?? "Failed to load reports";
     } catch (e) {
       if (sessionGeneration != _sessionGeneration ||
           loadGeneration != _loadGeneration) {
@@ -140,7 +144,8 @@ class ReportProvider extends ChangeNotifier {
       return sessionGeneration == _sessionGeneration ? csvContent : null;
     } on DioException catch (e) {
       if (sessionGeneration != _sessionGeneration) return null;
-      _errorMessage = e.response?.data["message"] ?? e.message ?? "Failed to export report";
+      _errorMessage =
+          e.response?.data["message"] ?? e.message ?? "Failed to export report";
       return null;
     } catch (e) {
       if (sessionGeneration != _sessionGeneration) return null;
@@ -157,7 +162,7 @@ class ReportProvider extends ChangeNotifier {
   bool _isPdfExporting = false;
   bool get isPdfExporting => _isPdfExporting;
 
-  Future<String?> exportPDF(String dateRangeStr, [String currencySymbol = '\$']) async {
+  Future<String?> exportPDF(String dateRangeStr, String currencySymbol) async {
     if (_summary == null) return null;
 
     final sessionGeneration = _sessionGeneration;

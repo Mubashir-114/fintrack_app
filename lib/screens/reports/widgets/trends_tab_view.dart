@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
@@ -35,11 +34,15 @@ class TrendsTabView extends StatefulWidget {
   State<TrendsTabView> createState() => _TrendsTabViewState();
 }
 
-class _TrendsTabViewState extends State<TrendsTabView> {
+class _TrendsTabViewState extends State<TrendsTabView>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   int? _selectedTrendIndex;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final colors = AppColors.of(context);
     final summary = widget.summary;
 
@@ -651,10 +654,7 @@ class _TrendsTabViewState extends State<TrendsTabView> {
                         meta: meta,
                         space: 6,
                         child: Text(
-                          NumberFormat.compactCurrency(
-                            symbol: currency.currencySymbol,
-                            decimalDigits: 0,
-                          ).format(value),
+                          currency.formatCompact(value),
                           style: TextStyle(
                             fontSize: 9,
                             color: colors.textSecondary,

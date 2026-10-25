@@ -11,7 +11,7 @@ class PdfExporter {
     required List<CategoryReport> categoryReports,
     required List<CashflowReport> cashflowReports,
     required String dateRangeStr,
-    String currencySymbol = '\$',
+    required String currencySymbol,
   }) async {
     final pdf = pw.Document();
 
