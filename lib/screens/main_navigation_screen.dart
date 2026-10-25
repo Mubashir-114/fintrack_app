@@ -16,11 +16,17 @@ import '../providers/goal_provider.dart';
 import '../providers/analytics_provider.dart';
 import 'analytics/widgets/global_fin_overlay.dart';
 import 'analytics/widgets/fin_content_bounds.dart';
+import 'primary_page_view.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   final Widget child;
+  final List<WidgetBuilder>? primaryDestinations;
 
-  const MainNavigationScreen({super.key, required this.child});
+  const MainNavigationScreen({
+    super.key,
+    required this.child,
+    this.primaryDestinations,
+  }) : assert(primaryDestinations == null || primaryDestinations.length == 5);
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
@@ -29,6 +35,16 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   StreamSubscription<bool>? _connectivitySubscription;
   bool _wasOffline = false;
+  bool _hasMountedPrimary = false;
+  int _primaryIndex = 0;
+  GoRouterDelegate? _routerDelegate;
+  static const _primaryRoutes = [
+    "/dashboard",
+    "/ledger",
+    "/budgets",
+    "/reports",
+    "/profile",
+  ];
   final _finContentBounds = ValueNotifier<List<Rect>>([Rect.largest]);
 
   @override
@@ -52,7 +68,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final delegate = GoRouter.of(context).routerDelegate;
+    if (delegate == _routerDelegate) return;
+    _routerDelegate?.removeListener(_onRouteChanged);
+    _routerDelegate = delegate..addListener(_onRouteChanged);
+  }
+
+  void _onRouteChanged() {
+    if (mounted) setState(() {});
+  }
+
+  String get _location =>
+      _routerDelegate!.currentConfiguration.last.matchedLocation;
+
+  @override
   void dispose() {
+    _routerDelegate?.removeListener(_onRouteChanged);
     _finContentBounds.dispose();
     _connectivitySubscription?.cancel();
     super.dispose();
@@ -86,7 +119,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   int _getSelectedIndex(BuildContext context) {
-    final String location = GoRouterState.of(context).matchedLocation;
+    final String location = _location;
     if (location.startsWith('/dashboard')) return 0;
     // `/transactions` remains a compatible deep link to transaction
     // management. It belongs to the Ledger destination in the new IA.
@@ -132,6 +165,29 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final colors = AppColors.of(context);
     final media = MediaQuery.of(context);
     final isTablet = media.size.width >= 600 && media.size.height >= 520;
+
+    final location = _location;
+    final isPrimary = _primaryRoutes.contains(location);
+    if (isPrimary) _primaryIndex = selectedIndex;
+    _hasMountedPrimary |= isPrimary && widget.primaryDestinations != null;
+    final content = widget.primaryDestinations == null
+        ? widget.child
+        : Stack(
+            fit: StackFit.expand,
+            children: [
+              if (_hasMountedPrimary)
+                Offstage(
+                  offstage: !isPrimary,
+                  child: PrimaryPageView(
+                    selectedIndex: _primaryIndex,
+                    builders: widget.primaryDestinations!,
+                    active: isPrimary,
+                    onPageChanged: (index) => _onItemTapped(index, context),
+                  ),
+                ),
+              Offstage(offstage: isPrimary, child: widget.child),
+            ],
+          );
 
     Widget mainLayout;
 
@@ -198,15 +254,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             ],
           ),
           const VerticalDivider(width: 1, thickness: 1),
-          Expanded(child: widget.child),
+          Expanded(child: content),
         ],
       );
     } else {
       // Mobile standard layout: Bottom Navigation Bar
-      mainLayout = widget.child;
+      mainLayout = content;
     }
 
-    final location = GoRouterState.of(context).matchedLocation;
     final screenTitle = switch (location) {
       '/dashboard' => 'Dashboard',
       '/transactions' => 'Transactions',
@@ -226,76 +281,91 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       '/profile/appearance' => 'Appearance',
       _ => location.startsWith('/accounts') ? 'Accounts' : 'FinTrack',
     };
-    return Title(
-      title: '$screenTitle | FinTrack',
-      color: colors.primary,
-      child: Scaffold(
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned.fill(
-              child: FinContentBounds(
-                bounds: _finContentBounds,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    StreamBuilder<bool>(
-                      stream: ConnectivityService.connectionStream,
-                      initialData: ConnectivityService.isOnline,
-                      builder: (context, snapshot) {
-                        final isOnline = snapshot.data ?? true;
-                        if (isOnline) return const SizedBox.shrink();
-                        return Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 7,
-                            horizontal: 12,
-                          ),
-                          color: AppColors.danger.withValues(alpha: .94),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.wifi_off_rounded,
-                                color: Colors.white,
-                                size: 14,
-                              ),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  "Offline · Showing saved data. Changes need a connection.",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
+    return PopScope(
+      canPop:
+          widget.primaryDestinations == null ||
+          !isPrimary ||
+          selectedIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && isPrimary && selectedIndex != 0) {
+          _onItemTapped(0, context);
+        }
+      },
+      child: Title(
+        title: '$screenTitle | FinTrack',
+        color: colors.primary,
+        child: Scaffold(
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              Positioned.fill(
+                child: FinContentBounds(
+                  bounds: _finContentBounds,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      StreamBuilder<bool>(
+                        stream: ConnectivityService.connectionStream,
+                        initialData: ConnectivityService.isOnline,
+                        builder: (context, snapshot) {
+                          final isOnline = snapshot.data ?? true;
+                          if (isOnline) return const SizedBox.shrink();
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 7,
+                              horizontal: 12,
+                            ),
+                            color: AppColors.danger.withValues(alpha: .94),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.wifi_off_rounded,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "Offline · Showing saved data. Changes need a connection.",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    Expanded(child: mainLayout),
-                  ],
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                      Expanded(child: mainLayout),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Positioned.fill(
-              child: GlobalFinOverlay(contentBounds: _finContentBounds),
-            ),
-          ],
+              Positioned.fill(
+                child: GlobalFinOverlay(
+                  contentBounds: _finContentBounds,
+                  location: location,
+                ),
+              ),
+            ],
+          ),
+          // The shell reserves this height, so scrollable screen content never
+          // sits beneath the floating card. Hide it while a keyboard is open so
+          // fields retain the full visible area.
+          bottomNavigationBar: !isTablet && media.viewInsets.bottom == 0
+              ? FloatingBottomNavigation(
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: (index) =>
+                      _onItemTapped(index, context),
+                )
+              : null,
         ),
-        // The shell reserves this height, so scrollable screen content never
-        // sits beneath the floating card. Hide it while a keyboard is open so
-        // fields retain the full visible area.
-        bottomNavigationBar: !isTablet && media.viewInsets.bottom == 0
-            ? FloatingBottomNavigation(
-                selectedIndex: selectedIndex,
-                onDestinationSelected: (index) => _onItemTapped(index, context),
-              )
-            : null,
       ),
     );
   }

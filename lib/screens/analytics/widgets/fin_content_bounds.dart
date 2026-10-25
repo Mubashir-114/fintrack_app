@@ -49,6 +49,7 @@ class _ContentBounds extends RenderProxyBox {
       final occupied = <Rect>[];
       void visit(RenderObject object) {
         if (!object.attached) return;
+        if (object is RenderOffstage && object.offstage) return;
         final protectsControl =
             object is RenderSemanticsAnnotations &&
             (object.properties.button == true ||

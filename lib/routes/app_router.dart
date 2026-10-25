@@ -3,7 +3,6 @@ import '../screens/profile/privacy_screen.dart';
 import '../screens/profile/delete_account_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-import '../core/constants/app_motion.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
@@ -127,20 +126,22 @@ final GoRouter appRouter = GoRouter(
     ),
     ShellRoute(
       observers: [FinOverlayObserver()],
-      builder: (context, state, child) => MainNavigationScreen(child: child),
+      builder: (context, state, child) => MainNavigationScreen(
+        primaryDestinations: [
+          (_) => const DashboardScreen(),
+          (_) => const LedgerScreen(),
+          (_) => const BudgetsListScreen(),
+          (_) => const ReportsScreen(),
+          (_) => const ProfileScreen(),
+        ],
+        child: child,
+      ),
       routes: [
         GoRoute(
           path: '/dashboard',
-          pageBuilder: (context, state) => CustomTransitionPage<void>(
+          pageBuilder: (context, state) => NoTransitionPage<void>(
             key: state.pageKey,
-            transitionDuration: MediaQuery.disableAnimationsOf(context)
-                ? Duration.zero
-                : AppMotion.quick,
-            reverseTransitionDuration: Duration.zero,
-            child: const DashboardScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) =>
-                    FadeTransition(opacity: animation, child: child),
+            child: const SizedBox.shrink(),
           ),
         ),
         GoRoute(
@@ -149,7 +150,10 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: '/ledger',
-          builder: (context, state) => const LedgerScreen(),
+          pageBuilder: (context, state) => NoTransitionPage<void>(
+            key: state.pageKey,
+            child: const SizedBox.shrink(),
+          ),
         ),
         GoRoute(
           path: '/income-details',
@@ -165,11 +169,17 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: '/budgets',
-          builder: (context, state) => const BudgetsListScreen(),
+          pageBuilder: (context, state) => NoTransitionPage<void>(
+            key: state.pageKey,
+            child: const SizedBox.shrink(),
+          ),
         ),
         GoRoute(
           path: '/reports',
-          builder: (context, state) => const ReportsScreen(),
+          pageBuilder: (context, state) => NoTransitionPage<void>(
+            key: state.pageKey,
+            child: const SizedBox.shrink(),
+          ),
         ),
         GoRoute(
           path: '/analytics',
@@ -193,7 +203,10 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: '/profile',
-          builder: (context, state) => const ProfileScreen(),
+          pageBuilder: (context, state) => NoTransitionPage<void>(
+            key: state.pageKey,
+            child: const SizedBox.shrink(),
+          ),
         ),
         GoRoute(
           path: '/profile/privacy',

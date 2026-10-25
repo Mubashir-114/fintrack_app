@@ -44,7 +44,8 @@ class FinOverlayObserver extends NavigatorObserver {
 
 /// Restricted to browsing surfaces; forms, import and security stay unobstructed.
 class GlobalFinOverlay extends StatefulWidget {
-  const GlobalFinOverlay({super.key, this.contentBounds});
+  const GlobalFinOverlay({super.key, this.contentBounds, this.location});
+  final String? location;
 
   final ValueListenable<List<Rect>>? contentBounds;
 
@@ -143,7 +144,8 @@ class _GlobalFinOverlayState extends State<GlobalFinOverlay>
         widget.contentBounds,
       ]),
       builder: (context, _) {
-        final location = GoRouterState.of(context).matchedLocation;
+        final location =
+            widget.location ?? GoRouterState.of(context).matchedLocation;
         if (_location != location) {
           _location = location;
           // Route changes never reopen a mini panel.
