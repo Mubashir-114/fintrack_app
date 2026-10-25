@@ -122,9 +122,15 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
               const SizedBox(width: 8),
-              Expanded(child: Text('${updated.displayName} updated successfully')),
+              Expanded(
+                child: Text('${updated.displayName} updated successfully'),
+              ),
             ],
           ),
           backgroundColor: AppColors.success,
@@ -247,8 +253,8 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                       textInputAction: _needsInstitution
                           ? TextInputAction.next
                           : (account.type != 'cash'
-                              ? TextInputAction.next
-                              : TextInputAction.done),
+                                ? TextInputAction.next
+                                : TextInputAction.done),
                       onFieldSubmitted: (_) {
                         if (_needsInstitution) {
                           _institutionFocus.requestFocus();
@@ -283,7 +289,9 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                           if (v == null || v.trim().isEmpty) {
                             return 'Institution name is required';
                           }
-                          if (v.trim().length > 100) return 'Max 100 characters';
+                          if (v.trim().length > 100) {
+                            return 'Max 100 characters';
+                          }
                           return null;
                         },
                       ),
@@ -321,22 +329,28 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: tokens.danger.withValues(alpha: 0.1),
-                          borderRadius:
-                              BorderRadius.circular(AppDimensions.radiusMD),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMD,
+                          ),
                           border: Border.all(
                             color: tokens.danger.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline_rounded,
-                                color: tokens.danger, size: 18),
+                            Icon(
+                              Icons.error_outline_rounded,
+                              color: tokens.danger,
+                              size: 18,
+                            ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 _submitError!,
-                                style:
-                                    TextStyle(color: tokens.danger, fontSize: 13),
+                                style: TextStyle(
+                                  color: tokens.danger,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
                           ],
@@ -381,11 +395,13 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                   onPressed: _isSubmitting ? null : _submit,
                   style: FilledButton.styleFrom(
                     backgroundColor: tokens.primary,
-                    foregroundColor:
-                        isDark ? const Color(0xFF171B24) : Colors.white,
+                    foregroundColor: isDark
+                        ? const Color(0xFF171B24)
+                        : Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.radiusMD),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusMD,
+                      ),
                     ),
                     elevation: 0,
                   ),
@@ -453,24 +469,24 @@ class _ImmutableSection extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _Row(
-              label: 'Account Type',
-              value: _typeName(account.type),
-              isDark: isDark),
+            label: 'Account Type',
+            value: _typeName(account.type),
+            isDark: isDark,
+          ),
           _Row(
-              label: account.type == 'credit_card'
-                  ? 'Opening Debt'
-                  : 'Opening Balance',
-              value: '₹${account.openingAmount}',
-              isDark: isDark),
-          _Row(
-              label: 'Currency',
-              value: account.currencyCode,
-              isDark: isDark),
+            label: account.type == 'credit_card'
+                ? 'Opening Debt'
+                : 'Opening Balance',
+            value: '₹${account.openingAmount}',
+            isDark: isDark,
+          ),
+          _Row(label: 'Currency', value: account.currencyCode, isDark: isDark),
           if (account.creditLimit != null)
             _Row(
-                label: 'Credit Limit',
-                value: '₹${account.creditLimit}',
-                isDark: isDark),
+              label: 'Credit Limit',
+              value: '₹${account.creditLimit}',
+              isDark: isDark,
+            ),
         ],
       ),
     );
@@ -509,10 +525,7 @@ class _Row extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
-              color: tokens.textSecondary,
-            ),
+            style: TextStyle(fontSize: 12, color: tokens.textSecondary),
           ),
           Text(
             value,

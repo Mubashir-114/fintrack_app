@@ -96,7 +96,11 @@ class _AlertPreferencesSheetState extends State<AlertPreferencesSheet> {
                   color: colors.primary.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.tune_rounded, color: colors.primary, size: 22),
+                child: Icon(
+                  Icons.tune_rounded,
+                  color: colors.primary,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -113,7 +117,10 @@ class _AlertPreferencesSheetState extends State<AlertPreferencesSheet> {
                     ),
                     Text(
                       "Configure deterministic proactive insights",
-                      style: TextStyle(fontSize: 12, color: colors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -176,7 +183,10 @@ class _AlertPreferencesSheetState extends State<AlertPreferencesSheet> {
                     ),
                     subtitle: Text(
                       "Alerts when approaching or exceeding budgets",
-                      style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: colors.textSecondary,
+                      ),
                     ),
                     activeThumbColor: colors.primary,
                     value: _enableBudgetAlerts,
@@ -192,7 +202,10 @@ class _AlertPreferencesSheetState extends State<AlertPreferencesSheet> {
                     ),
                     subtitle: Text(
                       "Detects historical anomalies with statistical confidence",
-                      style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: colors.textSecondary,
+                      ),
                     ),
                     activeThumbColor: colors.primary,
                     value: _enableAnomalyAlerts,
@@ -208,7 +221,10 @@ class _AlertPreferencesSheetState extends State<AlertPreferencesSheet> {
                     ),
                     subtitle: Text(
                       "Actionable recommendations based on saved records",
-                      style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: colors.textSecondary,
+                      ),
                     ),
                     activeThumbColor: colors.primary,
                     value: _enableSavingsAlerts,
@@ -235,7 +251,10 @@ class _AlertPreferencesSheetState extends State<AlertPreferencesSheet> {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: colors.primary.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
@@ -261,7 +280,10 @@ class _AlertPreferencesSheetState extends State<AlertPreferencesSheet> {
                         inactiveColor: colors.elevated,
                         label: "${(_budgetThreshold * 100).toInt()}%",
                         onChanged: (val) {
-                          setState(() => _budgetThreshold = (val * 100).round() / 100.0);
+                          setState(
+                            () =>
+                                _budgetThreshold = (val * 100).round() / 100.0,
+                          );
                         },
                       ),
                     ],
@@ -280,9 +302,16 @@ class _AlertPreferencesSheetState extends State<AlertPreferencesSheet> {
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.primary,
-                  side: BorderSide(color: colors.primary.withValues(alpha: 0.5)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  side: BorderSide(
+                    color: colors.primary.withValues(alpha: 0.5),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
+                  ),
                 ),
                 icon: const Icon(Icons.restore_rounded, size: 18),
                 label: Text("Reset Dismissed Alerts ($dismissedCount)"),
@@ -305,7 +334,9 @@ class _AlertPreferencesSheetState extends State<AlertPreferencesSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.primary,
                 foregroundColor: colors.isDark ? Colors.black : Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 padding: const EdgeInsets.symmetric(vertical: 15),
               ),
               onPressed: _savePreferences,

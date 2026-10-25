@@ -4,10 +4,7 @@ class AuthResponse {
   final String token;
   final UserModel user;
 
-  const AuthResponse({
-    required this.token,
-    required this.user,
-  });
+  const AuthResponse({required this.token, required this.user});
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
@@ -17,20 +14,11 @@ class AuthResponse {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      "token": token,
-      "user": user.toJson(),
-    };
+    return {"token": token, "user": user.toJson()};
   }
 
-  AuthResponse copyWith({
-    String? token,
-    UserModel? user,
-  }) {
-    return AuthResponse(
-      token: token ?? this.token,
-      user: user ?? this.user,
-    );
+  AuthResponse copyWith({String? token, UserModel? user}) {
+    return AuthResponse(token: token ?? this.token, user: user ?? this.user);
   }
 }
 
@@ -40,8 +28,6 @@ class ProfileResponse {
   const ProfileResponse({required this.user});
 
   factory ProfileResponse.fromJson(Map<String, dynamic> json) {
-    return ProfileResponse(
-      user: UserModel.fromJson(json["user"]),
-    );
+    return ProfileResponse(user: UserModel.fromJson(json["user"]));
   }
 }

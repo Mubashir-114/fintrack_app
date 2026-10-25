@@ -48,10 +48,7 @@ class AccountRepository {
     int id, {
     CancelToken? cancelToken,
   }) async {
-    final response = await _dio.get(
-      'accounts/$id',
-      cancelToken: cancelToken,
-    );
+    final response = await _dio.get('accounts/$id', cancelToken: cancelToken);
     return ApiResponse.fromJson(
       response.data as Map<String, dynamic>,
       (data) => AccountModel.fromJson(
@@ -69,8 +66,10 @@ class AccountRepository {
     String? institutionName,
     String? maskedLast4,
     String currencyCode = 'INR',
+
     /// Exact decimal string, e.g. "1000.00"
     String openingAmount = '0.00',
+
     /// Required for credit_card; null otherwise.
     String? creditLimit,
     bool isDefault = false,
@@ -178,7 +177,8 @@ class AccountRepository {
     );
     return ApiResponse.fromJson(
       response.data as Map<String, dynamic>,
-      (data) => AccountActivityListResponse.fromJson(data as Map<String, dynamic>),
+      (data) =>
+          AccountActivityListResponse.fromJson(data as Map<String, dynamic>),
     );
   }
 
@@ -309,7 +309,8 @@ class AccountRepository {
     final response = await _dio.post('accounts/$cardId/repay', data: body);
     return ApiResponse.fromJson(
       response.data as Map<String, dynamic>,
-      (data) => CreditCardRepaymentResult.fromJson(data as Map<String, dynamic>),
+      (data) =>
+          CreditCardRepaymentResult.fromJson(data as Map<String, dynamic>),
     );
   }
 
@@ -327,7 +328,8 @@ class AccountRepository {
     );
     return ApiResponse.fromJson(
       response.data as Map<String, dynamic>,
-      (data) => CreditCardPaymentListResponse.fromJson(data as Map<String, dynamic>),
+      (data) =>
+          CreditCardPaymentListResponse.fromJson(data as Map<String, dynamic>),
     );
   }
 }

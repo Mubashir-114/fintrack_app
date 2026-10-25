@@ -8,22 +8,45 @@ import 'animated_budget_progress.dart';
 
 String resolveCategoryVisualDescriptor(String category) {
   final norm = category.toLowerCase().trim();
-  if (norm.contains('health') || norm.contains('medic') || norm.contains('doctor') || norm.contains('hospital') || norm.contains('pharm')) {
+  if (norm.contains('health') ||
+      norm.contains('medic') ||
+      norm.contains('doctor') ||
+      norm.contains('hospital') ||
+      norm.contains('pharm')) {
     return 'Vitals: Healthy Range';
   }
-  if (norm.contains('food') || norm.contains('dining') || norm.contains('grocer') || norm.contains('restaurant')) {
+  if (norm.contains('food') ||
+      norm.contains('dining') ||
+      norm.contains('grocer') ||
+      norm.contains('restaurant')) {
     return 'Dining Allowance';
   }
-  if (norm.contains('transport') || norm.contains('transit') || norm.contains('commute') || norm.contains('fuel') || norm.contains('travel') || norm == 'car' || norm.contains('vehicle')) {
+  if (norm.contains('transport') ||
+      norm.contains('transit') ||
+      norm.contains('commute') ||
+      norm.contains('fuel') ||
+      norm.contains('travel') ||
+      norm == 'car' ||
+      norm.contains('vehicle')) {
     return 'Commute Route Track';
   }
-  if (norm.contains('shop') || norm.contains('retail') || norm.contains('cloth') || norm.contains('store')) {
+  if (norm.contains('shop') ||
+      norm.contains('retail') ||
+      norm.contains('cloth') ||
+      norm.contains('store')) {
     return 'Retail Spending Gauge';
   }
-  if (norm.contains('utilit') || norm.contains('bill') || norm.contains('electric') || norm.contains('water') || norm.contains('gas')) {
+  if (norm.contains('utilit') ||
+      norm.contains('bill') ||
+      norm.contains('electric') ||
+      norm.contains('water') ||
+      norm.contains('gas')) {
     return 'Recurring Billing Segments';
   }
-  if (norm.contains('entertain') || norm.contains('movie') || norm.contains('stream') || norm.contains('game')) {
+  if (norm.contains('entertain') ||
+      norm.contains('movie') ||
+      norm.contains('stream') ||
+      norm.contains('game')) {
     return 'Media & Leisure Arc';
   }
   return 'General Allowance';
@@ -77,10 +100,7 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0.0, 0.05),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     final delayMs = (widget.index * 45).clamp(0, 260);
     Future.delayed(Duration(milliseconds: delayMs), () {
@@ -116,16 +136,20 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
     final b = widget.budget;
     final limitNum = double.tryParse(b.budgetLimit) ?? 0.0;
     final spentNum = double.tryParse(b.actualSpending) ?? 0.0;
-    final remainingNum = double.tryParse(b.remainingAmount) ?? (limitNum - spentNum);
-    final utilizationNum = double.tryParse(b.utilizationPercentage) ??
+    final remainingNum =
+        double.tryParse(b.remainingAmount) ?? (limitNum - spentNum);
+    final utilizationNum =
+        double.tryParse(b.utilizationPercentage) ??
         (limitNum > 0 ? (spentNum / limitNum * 100) : 0.0);
     final projectedNum = double.tryParse(b.projectedSpending) ?? spentNum;
 
     final isOver = b.status == "exceeded" || spentNum > limitNum;
-    final isApproaching = b.status == "approaching_limit" ||
-        (!isOver && utilizationNum >= 80.0);
+    final isApproaching =
+        b.status == "approaching_limit" || (!isOver && utilizationNum >= 80.0);
 
-    final progressRatio = limitNum > 0 ? (spentNum / limitNum).clamp(0.0, 1.0) : 0.0;
+    final progressRatio = limitNum > 0
+        ? (spentNum / limitNum).clamp(0.0, 1.0)
+        : 0.0;
 
     Color statusColor;
     String statusLabel;
@@ -148,9 +172,13 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
       animation: _controller,
       builder: (context, child) {
         return FadeTransition(
-          opacity: reduceMotion ? const AlwaysStoppedAnimation(1.0) : _fadeAnimation,
+          opacity: reduceMotion
+              ? const AlwaysStoppedAnimation(1.0)
+              : _fadeAnimation,
           child: SlideTransition(
-            position: reduceMotion ? const AlwaysStoppedAnimation(Offset.zero) : _slideAnimation,
+            position: reduceMotion
+                ? const AlwaysStoppedAnimation(Offset.zero)
+                : _slideAnimation,
             child: child,
           ),
         );
@@ -163,7 +191,9 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
           border: Border.all(
             color: isOver
                 ? tokens.outflow.withValues(alpha: 0.35)
-                : (isApproaching ? tokens.warning.withValues(alpha: 0.35) : tokens.rimNeutral),
+                : (isApproaching
+                      ? tokens.warning.withValues(alpha: 0.35)
+                      : tokens.rimNeutral),
             width: isOver || isApproaching ? 1.2 : 1.0,
           ),
         ),
@@ -185,7 +215,9 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
                       height: 32,
                       decoration: BoxDecoration(
                         color: catAccentColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(HorizonDimensions.radiusSM),
+                        borderRadius: BorderRadius.circular(
+                          HorizonDimensions.radiusSM,
+                        ),
                       ),
                       alignment: Alignment.center,
                       child: Icon(catIcon, size: 17, color: catAccentColor),
@@ -230,10 +262,15 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
 
                     // Compact Semantic Status Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(HorizonDimensions.radiusSM),
+                        borderRadius: BorderRadius.circular(
+                          HorizonDimensions.radiusSM,
+                        ),
                         border: Border.all(
                           color: statusColor.withValues(alpha: 0.30),
                           width: 1,
@@ -256,11 +293,17 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
                       height: 28,
                       child: PopupMenuButton<String>(
                         padding: EdgeInsets.zero,
-                        icon: Icon(Icons.more_vert_rounded, size: 18, color: tokens.textMedium),
+                        icon: Icon(
+                          Icons.more_vert_rounded,
+                          size: 18,
+                          color: tokens.textMedium,
+                        ),
                         color: tokens.surface2,
                         surfaceTintColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                          borderRadius: BorderRadius.circular(
+                            HorizonDimensions.radiusMD,
+                          ),
                           side: BorderSide(color: tokens.rimNeutral),
                         ),
                         onSelected: (action) {
@@ -275,7 +318,11 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
                             value: 'edit',
                             child: Row(
                               children: [
-                                Icon(Icons.edit_outlined, size: 16, color: tokens.textHigh),
+                                Icon(
+                                  Icons.edit_outlined,
+                                  size: 16,
+                                  color: tokens.textHigh,
+                                ),
                                 const SizedBox(width: 10),
                                 Text(
                                   'Edit Amount',
@@ -291,7 +338,11 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
                             value: 'delete',
                             child: Row(
                               children: [
-                                Icon(Icons.delete_outline_rounded, size: 16, color: tokens.outflow),
+                                Icon(
+                                  Icons.delete_outline_rounded,
+                                  size: 16,
+                                  color: tokens.outflow,
+                                ),
                                 const SizedBox(width: 10),
                                 Text(
                                   'Delete',
@@ -355,7 +406,9 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
                 // Row 4: Remaining amount on left, days left on right (Safe Layout)
                 Builder(
                   builder: (context) {
-                    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+                    final textScale = MediaQuery.textScalerOf(
+                      context,
+                    ).scale(1.0);
                     if (textScale > 1.3) {
                       return Wrap(
                         alignment: WrapAlignment.spaceBetween,
@@ -370,7 +423,9 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
                             style: HorizonTypography.bodySm.copyWith(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: remainingNum >= 0 ? tokens.textHigh : tokens.outflow,
+                              color: remainingNum >= 0
+                                  ? tokens.textHigh
+                                  : tokens.outflow,
                               fontFeatures: HorizonTypography.tabularFigures,
                             ),
                           ),
@@ -396,7 +451,9 @@ class _CategoryBudgetRowState extends State<CategoryBudgetRow>
                             style: HorizonTypography.bodySm.copyWith(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: remainingNum >= 0 ? tokens.textHigh : tokens.outflow,
+                              color: remainingNum >= 0
+                                  ? tokens.textHigh
+                                  : tokens.outflow,
                               fontFeatures: HorizonTypography.tabularFigures,
                             ),
                             maxLines: 1,

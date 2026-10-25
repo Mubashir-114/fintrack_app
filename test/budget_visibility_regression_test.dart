@@ -141,7 +141,8 @@ Widget createTestApp({
       ChangeNotifierProvider<CurrencyProvider>.value(value: currencyProvider),
     ],
     child: MaterialApp(
-      theme: theme ??
+      theme:
+          theme ??
           ThemeData.dark().copyWith(
             extensions: const [FinTrackThemeTokens.graphiteChampagneDark],
           ),
@@ -158,318 +159,329 @@ void main() {
 
   group('FinTrack 2.0: Budget Visibility & Animated Cards Regression Tests', () {
     testWidgets(
-        'Regression: Creating budget immediately replaces empty state with populated hero, card, and FAB',
-        (tester) async {
-      final budgetProvider = TestableBudgetProvider();
-      final reportProvider = TestableReportProvider();
-      final currency = CurrencyProvider();
+      'Regression: Creating budget immediately replaces empty state with populated hero, card, and FAB',
+      (tester) async {
+        final budgetProvider = TestableBudgetProvider();
+        final reportProvider = TestableReportProvider();
+        final currency = CurrencyProvider();
 
-      // Start: No budgets configured -> displays empty state
-      budgetProvider.setTestState(progress: null);
+        // Start: No budgets configured -> displays empty state
+        budgetProvider.setTestState(progress: null);
 
-      tester.view.physicalSize = const Size(800, 2000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+        tester.view.physicalSize = const Size(800, 2000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      await tester.pumpWidget(
-        createTestApp(
-          budgetProvider: budgetProvider,
-          reportProvider: reportProvider,
-          currencyProvider: currency,
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          createTestApp(
+            budgetProvider: budgetProvider,
+            reportProvider: reportProvider,
+            currencyProvider: currency,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Empty state visible initially
-      expect(find.byType(BudgetEmptyState), findsOneWidget);
-      expect(find.text("Shape Your Living Budget"), findsOneWidget);
-      expect(find.byType(FloatingActionButton), findsNothing);
-      expect(find.byType(CategoryBudgetCard), findsNothing);
+        // Empty state visible initially
+        expect(find.byType(BudgetEmptyState), findsOneWidget);
+        expect(find.text("Shape Your Living Budget"), findsOneWidget);
+        expect(find.byType(FloatingActionButton), findsNothing);
+        expect(find.byType(CategoryBudgetCard), findsNothing);
 
-      // Action: Budget is created
-      budgetProvider.simulateBudgetCreated(
-        budgetId: 101,
-        categoryId: 3,
-        category: "Food",
-        limit: "15000.00",
-      );
-      await tester.pumpAndSettle();
+        // Action: Budget is created
+        budgetProvider.simulateBudgetCreated(
+          budgetId: 101,
+          categoryId: 3,
+          category: "Food",
+          limit: "15000.00",
+        );
+        await tester.pumpAndSettle();
 
-      // Verified: Empty state is GONE immediately
-      expect(find.byType(BudgetEmptyState), findsNothing);
-      expect(find.text("Shape Your Living Budget"), findsNothing);
+        // Verified: Empty state is GONE immediately
+        expect(find.byType(BudgetEmptyState), findsNothing);
+        expect(find.text("Shape Your Living Budget"), findsNothing);
 
-      // Verified: Monthly Total Budget overview appears
-      expect(find.byType(BudgetHeroOverview), findsOneWidget);
-      expect(find.text("Monthly Total Budget"), findsOneWidget);
+        // Verified: Monthly Total Budget overview appears
+        expect(find.byType(BudgetHeroOverview), findsOneWidget);
+        expect(find.text("Monthly Total Budget"), findsOneWidget);
 
-      // Verified: Category card appears with Food identity
-      expect(find.byType(CategoryBudgetCard), findsOneWidget);
-      expect(find.text("Food"), findsOneWidget);
-      expect(find.text("ON TRACK"), findsWidgets);
+        // Verified: Category card appears with Food identity
+        expect(find.byType(CategoryBudgetCard), findsOneWidget);
+        expect(find.text("Food"), findsOneWidget);
+        expect(find.text("ON TRACK"), findsWidgets);
 
-      // Verified: Contextual Add Budget FAB is rendered
-      expect(find.byType(FloatingActionButton), findsOneWidget);
-      expect(find.text("Add Budget"), findsOneWidget);
-    });
+        // Verified: Contextual Add Budget FAB is rendered
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+        expect(find.text("Add Budget"), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'Regression: Meaningful error card is displayed when loading fails instead of incorrectly showing empty state',
-        (tester) async {
-      final budgetProvider = TestableBudgetProvider();
-      final reportProvider = TestableReportProvider();
-      final currency = CurrencyProvider();
+      'Regression: Meaningful error card is displayed when loading fails instead of incorrectly showing empty state',
+      (tester) async {
+        final budgetProvider = TestableBudgetProvider();
+        final reportProvider = TestableReportProvider();
+        final currency = CurrencyProvider();
 
-      budgetProvider.setTestState(
-        progress: null,
-        error: "Connection timeout to FinTrack budget service",
-      );
+        budgetProvider.setTestState(
+          progress: null,
+          error: "Connection timeout to FinTrack budget service",
+        );
 
-      tester.view.physicalSize = const Size(800, 2000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+        tester.view.physicalSize = const Size(800, 2000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      await tester.pumpWidget(
-        createTestApp(
-          budgetProvider: budgetProvider,
-          reportProvider: reportProvider,
-          currencyProvider: currency,
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          createTestApp(
+            budgetProvider: budgetProvider,
+            reportProvider: reportProvider,
+            currencyProvider: currency,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Verified: Empty state is NOT incorrectly displayed on error
-      expect(find.byType(BudgetEmptyState), findsNothing);
+        // Verified: Empty state is NOT incorrectly displayed on error
+        expect(find.byType(BudgetEmptyState), findsNothing);
 
-      // Verified: Explicit error card is displayed
-      expect(find.text("Unable to Load Budgets"), findsOneWidget);
-      expect(find.textContaining("Connection timeout"), findsOneWidget);
-      expect(find.text("Retry"), findsOneWidget);
+        // Verified: Explicit error card is displayed
+        expect(find.text("Unable to Load Budgets"), findsOneWidget);
+        expect(find.textContaining("Connection timeout"), findsOneWidget);
+        expect(find.text("Retry"), findsOneWidget);
 
-      // Tapping retry triggers reload
-      await tester.tap(find.text("Retry"));
-      await tester.pump();
-      expect(budgetProvider.loadAllCallCount, greaterThan(0));
-    });
+        // Tapping retry triggers reload
+        await tester.tap(find.text("Retry"));
+        await tester.pump();
+        expect(budgetProvider.loadAllCallCount, greaterThan(0));
+      },
+    );
 
     testWidgets(
-        'Living Category Cards: Food, Transport, Shopping, Healthcare, Utilities render distinct identities and expand',
-        (tester) async {
-      final budgetProvider = TestableBudgetProvider();
-      final reportProvider = TestableReportProvider();
-      final currency = CurrencyProvider();
+      'Living Category Cards: Food, Transport, Shopping, Healthcare, Utilities render distinct identities and expand',
+      (tester) async {
+        final budgetProvider = TestableBudgetProvider();
+        final reportProvider = TestableReportProvider();
+        final currency = CurrencyProvider();
 
-      budgetProvider.setTestState(
-        progress: BudgetProgressResponseModel(
-          month: 10,
-          year: 2026,
-          period: const BudgetPeriodModel(
-            daysInMonth: 31,
-            daysElapsed: 15,
-            daysRemaining: 16,
-            isCurrentPeriod: true,
-            estimationMethod: "Linear Daily Burn-Rate",
-          ),
-          overall: const BudgetOverallProgressModel(
-            budgetLimit: "50000.00",
-            actualSpending: "32000.00",
-            remainingAmount: "18000.00",
-            utilizationPercentage: "64.0",
-            dailyBurnRate: "2133.33",
-            projectedSpending: "66133.33",
-            status: "on_track",
-            hasBudgetsDefined: true,
-          ),
-          categoryBudgets: const [
-            BudgetCategoryProgressModel(
-              budgetId: 1,
-              categoryId: 3,
-              category: "Food",
-              categoryType: "expense",
-              budgetLimit: "15000.00",
-              actualSpending: "8000.00",
-              remainingAmount: "7000.00",
-              utilizationPercentage: "53.3",
-              projectedSpending: "16533.33",
+        budgetProvider.setTestState(
+          progress: BudgetProgressResponseModel(
+            month: 10,
+            year: 2026,
+            period: const BudgetPeriodModel(
+              daysInMonth: 31,
+              daysElapsed: 15,
+              daysRemaining: 16,
+              isCurrentPeriod: true,
+              estimationMethod: "Linear Daily Burn-Rate",
+            ),
+            overall: const BudgetOverallProgressModel(
+              budgetLimit: "50000.00",
+              actualSpending: "32000.00",
+              remainingAmount: "18000.00",
+              utilizationPercentage: "64.0",
+              dailyBurnRate: "2133.33",
+              projectedSpending: "66133.33",
               status: "on_track",
-              daysRemaining: 16,
+              hasBudgetsDefined: true,
             ),
-            BudgetCategoryProgressModel(
-              budgetId: 2,
-              categoryId: 4,
-              category: "Transport",
-              categoryType: "expense",
-              budgetLimit: "8000.00",
-              actualSpending: "6800.00",
-              remainingAmount: "1200.00",
-              utilizationPercentage: "85.0",
-              projectedSpending: "14044.44",
-              status: "approaching_limit",
-              daysRemaining: 16,
+            categoryBudgets: const [
+              BudgetCategoryProgressModel(
+                budgetId: 1,
+                categoryId: 3,
+                category: "Food",
+                categoryType: "expense",
+                budgetLimit: "15000.00",
+                actualSpending: "8000.00",
+                remainingAmount: "7000.00",
+                utilizationPercentage: "53.3",
+                projectedSpending: "16533.33",
+                status: "on_track",
+                daysRemaining: 16,
+              ),
+              BudgetCategoryProgressModel(
+                budgetId: 2,
+                categoryId: 4,
+                category: "Transport",
+                categoryType: "expense",
+                budgetLimit: "8000.00",
+                actualSpending: "6800.00",
+                remainingAmount: "1200.00",
+                utilizationPercentage: "85.0",
+                projectedSpending: "14044.44",
+                status: "approaching_limit",
+                daysRemaining: 16,
+              ),
+              BudgetCategoryProgressModel(
+                budgetId: 3,
+                categoryId: 9,
+                category: "Shopping",
+                categoryType: "expense",
+                budgetLimit: "10000.00",
+                actualSpending: "12500.00",
+                remainingAmount: "-2500.00",
+                utilizationPercentage: "125.0",
+                projectedSpending: "25833.33",
+                status: "exceeded",
+                daysRemaining: 16,
+              ),
+              BudgetCategoryProgressModel(
+                budgetId: 4,
+                categoryId: 6,
+                category: "Utilities",
+                categoryType: "expense",
+                budgetLimit: "7000.00",
+                actualSpending: "4200.00",
+                remainingAmount: "2800.00",
+                utilizationPercentage: "60.0",
+                projectedSpending: "8680.00",
+                status: "on_track",
+                daysRemaining: 16,
+              ),
+              BudgetCategoryProgressModel(
+                budgetId: 5,
+                categoryId: 7,
+                category: "Healthcare",
+                categoryType: "expense",
+                budgetLimit: "5000.00",
+                actualSpending: "1500.00",
+                remainingAmount: "3500.00",
+                utilizationPercentage: "30.0",
+                projectedSpending: "3100.00",
+                status: "on_track",
+                daysRemaining: 16,
+              ),
+            ],
+            uncategorizedSpending: "0.00",
+            savings: const BudgetSavingsProgressModel(
+              totalIncome: "80000.00",
+              totalExpense: "32000.00",
+              netSavings: "48000.00",
+              projectedNetSavings: "13866.67",
+              isTargetAchieved: true,
             ),
-            BudgetCategoryProgressModel(
-              budgetId: 3,
-              categoryId: 9,
-              category: "Shopping",
-              categoryType: "expense",
-              budgetLimit: "10000.00",
-              actualSpending: "12500.00",
-              remainingAmount: "-2500.00",
-              utilizationPercentage: "125.0",
-              projectedSpending: "25833.33",
-              status: "exceeded",
-              daysRemaining: 16,
-            ),
-            BudgetCategoryProgressModel(
-              budgetId: 4,
-              categoryId: 6,
-              category: "Utilities",
-              categoryType: "expense",
-              budgetLimit: "7000.00",
-              actualSpending: "4200.00",
-              remainingAmount: "2800.00",
-              utilizationPercentage: "60.0",
-              projectedSpending: "8680.00",
-              status: "on_track",
-              daysRemaining: 16,
-            ),
-            BudgetCategoryProgressModel(
-              budgetId: 5,
-              categoryId: 7,
-              category: "Healthcare",
-              categoryType: "expense",
-              budgetLimit: "5000.00",
-              actualSpending: "1500.00",
-              remainingAmount: "3500.00",
-              utilizationPercentage: "30.0",
-              projectedSpending: "3100.00",
-              status: "on_track",
-              daysRemaining: 16,
-            ),
-          ],
-          uncategorizedSpending: "0.00",
-          savings: const BudgetSavingsProgressModel(
-            totalIncome: "80000.00",
-            totalExpense: "32000.00",
-            netSavings: "48000.00",
-            projectedNetSavings: "13866.67",
-            isTargetAchieved: true,
           ),
-        ),
-      );
+        );
 
-      tester.view.physicalSize = const Size(800, 3000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+        tester.view.physicalSize = const Size(800, 3000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      await tester.pumpWidget(
-        createTestApp(
-          budgetProvider: budgetProvider,
-          reportProvider: reportProvider,
-          currencyProvider: currency,
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      // All 5 category cards rendered
-      expect(find.byType(CategoryBudgetCard), findsNWidgets(5));
-      expect(find.text("Food"), findsOneWidget);
-      expect(find.text("Transport"), findsOneWidget);
-      expect(find.text("Shopping"), findsOneWidget);
-      expect(find.text("Utilities"), findsOneWidget);
-      expect(find.text("Healthcare"), findsOneWidget);
-
-      // Financial status indicators
-      expect(find.text("80%+ USED"), findsOneWidget); // Transport
-      expect(find.text("OVER BUDGET"), findsOneWidget); // Shopping
-      expect(find.text("ON TRACK"), findsWidgets);
-
-      // Living Category Specific Visual Elements rendered
-      expect(find.text("Dining Allowance"), findsOneWidget); // Food
-      expect(find.text("Commute Route Track"), findsOneWidget); // Transport
-      expect(find.text("Retail Spending Gauge"), findsOneWidget); // Shopping
-      expect(find.text("Recurring Billing Segments"), findsOneWidget); // Utilities
-      expect(find.text("Vitals: Healthy Range"), findsOneWidget); // Healthcare
-
-      // Card tap reveals smooth expanded details
-      await tester.tap(find.text("Food"));
-      await tester.pumpAndSettle();
-
-      expect(find.text("Category Spending Insights"), findsOneWidget);
-      expect(find.text("Projected EOM Spend:"), findsOneWidget);
-      expect(find.text("Edit Limit"), findsOneWidget);
-    });
-
-    testWidgets('Theme consistency: Renders seamlessly across all three FinTrack themes',
-        (tester) async {
-      final budgetProvider = TestableBudgetProvider();
-      final reportProvider = TestableReportProvider();
-      final currency = CurrencyProvider();
-
-      budgetProvider.simulateBudgetCreated(
-        budgetId: 1,
-        categoryId: 3,
-        category: "Food",
-        limit: "10000.00",
-      );
-
-      tester.view.physicalSize = const Size(800, 2000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      // 1. Graphite & Champagne Dark
-      await tester.pumpWidget(
-        createTestApp(
-          budgetProvider: budgetProvider,
-          reportProvider: reportProvider,
-          currencyProvider: currency,
-          theme: ThemeData.dark().copyWith(
-            extensions: const [FinTrackThemeTokens.graphiteChampagneDark],
+        await tester.pumpWidget(
+          createTestApp(
+            budgetProvider: budgetProvider,
+            reportProvider: reportProvider,
+            currencyProvider: currency,
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text("Food"), findsOneWidget);
+        );
+        await tester.pumpAndSettle();
 
-      // 2. Obsidian & Jade Light
-      await tester.pumpWidget(
-        createTestApp(
-          budgetProvider: budgetProvider,
-          reportProvider: reportProvider,
-          currencyProvider: currency,
-          theme: ThemeData.light().copyWith(
-            extensions: const [FinTrackThemeTokens.obsidianJadeLight],
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text("Food"), findsOneWidget);
+        // All 5 category cards rendered
+        expect(find.byType(CategoryBudgetCard), findsNWidgets(5));
+        expect(find.text("Food"), findsOneWidget);
+        expect(find.text("Transport"), findsOneWidget);
+        expect(find.text("Shopping"), findsOneWidget);
+        expect(find.text("Utilities"), findsOneWidget);
+        expect(find.text("Healthcare"), findsOneWidget);
 
-      // 3. Arctic Blue Dark
-      await tester.pumpWidget(
-        createTestApp(
-          budgetProvider: budgetProvider,
-          reportProvider: reportProvider,
-          currencyProvider: currency,
-          theme: ThemeData.dark().copyWith(
-            extensions: const [FinTrackThemeTokens.arcticBlueDark],
+        // Financial status indicators
+        expect(find.text("80%+ USED"), findsOneWidget); // Transport
+        expect(find.text("OVER BUDGET"), findsOneWidget); // Shopping
+        expect(find.text("ON TRACK"), findsWidgets);
+
+        // Living Category Specific Visual Elements rendered
+        expect(find.text("Dining Allowance"), findsOneWidget); // Food
+        expect(find.text("Commute Route Track"), findsOneWidget); // Transport
+        expect(find.text("Retail Spending Gauge"), findsOneWidget); // Shopping
+        expect(
+          find.text("Recurring Billing Segments"),
+          findsOneWidget,
+        ); // Utilities
+        expect(
+          find.text("Vitals: Healthy Range"),
+          findsOneWidget,
+        ); // Healthcare
+
+        // Card tap reveals smooth expanded details
+        await tester.tap(find.text("Food"));
+        await tester.pumpAndSettle();
+
+        expect(find.text("Category Spending Insights"), findsOneWidget);
+        expect(find.text("Projected EOM Spend:"), findsOneWidget);
+        expect(find.text("Edit Limit"), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Theme consistency: Renders seamlessly across all three FinTrack themes',
+      (tester) async {
+        final budgetProvider = TestableBudgetProvider();
+        final reportProvider = TestableReportProvider();
+        final currency = CurrencyProvider();
+
+        budgetProvider.simulateBudgetCreated(
+          budgetId: 1,
+          categoryId: 3,
+          category: "Food",
+          limit: "10000.00",
+        );
+
+        tester.view.physicalSize = const Size(800, 2000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        // 1. Graphite & Champagne Dark
+        await tester.pumpWidget(
+          createTestApp(
+            budgetProvider: budgetProvider,
+            reportProvider: reportProvider,
+            currencyProvider: currency,
+            theme: ThemeData.dark().copyWith(
+              extensions: const [FinTrackThemeTokens.graphiteChampagneDark],
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text("Food"), findsOneWidget);
-    });
+        );
+        await tester.pumpAndSettle();
+        expect(find.text("Food"), findsOneWidget);
+
+        // 2. Obsidian & Jade Light
+        await tester.pumpWidget(
+          createTestApp(
+            budgetProvider: budgetProvider,
+            reportProvider: reportProvider,
+            currencyProvider: currency,
+            theme: ThemeData.light().copyWith(
+              extensions: const [FinTrackThemeTokens.obsidianJadeLight],
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text("Food"), findsOneWidget);
+
+        // 3. Arctic Blue Dark
+        await tester.pumpWidget(
+          createTestApp(
+            budgetProvider: budgetProvider,
+            reportProvider: reportProvider,
+            currencyProvider: currency,
+            theme: ThemeData.dark().copyWith(
+              extensions: const [FinTrackThemeTokens.arcticBlueDark],
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text("Food"), findsOneWidget);
+      },
+    );
   });
 }

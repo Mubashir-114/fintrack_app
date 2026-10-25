@@ -90,7 +90,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.surface,
-        title: Text('Delete "${goal.name}"?', style: TextStyle(color: colors.textPrimary)),
+        title: Text(
+          'Delete "${goal.name}"?',
+          style: TextStyle(color: colors.textPrimary),
+        ),
         content: Text(
           'Are you sure you want to delete this savings goal and all its tracked progress history? This action cannot be undone.',
           style: TextStyle(color: colors.textSecondary),
@@ -98,7 +101,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: colors.textSecondary),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -154,7 +160,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.surface,
-        title: Text('Remove Contribution?', style: TextStyle(color: colors.textPrimary)),
+        title: Text(
+          'Remove Contribution?',
+          style: TextStyle(color: colors.textPrimary),
+        ),
         content: Text(
           'Remove this progress contribution record? Your goal saved total will be automatically recalculated.',
           style: TextStyle(color: colors.textSecondary),
@@ -162,7 +171,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: colors.textSecondary),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -178,7 +190,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
 
     if (confirmed == true && mounted) {
       try {
-        await context.read<GoalProvider>().deleteContribution(widget.goalId, contributionId);
+        await context.read<GoalProvider>().deleteContribution(
+          widget.goalId,
+          contributionId,
+        );
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -213,9 +228,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
             onPressed: () => context.pop(),
           ),
         ),
-        body: Center(
-          child: CircularProgressIndicator(color: colors.primary),
-        ),
+        body: Center(child: CircularProgressIndicator(color: colors.primary)),
       );
     }
 
@@ -234,7 +247,11 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.search_off_rounded, size: 48, color: AppColors.warning),
+              const Icon(
+                Icons.search_off_rounded,
+                size: 48,
+                color: AppColors.warning,
+              ),
               const SizedBox(height: 12),
               Text(
                 'Goal not found',
@@ -261,7 +278,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
 
     final contributions = goal.recentContributions;
     final statusColor = _getStatusColor(goal.intelligenceStatus, colors);
-    final statusLabel = _getStatusLabel(goal.intelligenceStatus, goal.isOverdue);
+    final statusLabel = _getStatusLabel(
+      goal.intelligenceStatus,
+      goal.isOverdue,
+    );
     final statusIcon = _getStatusIcon(goal.intelligenceStatus, goal.isOverdue);
     final progressRatio = (goal.progressPercentage / 100).clamp(0.0, 1.0);
 
@@ -327,7 +347,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      goal.status == 'archived' ? 'Unarchive Goal' : 'Archive Goal',
+                      goal.status == 'archived'
+                          ? 'Unarchive Goal'
+                          : 'Archive Goal',
                       style: TextStyle(color: colors.textPrimary),
                     ),
                   ],
@@ -337,9 +359,16 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                 value: 'delete',
                 child: const Row(
                   children: [
-                    Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.danger),
+                    Icon(
+                      Icons.delete_outline_rounded,
+                      size: 18,
+                      color: AppColors.danger,
+                    ),
                     SizedBox(width: 8),
-                    Text('Delete Goal', style: TextStyle(color: AppColors.danger)),
+                    Text(
+                      'Delete Goal',
+                      style: TextStyle(color: AppColors.danger),
+                    ),
                   ],
                 ),
               ),
@@ -356,7 +385,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
         backgroundColor: colors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Record Progress', style: TextStyle(fontWeight: FontWeight.bold)),
+        label: const Text(
+          'Record Progress',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: _refreshData,
@@ -384,10 +416,15 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.14),
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusSM,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -415,11 +452,15 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                       ),
                     ],
                   ),
-                  if (goal.description != null && goal.description!.isNotEmpty) ...[
+                  if (goal.description != null &&
+                      goal.description!.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     Text(
                       goal.description!,
-                      style: TextStyle(fontSize: 13, color: colors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colors.textSecondary,
+                      ),
                     ),
                   ],
                   const SizedBox(height: 16),
@@ -430,7 +471,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                     child: LinearProgressIndicator(
                       value: progressRatio,
                       minHeight: 12,
-                      backgroundColor: colors.isDark ? colors.elevated : colors.background,
+                      backgroundColor: colors.isDark
+                          ? colors.elevated
+                          : colors.background,
                       valueColor: AlwaysStoppedAnimation<Color>(
                         goal.isAchieved ? AppColors.success : colors.primary,
                       ),
@@ -451,7 +494,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                       _buildHeroStat(
                         'Remaining',
                         currency.format(goal.remainingAmount),
-                        goal.remainingAmount > 0 ? AppColors.danger : AppColors.success,
+                        goal.remainingAmount > 0
+                            ? AppColors.danger
+                            : AppColors.success,
                         colors,
                       ),
                       _buildHeroStat(
@@ -484,7 +529,11 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.insights_rounded, size: 18, color: colors.primary),
+                      Icon(
+                        Icons.insights_rounded,
+                        size: 18,
+                        color: colors.primary,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'Progress Intelligence',
@@ -506,8 +555,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                         : 'No deadline set',
                     subtitle: targetDateParsed != null
                         ? (goal.daysRemaining != null && goal.daysRemaining! > 0
-                            ? '${goal.daysRemaining} days left (${goal.monthsRemaining?.toStringAsFixed(1)} months)'
-                            : 'Target date has passed')
+                              ? '${goal.daysRemaining} days left (${goal.monthsRemaining?.toStringAsFixed(1)} months)'
+                              : 'Target date has passed')
                         : null,
                     icon: Icons.calendar_today_rounded,
                     colors: colors,
@@ -515,10 +564,12 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                   const Divider(height: 18),
 
                   // Required Monthly Saving
-                  if (goal.requiredMonthlySaving != null && goal.requiredMonthlySaving! > 0) ...[
+                  if (goal.requiredMonthlySaving != null &&
+                      goal.requiredMonthlySaving! > 0) ...[
                     _buildIntelligenceRow(
                       label: 'Required Monthly Pace',
-                      value: '${currency.format(goal.requiredMonthlySaving!)} / month',
+                      value:
+                          '${currency.format(goal.requiredMonthlySaving!)} / month',
                       subtitle: 'To achieve target by your deadline',
                       icon: Icons.speed_rounded,
                       colors: colors,
@@ -533,16 +584,21 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                     value: goal.isAchieved
                         ? 'Goal Target Achieved!'
                         : (goal.isEstimated && completionDateParsed != null
-                            ? DateFormat('MMMM yyyy').format(completionDateParsed)
-                            : 'More data needed'),
+                              ? DateFormat(
+                                  'MMMM yyyy',
+                                ).format(completionDateParsed)
+                              : 'More data needed'),
                     subtitle: goal.isAchieved
                         ? 'Congratulations on reaching your target!'
-                        : (goal.estimationReason ?? 'Based on contribution velocity'),
+                        : (goal.estimationReason ??
+                              'Based on contribution velocity'),
                     icon: Icons.track_changes_rounded,
                     colors: colors,
                     valueColor: goal.isAchieved
                         ? AppColors.success
-                        : (goal.isEstimated ? colors.primary : colors.textSecondary),
+                        : (goal.isEstimated
+                              ? colors.primary
+                              : colors.textSecondary),
                   ),
                 ],
               ),
@@ -573,7 +629,11 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                       color: colors.primary.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.auto_awesome_rounded, color: colors.primary, size: 20),
+                    child: Icon(
+                      Icons.auto_awesome_rounded,
+                      color: colors.primary,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -591,7 +651,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                         const SizedBox(height: 2),
                         Text(
                           'Ask "When can I reach my ${goal.name} goal?"',
-                          style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: colors.textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -603,7 +666,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                     },
                     style: TextButton.styleFrom(
                       foregroundColor: colors.primary,
-                      textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
                     child: const Text('Ask FIN'),
                   ),
@@ -631,10 +697,11 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                     goalName: goal.name,
                   ),
                   icon: const Icon(Icons.add_rounded, size: 16),
-                  label: const Text('Add Record', style: TextStyle(fontSize: 12)),
-                  style: TextButton.styleFrom(
-                    foregroundColor: colors.primary,
+                  label: const Text(
+                    'Add Record',
+                    style: TextStyle(fontSize: 12),
                   ),
+                  style: TextButton.styleFrom(foregroundColor: colors.primary),
                 ),
               ],
             ),
@@ -655,7 +722,11 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                 ),
                 child: Column(
                   children: [
-                    Icon(Icons.savings_outlined, size: 36, color: colors.textSecondary),
+                    Icon(
+                      Icons.savings_outlined,
+                      size: 36,
+                      color: colors.textSecondary,
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       'No contributions recorded yet',
@@ -668,7 +739,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'Record saved amounts to track your progress and calculate velocity completion dates.',
-                      style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: colors.textSecondary,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 14),
@@ -702,10 +776,15 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                   } catch (_) {}
 
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: colors.surface,
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusMD,
+                      ),
                       border: Border.all(
                         color: colors.isDark
                             ? colors.surface.withValues(alpha: 0.8)
@@ -718,9 +797,15 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: colors.primary.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusSM,
+                            ),
                           ),
-                          child: Icon(Icons.arrow_upward_rounded, color: colors.primary, size: 16),
+                          child: Icon(
+                            Icons.arrow_upward_rounded,
+                            color: colors.primary,
+                            size: 16,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -738,7 +823,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                               const SizedBox(height: 2),
                               Text(
                                 DateFormat('MMM dd, yyyy').format(cDate),
-                                style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: colors.textSecondary,
+                                ),
                               ),
                               if (c.note != null && c.note!.isNotEmpty) ...[
                                 const SizedBox(height: 2),
@@ -757,7 +845,11 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                           ),
                         ),
                         PopupMenuButton<String>(
-                          icon: Icon(Icons.more_vert_rounded, size: 18, color: colors.textSecondary),
+                          icon: Icon(
+                            Icons.more_vert_rounded,
+                            size: 18,
+                            color: colors.textSecondary,
+                          ),
                           color: colors.surface,
                           onSelected: (val) {
                             if (val == 'edit') {
@@ -776,9 +868,16 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                               value: 'edit',
                               child: Row(
                                 children: [
-                                  Icon(Icons.edit_outlined, size: 16, color: colors.textSecondary),
+                                  Icon(
+                                    Icons.edit_outlined,
+                                    size: 16,
+                                    color: colors.textSecondary,
+                                  ),
                                   const SizedBox(width: 8),
-                                  Text('Edit', style: TextStyle(color: colors.textPrimary)),
+                                  Text(
+                                    'Edit',
+                                    style: TextStyle(color: colors.textPrimary),
+                                  ),
                                 ],
                               ),
                             ),
@@ -786,9 +885,16 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                               value: 'delete',
                               child: Row(
                                 children: [
-                                  Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.danger),
+                                  Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 16,
+                                    color: AppColors.danger,
+                                  ),
                                   SizedBox(width: 8),
-                                  Text('Remove', style: TextStyle(color: AppColors.danger)),
+                                  Text(
+                                    'Remove',
+                                    style: TextStyle(color: AppColors.danger),
+                                  ),
                                 ],
                               ),
                             ),

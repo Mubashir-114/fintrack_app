@@ -38,7 +38,11 @@ class BudgetHeader extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           tooltip: "Smart Suggestions",
-          icon: Icon(Icons.lightbulb_outline_rounded, color: tokens.textMedium, size: 20),
+          icon: Icon(
+            Icons.lightbulb_outline_rounded,
+            color: tokens.textMedium,
+            size: 20,
+          ),
           onPressed: onSuggestions,
         ),
         IconButton(
@@ -48,7 +52,11 @@ class BudgetHeader extends StatelessWidget implements PreferredSizeWidget {
         ),
         IconButton(
           tooltip: "Select Month",
-          icon: Icon(Icons.calendar_month_rounded, color: tokens.textMedium, size: 20),
+          icon: Icon(
+            Icons.calendar_month_rounded,
+            color: tokens.textMedium,
+            size: 20,
+          ),
           onPressed: onSelectMonth,
         ),
         const SizedBox(width: 4),

@@ -153,10 +153,7 @@ Widget _wrapScreen({
         child: SizedBox(
           width: size.width,
           height: size.height,
-          child: RepaintBoundary(
-            key: _captureKey,
-            child: child,
-          ),
+          child: RepaintBoundary(key: _captureKey, child: child),
         ),
       ),
     ),
@@ -197,88 +194,101 @@ void main() {
   });
 
   group('FIN Live Motion System & Reusable Widgets', () {
-    testWidgets('FinLiveCharacter renders across all 6 FinMotionStates without throwing', (
-      tester,
-    ) async {
-      for (final motion in FinMotionState.values) {
+    testWidgets(
+      'FinLiveCharacter renders across all 6 FinMotionStates without throwing',
+      (tester) async {
+        for (final motion in FinMotionState.values) {
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: AppTheme.darkTheme,
+              home: Scaffold(
+                body: Center(
+                  child: FinLiveCharacter(
+                    motionState: motion,
+                    size: 120,
+                    animationsEnabled: false,
+                  ),
+                ),
+              ),
+            ),
+          );
+          expect(find.byType(FinLiveCharacter), findsOneWidget);
+          expect(find.byType(CustomPaint), findsWidgets);
+        }
+      },
+    );
+
+    testWidgets(
+      'FinCharacterStage renders living character and interactive mood chips',
+      (tester) async {
+        FinMotionState selected = FinMotionState.idle;
+
         await tester.pumpWidget(
           MaterialApp(
             theme: AppTheme.darkTheme,
             home: Scaffold(
               body: Center(
-                child: FinLiveCharacter(
-                  motionState: motion,
-                  size: 120,
+                child: FinCharacterStage(
+                  currentMotion: selected,
+                  onMotionChanged: (m) => selected = m,
                   animationsEnabled: false,
                 ),
               ),
             ),
           ),
         );
+
+        expect(find.byType(FinCharacterStage), findsOneWidget);
         expect(find.byType(FinLiveCharacter), findsOneWidget);
-        expect(find.byType(CustomPaint), findsWidgets);
-      }
-    });
 
-    testWidgets('FinCharacterStage renders living character and interactive mood chips', (
-      tester,
-    ) async {
-      FinMotionState selected = FinMotionState.idle;
+        // Verify all mood chips exist
+        for (final motion in FinMotionState.values) {
+          expect(find.text(motion.label), findsOneWidget);
+        }
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: Scaffold(
-            body: Center(
-              child: FinCharacterStage(
-                currentMotion: selected,
-                onMotionChanged: (m) => selected = m,
-                animationsEnabled: false,
+        // Tap Thinking chip
+        await tester.tap(find.text('Thinking'));
+        await tester.pumpAndSettle();
+        expect(selected, FinMotionState.thinking);
+      },
+    );
+
+    testWidgets(
+      'FinStatusChip displays active, docked, and deactivated states',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: const Scaffold(
+              body: Column(
+                children: [
+                  FinStatusChip(
+                    isActive: true,
+                    isDocked: false,
+                    placement: 'Right Edge',
+                  ),
+                  FinStatusChip(
+                    isActive: true,
+                    isDocked: true,
+                    placement: 'Dock Trigger',
+                  ),
+                  FinStatusChip(isActive: false, isDocked: false),
+                ],
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.byType(FinCharacterStage), findsOneWidget);
-      expect(find.byType(FinLiveCharacter), findsOneWidget);
+        expect(find.text('ACTIVE & PRESENT'), findsOneWidget);
+        expect(find.text('DOCKED REST'), findsOneWidget);
+        expect(find.text('DEACTIVATED'), findsOneWidget);
+        expect(find.text('RIGHT EDGE'), findsOneWidget);
+      },
+    );
 
-      // Verify all mood chips exist
-      for (final motion in FinMotionState.values) {
-        expect(find.text(motion.label), findsOneWidget);
-      }
-
-      // Tap Thinking chip
-      await tester.tap(find.text('Thinking'));
-      await tester.pumpAndSettle();
-      expect(selected, FinMotionState.thinking);
-    });
-
-    testWidgets('FinStatusChip displays active, docked, and deactivated states', (
+    testWidgets('FinSpeechPanel displays quotes and cycles on tap', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: const Scaffold(
-            body: Column(
-              children: [
-                FinStatusChip(isActive: true, isDocked: false, placement: 'Right Edge'),
-                FinStatusChip(isActive: true, isDocked: true, placement: 'Dock Trigger'),
-                FinStatusChip(isActive: false, isDocked: false),
-              ],
-            ),
-          ),
-        ),
-      );
-
-      expect(find.text('ACTIVE & PRESENT'), findsOneWidget);
-      expect(find.text('DOCKED REST'), findsOneWidget);
-      expect(find.text('DEACTIVATED'), findsOneWidget);
-      expect(find.text('RIGHT EDGE'), findsOneWidget);
-    });
-
-    testWidgets('FinSpeechPanel displays quotes and cycles on tap', (tester) async {
       int tapped = 0;
       await tester.pumpWidget(
         MaterialApp(
@@ -302,37 +312,38 @@ void main() {
       expect(tapped, 1);
     });
 
-    testWidgets('FinPlacementSelector switches options and triggers reset anchor', (
-      tester,
-    ) async {
-      String current = 'Right Edge';
-      bool resetClicked = false;
+    testWidgets(
+      'FinPlacementSelector switches options and triggers reset anchor',
+      (tester) async {
+        String current = 'Right Edge';
+        bool resetClicked = false;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: Scaffold(
-            body: FinPlacementSelector(
-              placement: current,
-              onPlacementChanged: (m) => current = m,
-              onResetPosition: () => resetClicked = true,
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: Scaffold(
+              body: FinPlacementSelector(
+                placement: current,
+                onPlacementChanged: (m) => current = m,
+                onResetPosition: () => resetClicked = true,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('RIGHT EDGE'), findsWidgets);
-      expect(find.text('Left Edge'), findsOneWidget);
-      expect(find.text('Dock Trigger'), findsOneWidget);
+        expect(find.text('RIGHT EDGE'), findsWidgets);
+        expect(find.text('Left Edge'), findsOneWidget);
+        expect(find.text('Dock Trigger'), findsOneWidget);
 
-      await tester.tap(find.text('Left Edge'));
-      await tester.pumpAndSettle();
-      expect(current, 'Left Edge');
+        await tester.tap(find.text('Left Edge'));
+        await tester.pumpAndSettle();
+        expect(current, 'Left Edge');
 
-      await tester.tap(find.text('RESET ANCHOR'));
-      await tester.pumpAndSettle();
-      expect(resetClicked, true);
-    });
+        await tester.tap(find.text('RESET ANCHOR'));
+        await tester.pumpAndSettle();
+        expect(resetClicked, true);
+      },
+    );
 
     testWidgets('FinGuidanceStyleCard switches between helpful and minimal', (
       tester,
@@ -359,91 +370,94 @@ void main() {
       expect(freq, 'minimal');
     });
 
-    testWidgets('FinDataBoundaryPanel renders all 3 key safeguards without error', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: const Scaffold(
-            body: FinDataBoundaryPanel(),
+    testWidgets(
+      'FinDataBoundaryPanel renders all 3 key safeguards without error',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: const Scaffold(body: FinDataBoundaryPanel()),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('Data Boundaries & Privacy'), findsOneWidget);
-      expect(find.text('Authorized records only'), findsOneWidget);
-      expect(find.text('No direct bank account link'), findsOneWidget);
-      expect(find.text('No inbox or SMS access'), findsOneWidget);
-      expect(find.text('Bounded, deterministic backend analysis'), findsOneWidget);
-    });
+        expect(find.text('Data Boundaries & Privacy'), findsOneWidget);
+        expect(find.text('Authorized records only'), findsOneWidget);
+        expect(find.text('No direct bank account link'), findsOneWidget);
+        expect(find.text('No inbox or SMS access'), findsOneWidget);
+        expect(
+          find.text('Bounded, deterministic backend analysis'),
+          findsOneWidget,
+        );
+      },
+    );
   });
 
   group('FinSettingsScreen Full Interaction & Visual Captures', () {
-    testWidgets('Full flow: toggle presence, change placement, save preferences', (
-      tester,
-    ) async {
-      final repo = _MockAnalyticsRepo();
-      final provider = AnalyticsProvider(repository: repo);
+    testWidgets(
+      'Full flow: toggle presence, change placement, save preferences',
+      (tester) async {
+        final repo = _MockAnalyticsRepo();
+        final provider = AnalyticsProvider(repository: repo);
 
-      await tester.pumpWidget(
-        _wrapScreen(
-          child: const FinSettingsScreen(),
-          provider: provider,
-          isDark: true,
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _wrapScreen(
+            child: const FinSettingsScreen(),
+            provider: provider,
+            isDark: true,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Verify Header & Hero
-      expect(find.text('FIN Companion'), findsOneWidget);
-      expect(find.text('Companion Settings'), findsOneWidget);
-      expect(find.text('ACTIVE & PRESENT'), findsOneWidget);
+        // Verify Header & Hero
+        expect(find.text('FIN Companion'), findsOneWidget);
+        expect(find.text('Companion Settings'), findsOneWidget);
+        expect(find.text('ACTIVE & PRESENT'), findsOneWidget);
 
-      // Verify Presence toggles
-      expect(find.text('Show FIN on Home Dashboard'), findsOneWidget);
-      expect(find.text('Show FIN in Budgets & Envelopes'), findsOneWidget);
+        // Verify Presence toggles
+        expect(find.text('Show FIN on Home Dashboard'), findsOneWidget);
+        expect(find.text('Show FIN in Budgets & Envelopes'), findsOneWidget);
 
-      // Cycle quotes by tapping speech panel
-      final initialQuote = find.textContaining('spending patterns');
-      expect(initialQuote, findsOneWidget);
-      await tester.tap(find.byType(FinSpeechPanel));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('mid-month'), findsOneWidget);
+        // Cycle quotes by tapping speech panel
+        final initialQuote = find.textContaining('spending patterns');
+        expect(initialQuote, findsOneWidget);
+        await tester.tap(find.byType(FinSpeechPanel));
+        await tester.pumpAndSettle();
+        expect(find.textContaining('mid-month'), findsOneWidget);
 
-      // Select 'Left Edge'
-      await tester.ensureVisible(find.text('Left Edge'));
-      await tester.tap(find.text('Left Edge'));
-      await tester.pumpAndSettle();
+        // Select 'Left Edge'
+        await tester.ensureVisible(find.text('Left Edge'));
+        await tester.tap(find.text('Left Edge'));
+        await tester.pumpAndSettle();
 
-      // Select 'Minimal Alerts'
-      await tester.ensureVisible(find.text('Minimal Alerts'));
-      await tester.tap(find.text('Minimal Alerts'));
-      await tester.pumpAndSettle();
+        // Select 'Minimal Alerts'
+        await tester.ensureVisible(find.text('Minimal Alerts'));
+        await tester.tap(find.text('Minimal Alerts'));
+        await tester.pumpAndSettle();
 
-      // Tap Save Preferences
-      await tester.ensureVisible(find.text('SAVE PREFERENCES'));
-      await tester.tap(find.text('SAVE PREFERENCES'));
-      await tester.pumpAndSettle();
+        // Tap Save Preferences
+        await tester.ensureVisible(find.text('SAVE PREFERENCES'));
+        await tester.tap(find.text('SAVE PREFERENCES'));
+        await tester.pumpAndSettle();
 
-      // Check SnackBar confirmation
-      expect(find.text('Preferences Synchronized'), findsOneWidget);
-      expect(repo.prefs.edgePosition, 'left');
-      expect(repo.prefs.proactiveHints, false);
+        // Check SnackBar confirmation
+        expect(find.text('Preferences Synchronized'), findsOneWidget);
+        expect(repo.prefs.edgePosition, 'left');
+        expect(repo.prefs.proactiveHints, false);
 
-      // Scroll up to Deactivate
-      await tester.ensureVisible(find.text('DEACTIVATE'));
-      await tester.tap(find.text('DEACTIVATE'));
-      await tester.pumpAndSettle();
-      expect(find.text('RESTORE'), findsOneWidget);
-      expect(find.text('DEACTIVATED'), findsOneWidget);
+        // Scroll up to Deactivate
+        await tester.ensureVisible(find.text('DEACTIVATE'));
+        await tester.tap(find.text('DEACTIVATE'));
+        await tester.pumpAndSettle();
+        expect(find.text('RESTORE'), findsOneWidget);
+        expect(find.text('DEACTIVATED'), findsOneWidget);
 
-      // Restore FIN
-      await tester.ensureVisible(find.text('RESTORE'));
-      await tester.tap(find.text('RESTORE'));
-      await tester.pumpAndSettle();
-      expect(find.text('ACTIVE & PRESENT'), findsOneWidget);
-    });
+        // Restore FIN
+        await tester.ensureVisible(find.text('RESTORE'));
+        await tester.tap(find.text('RESTORE'));
+        await tester.pumpAndSettle();
+        expect(find.text('ACTIVE & PRESENT'), findsOneWidget);
+      },
+    );
 
     // ── Generate Screenshots for all required states ──────────────────────────
     testWidgets('Capture: FIN settings dark mode (393x852)', (tester) async {
@@ -482,7 +496,9 @@ void main() {
       await _capture(tester, '02_fin_settings_light_393');
     });
 
-    testWidgets('Capture: FIN settings compact width (320x568)', (tester) async {
+    testWidgets('Capture: FIN settings compact width (320x568)', (
+      tester,
+    ) async {
       const size = Size(320, 568);
       _setViewport(tester, size);
       final repo = _MockAnalyticsRepo();
@@ -501,7 +517,9 @@ void main() {
       await _capture(tester, '03_fin_settings_compact_320');
     });
 
-    testWidgets('Capture: FIN settings tablet width (1024x768)', (tester) async {
+    testWidgets('Capture: FIN settings tablet width (1024x768)', (
+      tester,
+    ) async {
       const size = Size(1024, 768);
       _setViewport(tester, size);
       final repo = _MockAnalyticsRepo();
@@ -520,7 +538,9 @@ void main() {
       await _capture(tester, '04_fin_settings_tablet_1024');
     });
 
-    testWidgets('Capture: FIN settings 2x text scale (393x852)', (tester) async {
+    testWidgets('Capture: FIN settings 2x text scale (393x852)', (
+      tester,
+    ) async {
       const size = Size(393, 852);
       _setViewport(tester, size, textScale: 2.0);
       final repo = _MockAnalyticsRepo();
@@ -604,7 +624,9 @@ void main() {
       await _capture(tester, '09_fin_settings_deactivated');
     });
 
-    testWidgets('Capture: FIN save-preferences confirmation state', (tester) async {
+    testWidgets('Capture: FIN save-preferences confirmation state', (
+      tester,
+    ) async {
       const size = Size(393, 852);
       _setViewport(tester, size);
       final repo = _MockAnalyticsRepo();

@@ -12,7 +12,8 @@ class CreditCardBillingModel {
   final int? daysUntilDue;
   final bool isDue;
   final bool isOverdue;
-  final String status; // "unconfigured" | "paid_in_full" | "overdue" | "due" | "current"
+  final String
+  status; // "unconfigured" | "paid_in_full" | "overdue" | "due" | "current"
   final bool isEstimated;
 
   const CreditCardBillingModel({
@@ -103,20 +104,36 @@ class CreditCardDetailsModel {
 
     return CreditCardDetailsModel(
       accountId: (account?['id'] ?? json['accountId']) as int? ?? 0,
-      displayName: (account?['displayName'] ?? json['displayName']) as String? ?? '',
-      institutionName: (account?['institutionName'] ?? json['institutionName']) as String?,
+      displayName:
+          (account?['displayName'] ?? json['displayName']) as String? ?? '',
+      institutionName:
+          (account?['institutionName'] ?? json['institutionName']) as String?,
       maskedLast4: (account?['maskedLast4'] ?? json['maskedLast4']) as String?,
-      currencyCode: (account?['currencyCode'] ?? json['currencyCode']) as String? ?? 'INR',
-      creditLimit: (balance?['creditLimit'] ?? json['creditLimit']) as String? ?? '0.00',
-      outstandingDebt: (balance?['outstandingDebt'] ?? json['outstandingDebt']) as String? ?? '0.00',
-      availableCredit: (balance?['availableCredit'] ?? json['availableCredit']) as String? ?? '0.00',
-      creditBalance: (balance?['creditBalance'] ?? json['creditBalance']) as String? ?? '0.00',
-      utilizationPercentage: (balance?['utilizationPercentage'] ?? json['utilizationPercentage']) as String? ?? '0.00',
-      statementClosingDay: (account?['statementClosingDay'] ?? json['statementClosingDay']) as int?,
-      paymentDueDay: (account?['paymentDueDay'] ?? json['paymentDueDay']) as int?,
+      currencyCode:
+          (account?['currencyCode'] ?? json['currencyCode']) as String? ??
+          'INR',
+      creditLimit:
+          (balance?['creditLimit'] ?? json['creditLimit']) as String? ?? '0.00',
+      outstandingDebt:
+          (balance?['outstandingDebt'] ?? json['outstandingDebt']) as String? ??
+          '0.00',
+      availableCredit:
+          (balance?['availableCredit'] ?? json['availableCredit']) as String? ??
+          '0.00',
+      creditBalance:
+          (balance?['creditBalance'] ?? json['creditBalance']) as String? ??
+          '0.00',
+      utilizationPercentage:
+          (balance?['utilizationPercentage'] ?? json['utilizationPercentage'])
+              as String? ??
+          '0.00',
+      statementClosingDay:
+          (account?['statementClosingDay'] ?? json['statementClosingDay'])
+              as int?,
+      paymentDueDay:
+          (account?['paymentDueDay'] ?? json['paymentDueDay']) as int?,
       billingInfo: rawBilling != null
-          ? CreditCardBillingModel.fromJson(
-              rawBilling as Map<String, dynamic>)
+          ? CreditCardBillingModel.fromJson(rawBilling as Map<String, dynamic>)
           : const CreditCardBillingModel(),
       status: (account?['status'] ?? json['status']) as String? ?? 'active',
     );

@@ -64,14 +64,18 @@ class HorizonNavigationDock extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = HorizonThemeTokens.of(context);
     final media = MediaQuery.of(context);
-    final horizontalMargin = media.size.width <= 360 ? 12.0 : HorizonDimensions.marginMobile;
+    final horizontalMargin = media.size.width <= 360
+        ? 12.0
+        : HorizonDimensions.marginMobile;
     final dockRadius = HorizonDimensions.borderFull;
 
     final dockBg = tokens.surface3.withValues(alpha: 0.95);
 
     return SafeArea(
       top: false,
-      minimum: const EdgeInsets.only(bottom: HorizonDimensions.bottomDockClearance),
+      minimum: const EdgeInsets.only(
+        bottom: HorizonDimensions.bottomDockClearance,
+      ),
       child: Padding(
         padding: EdgeInsets.fromLTRB(horizontalMargin, 6, horizontalMargin, 0),
         child: Semantics(
@@ -86,13 +90,12 @@ class HorizonNavigationDock extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: dockBg,
                   borderRadius: dockRadius,
-                  border: Border.all(
-                    color: tokens.rimDock,
-                    width: 1,
-                  ),
+                  border: Border.all(color: tokens.rimDock, width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: tokens.isDark ? 0.65 : 0.15),
+                      color: Colors.black.withValues(
+                        alpha: tokens.isDark ? 0.65 : 0.15,
+                      ),
                       blurRadius: 28,
                       offset: const Offset(0, 10),
                     ),
@@ -170,10 +173,7 @@ class _HorizonDockItem extends StatelessWidget {
                     : Colors.transparent,
                 borderRadius: itemRadius,
                 border: selected
-                    ? Border.all(
-                        color: tokens.rimCyanActive,
-                        width: 1,
-                      )
+                    ? Border.all(color: tokens.rimCyanActive, width: 1)
                     : null,
                 boxShadow: selected
                     ? [
@@ -211,7 +211,9 @@ class _HorizonDockItem extends StatelessWidget {
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: tokens.ionCyan.withValues(alpha: 0.6),
+                                        color: tokens.ionCyan.withValues(
+                                          alpha: 0.6,
+                                        ),
                                         blurRadius: 4,
                                       ),
                                     ],

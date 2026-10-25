@@ -39,13 +39,10 @@ class ReportRepository {
       queryParameters: queryParams,
     );
 
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final list = json as List;
-        return list.map((item) => MonthlyReport.fromJson(item)).toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final list = json as List;
+      return list.map((item) => MonthlyReport.fromJson(item)).toList();
+    });
   }
 
   Future<ApiResponse<List<CategoryReport>>> getCategory({
@@ -61,13 +58,10 @@ class ReportRepository {
       queryParameters: queryParams,
     );
 
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final list = json as List;
-        return list.map((item) => CategoryReport.fromJson(item)).toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final list = json as List;
+      return list.map((item) => CategoryReport.fromJson(item)).toList();
+    });
   }
 
   Future<ApiResponse<List<TrendsReport>>> getTrends({
@@ -83,13 +77,10 @@ class ReportRepository {
       queryParameters: queryParams,
     );
 
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final list = json as List;
-        return list.map((item) => TrendsReport.fromJson(item)).toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final list = json as List;
+      return list.map((item) => TrendsReport.fromJson(item)).toList();
+    });
   }
 
   Future<ApiResponse<List<CashflowReport>>> getCashflow({
@@ -105,19 +96,13 @@ class ReportRepository {
       queryParameters: queryParams,
     );
 
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final list = json as List;
-        return list.map((item) => CashflowReport.fromJson(item)).toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final list = json as List;
+      return list.map((item) => CashflowReport.fromJson(item)).toList();
+    });
   }
 
-  Future<String> exportReportCsv({
-    String? from,
-    String? to,
-  }) async {
+  Future<String> exportReportCsv({String? from, String? to}) async {
     final queryParams = <String, dynamic>{'format': 'csv'};
     if (from != null && from.isNotEmpty) queryParams['from'] = from;
     if (to != null && to.isNotEmpty) queryParams['to'] = to;

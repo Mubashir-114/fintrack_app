@@ -4,40 +4,43 @@ import 'package:frontend/screens/accounts/widgets/money_text.dart';
 
 void main() {
   group('AccountModel JSON serialization', () {
-    test('parses bank account json correctly preserving exact string amounts', () {
-      final json = {
-        'id': 101,
-        'type': 'bank',
-        'subtype': 'savings',
-        'displayName': 'HDFC Salary Account',
-        'institutionName': 'HDFC Bank',
-        'maskedLast4': '4321',
-        'currencyCode': 'INR',
-        'openingAmount': '50000.75',
-        'creditLimit': null,
-        'isDefault': true,
-        'status': 'active',
-        'createdAt': '2026-10-11T10:00:00Z',
-        'updatedAt': '2026-10-11T10:00:00Z',
-      };
+    test(
+      'parses bank account json correctly preserving exact string amounts',
+      () {
+        final json = {
+          'id': 101,
+          'type': 'bank',
+          'subtype': 'savings',
+          'displayName': 'HDFC Salary Account',
+          'institutionName': 'HDFC Bank',
+          'maskedLast4': '4321',
+          'currencyCode': 'INR',
+          'openingAmount': '50000.75',
+          'creditLimit': null,
+          'isDefault': true,
+          'status': 'active',
+          'createdAt': '2026-10-11T10:00:00Z',
+          'updatedAt': '2026-10-11T10:00:00Z',
+        };
 
-      final account = AccountModel.fromJson(json);
+        final account = AccountModel.fromJson(json);
 
-      expect(account.id, 101);
-      expect(account.type, 'bank');
-      expect(account.subtype, 'savings');
-      expect(account.displayName, 'HDFC Salary Account');
-      expect(account.institutionName, 'HDFC Bank');
-      expect(account.maskedLast4, '4321');
-      expect(account.currencyCode, 'INR');
-      expect(account.openingAmount, '50000.75'); // exact string, not double
-      expect(account.creditLimit, isNull);
-      expect(account.isDefault, isTrue);
-      expect(account.status, 'active');
-      expect(account.isAsset, isTrue);
-      expect(account.isActive, isTrue);
-      expect(account.isArchived, isFalse);
-    });
+        expect(account.id, 101);
+        expect(account.type, 'bank');
+        expect(account.subtype, 'savings');
+        expect(account.displayName, 'HDFC Salary Account');
+        expect(account.institutionName, 'HDFC Bank');
+        expect(account.maskedLast4, '4321');
+        expect(account.currencyCode, 'INR');
+        expect(account.openingAmount, '50000.75'); // exact string, not double
+        expect(account.creditLimit, isNull);
+        expect(account.isDefault, isTrue);
+        expect(account.status, 'active');
+        expect(account.isAsset, isTrue);
+        expect(account.isActive, isTrue);
+        expect(account.isArchived, isFalse);
+      },
+    );
 
     test('parses credit card account json with credit limit', () {
       final json = {
@@ -120,7 +123,7 @@ void main() {
             'openingAmount': '10000.00',
             'isDefault': true,
             'status': 'active',
-          }
+          },
         ],
         'total': 1,
         'page': 1,
@@ -142,13 +145,16 @@ void main() {
   });
 
   group('Exact monetary representation & formatting', () {
-    test('formats Indian number system correctly without floating point errors', () {
-      expect(MoneyText.format('100000.00', 'INR'), '₹1,00,000.00');
-      expect(MoneyText.format('12500.50', 'INR'), '₹12,500.50');
-      expect(MoneyText.format('500.00', 'INR'), '₹500.00');
-      expect(MoneyText.format('10000000.00', 'INR'), '₹1,00,00,000.00');
-      expect(MoneyText.format('0.00', 'INR'), '₹0.00');
-    });
+    test(
+      'formats Indian number system correctly without floating point errors',
+      () {
+        expect(MoneyText.format('100000.00', 'INR'), '₹1,00,000.00');
+        expect(MoneyText.format('12500.50', 'INR'), '₹12,500.50');
+        expect(MoneyText.format('500.00', 'INR'), '₹500.00');
+        expect(MoneyText.format('10000000.00', 'INR'), '₹1,00,00,000.00');
+        expect(MoneyText.format('0.00', 'INR'), '₹0.00');
+      },
+    );
 
     test('formats standard currency with standard grouping', () {
       expect(MoneyText.format('100000.00', 'USD'), '\$100,000.00');

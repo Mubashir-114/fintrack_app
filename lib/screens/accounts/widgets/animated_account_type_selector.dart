@@ -115,8 +115,11 @@ class _TypeCard extends StatelessWidget {
     final tokens = AppColors.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final disableAnimations = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    final duration = disableAnimations ? Duration.zero : const Duration(milliseconds: 220);
+    final disableAnimations =
+        MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final duration = disableAnimations
+        ? Duration.zero
+        : const Duration(milliseconds: 220);
 
     return Semantics(
       button: true,
@@ -139,15 +142,15 @@ class _TypeCard extends StatelessWidget {
                   : tokens.surface,
               borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
               border: Border.all(
-                color: isSelected
-                    ? tokens.primary
-                    : tokens.divider,
+                color: isSelected ? tokens.primary : tokens.divider,
                 width: isSelected ? 1.8 : 1.0,
               ),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: tokens.primary.withValues(alpha: isDark ? 0.16 : 0.08),
+                        color: tokens.primary.withValues(
+                          alpha: isDark ? 0.16 : 0.08,
+                        ),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -171,12 +174,16 @@ class _TypeCard extends StatelessWidget {
                         color: isSelected
                             ? tokens.primary.withValues(alpha: 0.22)
                             : tokens.elevated,
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusSM,
+                        ),
                       ),
                       child: Icon(
                         option.icon,
                         size: 19,
-                        color: isSelected ? tokens.primary : tokens.textSecondary,
+                        color: isSelected
+                            ? tokens.primary
+                            : tokens.textSecondary,
                       ),
                     ),
                     AnimatedOpacity(
@@ -209,7 +216,9 @@ class _TypeCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w600,
                         color: isSelected ? tokens.primary : tokens.textPrimary,
                         letterSpacing: -0.2,
                       ),

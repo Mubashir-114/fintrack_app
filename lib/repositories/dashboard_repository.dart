@@ -17,7 +17,9 @@ class DashboardRepository {
     final Map<String, dynamic> query = {};
     if (month != null && month.isNotEmpty) query['month'] = month;
     if (period != null && period.isNotEmpty) query['period'] = period;
-    if (startDate != null && startDate.isNotEmpty) query['startDate'] = startDate;
+    if (startDate != null && startDate.isNotEmpty) {
+      query['startDate'] = startDate;
+    }
     if (endDate != null && endDate.isNotEmpty) query['endDate'] = endDate;
 
     final response = await _dio.get(
@@ -32,13 +34,10 @@ class DashboardRepository {
 
   Future<ApiResponse<List<MonthlySummary>>> getMonthlySummary() async {
     final response = await _dio.get("dashboard/monthly");
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final list = json as List;
-        return list.map((item) => MonthlySummary.fromJson(item)).toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final list = json as List;
+      return list.map((item) => MonthlySummary.fromJson(item)).toList();
+    });
   }
 
   Future<ApiResponse<List<CategorySummary>>> getCategorySummary({
@@ -48,33 +47,31 @@ class DashboardRepository {
   }) async {
     final Map<String, dynamic> query = {};
     if (month != null && month.isNotEmpty) query['month'] = month;
-    if (startDate != null && startDate.isNotEmpty) query['startDate'] = startDate;
+    if (startDate != null && startDate.isNotEmpty) {
+      query['startDate'] = startDate;
+    }
     if (endDate != null && endDate.isNotEmpty) query['endDate'] = endDate;
 
     final response = await _dio.get(
       "dashboard/categories",
       queryParameters: query.isNotEmpty ? query : null,
     );
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final list = json as List;
-        return list.map((item) => CategorySummary.fromJson(item)).toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final list = json as List;
+      return list.map((item) => CategorySummary.fromJson(item)).toList();
+    });
   }
 
-  Future<ApiResponse<List<TransactionModel>>> getRecentTransactions({int limit = 10}) async {
+  Future<ApiResponse<List<TransactionModel>>> getRecentTransactions({
+    int limit = 10,
+  }) async {
     final response = await _dio.get(
       "dashboard/recent",
       queryParameters: {"limit": limit},
     );
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final list = json as List;
-        return list.map((item) => TransactionModel.fromJson(item)).toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final list = json as List;
+      return list.map((item) => TransactionModel.fromJson(item)).toList();
+    });
   }
 }

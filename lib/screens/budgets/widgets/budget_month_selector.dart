@@ -36,7 +36,9 @@ class BudgetMonthSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = HorizonThemeTokens.of(context);
-    final monthName = DateFormat('MMMM').format(DateTime(selectedYear, selectedMonth));
+    final monthName = DateFormat(
+      'MMMM',
+    ).format(DateTime(selectedYear, selectedMonth));
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -67,7 +69,10 @@ class BudgetMonthSelector extends StatelessWidget {
                 label: "Select month and year: $monthName $selectedYear",
                 onPressed: onTapMonth,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Row(
@@ -91,10 +96,15 @@ class BudgetMonthSelector extends StatelessWidget {
                         if (_isCurrentMonth) ...[
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: tokens.ionCyan.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(HorizonDimensions.radiusSM),
+                              borderRadius: BorderRadius.circular(
+                                HorizonDimensions.radiusSM,
+                              ),
                               border: Border.all(
                                 color: tokens.ionCyan.withValues(alpha: 0.3),
                                 width: 0.8,

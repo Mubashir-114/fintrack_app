@@ -78,7 +78,9 @@ class _FakeAccountRepository extends AccountRepository {
       status: 'active',
     );
     if (isDefault) {
-      accountsList = accountsList.map((a) => a.copyWith(isDefault: false)).toList();
+      accountsList = accountsList
+          .map((a) => a.copyWith(isDefault: false))
+          .toList();
     }
     accountsList.add(newAccount);
     return ApiResponse(success: true, data: newAccount, message: 'Created');
@@ -126,7 +128,7 @@ class _FakeAccountRepository extends AccountRepository {
           statusCode: 400,
           data: {
             'success': false,
-            'message': 'Credit card accounts cannot be set as default'
+            'message': 'Credit card accounts cannot be set as default',
           },
         ),
       );
@@ -145,7 +147,10 @@ class _FakeAccountRepository extends AccountRepository {
   @override
   Future<ApiResponse<AccountModel>> archiveAccount(int id) async {
     final idx = accountsList.indexWhere((a) => a.id == id);
-    final archived = accountsList[idx].copyWith(status: 'archived', isDefault: false);
+    final archived = accountsList[idx].copyWith(
+      status: 'archived',
+      isDefault: false,
+    );
     accountsList.removeAt(idx);
     return ApiResponse(success: true, data: archived, message: 'Archived');
   }
@@ -217,84 +222,91 @@ void main() {
       expect(await CacheService.get('accounts_active_page1'), isNull);
     });
 
-    test('session reset clears all data and prevents stale async results', () async {
-      final fakeRepo = _FakeAccountRepository();
-      fakeRepo.hangGetAccounts = Completer<ApiResponse<AccountListResponse>>();
+    test(
+      'session reset clears all data and prevents stale async results',
+      () async {
+        final fakeRepo = _FakeAccountRepository();
+        fakeRepo.hangGetAccounts =
+            Completer<ApiResponse<AccountListResponse>>();
 
-      final provider = AccountProvider(repository: fakeRepo);
-      // Fire request that hangs
-      final future = provider.loadAccounts();
+        final provider = AccountProvider(repository: fakeRepo);
+        // Fire request that hangs
+        final future = provider.loadAccounts();
 
-      // Logout / reset session in between
-      provider.clearSession();
+        // Logout / reset session in between
+        provider.clearSession();
 
-      expect(provider.accounts, isEmpty);
-      expect(provider.isLoading, isFalse);
+        expect(provider.accounts, isEmpty);
+        expect(provider.isLoading, isFalse);
 
-      // Complete the in-flight request now
-      fakeRepo.hangGetAccounts!.complete(
-        ApiResponse(
-          success: true,
-          data: AccountListResponse(
-            accounts: [
-              const AccountModel(
-                id: 99,
-                type: 'bank',
-                subtype: 'savings',
-                displayName: 'Stale Account',
-                currencyCode: 'INR',
-                openingAmount: '0.00',
-                isDefault: false,
-                status: 'active',
-              ),
-            ],
-            total: 1,
-            page: 1,
-            limit: 20,
+        // Complete the in-flight request now
+        fakeRepo.hangGetAccounts!.complete(
+          ApiResponse(
+            success: true,
+            data: AccountListResponse(
+              accounts: [
+                const AccountModel(
+                  id: 99,
+                  type: 'bank',
+                  subtype: 'savings',
+                  displayName: 'Stale Account',
+                  currencyCode: 'INR',
+                  openingAmount: '0.00',
+                  isDefault: false,
+                  status: 'active',
+                ),
+              ],
+              total: 1,
+              page: 1,
+              limit: 20,
+            ),
+            message: 'OK',
           ),
-          message: 'OK',
-        ),
-      );
+        );
 
-      await future;
+        await future;
 
-      // Stale response must NOT populate the cleared provider
-      expect(provider.accounts, isEmpty);
-    });
+        // Stale response must NOT populate the cleared provider
+        expect(provider.accounts, isEmpty);
+      },
+    );
 
-    test('setDefault promotes target and updates defaultAccount getter', () async {
-      final fakeRepo = _FakeAccountRepository();
-      fakeRepo.accountsList = [
-        const AccountModel(
-          id: 1,
-          type: 'bank',
-          subtype: 'savings',
-          displayName: 'Bank 1',
-          currencyCode: 'INR',
-          openingAmount: '1000.00',
-          isDefault: true,
-          status: 'active',
-        ),
-        const AccountModel(
-          id: 2,
-          type: 'bank',
-          subtype: 'current',
-          displayName: 'Bank 2',
-          currencyCode: 'INR',
-          openingAmount: '2000.00',
-          isDefault: false,
-          status: 'active',
-        ),
-      ];
+    test(
+      'setDefault promotes target and updates defaultAccount getter',
+      () async {
+        final fakeRepo = _FakeAccountRepository();
+        fakeRepo.accountsList = [
+          const AccountModel(
+            id: 1,
+            type: 'bank',
+            subtype: 'savings',
+            displayName: 'Bank 1',
+            currencyCode: 'INR',
+            openingAmount: '1000.00',
+            isDefault: true,
+            status: 'active',
+          ),
+          const AccountModel(
+            id: 2,
+            type: 'bank',
+            subtype: 'current',
+            displayName: 'Bank 2',
+            currencyCode: 'INR',
+            openingAmount: '2000.00',
+            isDefault: false,
+            status: 'active',
+          ),
+        ];
 
-      final provider = AccountProvider(repository: fakeRepo);
-      await provider.loadAccounts();
-      expect(provider.defaultAccount?.id, 1);
+        final provider = AccountProvider(repository: fakeRepo);
+        await provider.loadAccounts();
+        expect(provider.defaultAccount?.id, 1);
 
-      final success = await provider.setDefault(2);
-      expect(success, isTrue);
-      expect(provider.defaultAccount?.id, 2);
-    });
+        final success = await provider.setDefault(2);
+        expect(success, isTrue);
+        expect(provider.defaultAccount?.id, 2);
+      },
+    );
 
     test('rejects setting credit card as default', () async {
       final fakeRepo = _FakeAccountRepository();
@@ -317,7 +329,10 @@ void main() {
 
       final success = await provider.setDefault(5);
       expect(success, isFalse);
-      expect(provider.actionError, contains('Credit card accounts cannot be set as default'));
+      expect(
+        provider.actionError,
+        contains('Credit card accounts cannot be set as default'),
+      );
     });
 
     test('archiveAccount removes account from active list', () async {

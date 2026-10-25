@@ -153,8 +153,10 @@ class FinPlacementSelector extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: tokens.textHigh,
                 side: BorderSide(color: tokens.rimNeutral),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

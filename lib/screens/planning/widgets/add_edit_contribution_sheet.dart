@@ -39,7 +39,8 @@ class AddEditContributionSheet extends StatefulWidget {
   }
 
   @override
-  State<AddEditContributionSheet> createState() => _AddEditContributionSheetState();
+  State<AddEditContributionSheet> createState() =>
+      _AddEditContributionSheetState();
 }
 
 class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
@@ -102,7 +103,9 @@ class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
     });
 
     final amount = double.tryParse(_amountController.text.trim()) ?? 0;
-    final note = _noteController.text.trim().isEmpty ? null : _noteController.text.trim();
+    final note = _noteController.text.trim().isEmpty
+        ? null
+        : _noteController.text.trim();
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
     final provider = context.read<GoalProvider>();
 
@@ -121,10 +124,7 @@ class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
           data,
         );
       } else {
-        success = await provider.addContribution(
-          widget.goalId,
-          data,
-        );
+        success = await provider.addContribution(widget.goalId, data);
       }
 
       if (mounted) {
@@ -132,7 +132,8 @@ class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
           Navigator.of(context).pop(true);
         } else {
           setState(() {
-            _errorMessage = provider.errorMessage ?? 'Failed to record contribution';
+            _errorMessage =
+                provider.errorMessage ?? 'Failed to record contribution';
             _isSubmitting = false;
           });
         }
@@ -198,7 +199,9 @@ class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _isEditing ? 'Edit Contribution' : 'Add Progress Record',
+                          _isEditing
+                              ? 'Edit Contribution'
+                              : 'Add Progress Record',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -220,7 +223,10 @@ class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close_rounded, color: colors.textSecondary),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: colors.textSecondary,
+                    ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -284,12 +290,19 @@ class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 18),
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        color: AppColors.danger,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _errorMessage!,
-                          style: const TextStyle(fontSize: 12, color: AppColors.danger),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.danger,
+                          ),
                         ),
                       ),
                     ],
@@ -301,14 +314,18 @@ class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
               // Contribution Amount
               TextFormField(
                 controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 autofocus: true,
                 decoration: InputDecoration(
                   labelText: 'Saved Amount *',
                   prefixText: '${currency.currencySymbol} ',
                   prefixIcon: const Icon(Icons.add_circle_outline_rounded),
                   filled: true,
-                  fillColor: colors.isDark ? colors.elevated : colors.background,
+                  fillColor: colors.isDark
+                      ? colors.elevated
+                      : colors.background,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
                     borderSide: BorderSide.none,
@@ -332,14 +349,21 @@ class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
                 onTap: _pickDate,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.isDark ? colors.elevated : colors.background,
                     borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.calendar_today_rounded, color: colors.textSecondary, size: 20),
+                      Icon(
+                        Icons.calendar_today_rounded,
+                        color: colors.textSecondary,
+                        size: 20,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -347,7 +371,10 @@ class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
                           children: [
                             Text(
                               'Date of Saving',
-                              style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: colors.textSecondary,
+                              ),
                             ),
                             const SizedBox(height: 2),
                             Text(
@@ -361,7 +388,11 @@ class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
                           ],
                         ),
                       ),
-                      Icon(Icons.edit_calendar_rounded, color: colors.primary, size: 18),
+                      Icon(
+                        Icons.edit_calendar_rounded,
+                        color: colors.primary,
+                        size: 18,
+                      ),
                     ],
                   ),
                 ),
@@ -378,7 +409,9 @@ class _AddEditContributionSheetState extends State<AddEditContributionSheet> {
                   prefixIcon: const Icon(Icons.edit_note_rounded),
                   counterText: '',
                   filled: true,
-                  fillColor: colors.isDark ? colors.elevated : colors.background,
+                  fillColor: colors.isDark
+                      ? colors.elevated
+                      : colors.background,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
                     borderSide: BorderSide.none,

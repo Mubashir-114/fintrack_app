@@ -68,7 +68,8 @@ class FinDataBoundaryPanel extends StatelessWidget {
             tokens: tokens,
             icon: Icons.check_circle_outline,
             title: 'Authorized records only',
-            detail: 'FIN evaluates only your saved transactions and envelope limits stored on the FinTrack backend.',
+            detail:
+                'FIN evaluates only your saved transactions and envelope limits stored on the FinTrack backend.',
           ),
           const SizedBox(height: 10),
 
@@ -77,7 +78,8 @@ class FinDataBoundaryPanel extends StatelessWidget {
             tokens: tokens,
             icon: Icons.account_balance_outlined,
             title: 'No direct bank account link',
-            detail: 'FIN never connects directly to your external banking credentials or account logins.',
+            detail:
+                'FIN never connects directly to your external banking credentials or account logins.',
           ),
           const SizedBox(height: 10),
 
@@ -86,7 +88,8 @@ class FinDataBoundaryPanel extends StatelessWidget {
             tokens: tokens,
             icon: Icons.phonelink_lock_outlined,
             title: 'No inbox or SMS access',
-            detail: 'FIN cannot independently read your SMS inbox or notifications without explicit user import.',
+            detail:
+                'FIN cannot independently read your SMS inbox or notifications without explicit user import.',
           ),
           const SizedBox(height: 14),
 
@@ -96,11 +99,17 @@ class FinDataBoundaryPanel extends StatelessWidget {
             decoration: BoxDecoration(
               color: tokens.surface3,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: tokens.rimNeutral.withValues(alpha: 0.6)),
+              border: Border.all(
+                color: tokens.rimNeutral.withValues(alpha: 0.6),
+              ),
             ),
             child: Row(
               children: [
-                Icon(Icons.verified_user_outlined, size: 14, color: tokens.ionCyan),
+                Icon(
+                  Icons.verified_user_outlined,
+                  size: 14,
+                  color: tokens.ionCyan,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(

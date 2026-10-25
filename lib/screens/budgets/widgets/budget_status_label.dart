@@ -8,8 +8,13 @@ enum BudgetThresholdLevel {
   approachingLimit,
   exceeded;
 
-  static BudgetThresholdLevel fromRatio(double ratio, {bool isExplicitExceeded = false}) {
-    if (isExplicitExceeded || ratio >= 1.0) return BudgetThresholdLevel.exceeded;
+  static BudgetThresholdLevel fromRatio(
+    double ratio, {
+    bool isExplicitExceeded = false,
+  }) {
+    if (isExplicitExceeded || ratio >= 1.0) {
+      return BudgetThresholdLevel.exceeded;
+    }
     if (ratio >= 0.85) return BudgetThresholdLevel.approachingLimit;
     if (ratio >= 0.70) return BudgetThresholdLevel.watch;
     return BudgetThresholdLevel.normal;
@@ -20,11 +25,7 @@ enum BudgetThresholdLevel {
 ///
 /// Small semantic badge that communicates budget state without screaming colors.
 class BudgetStatusLabel extends StatelessWidget {
-  const BudgetStatusLabel({
-    super.key,
-    required this.level,
-    this.customText,
-  });
+  const BudgetStatusLabel({super.key, required this.level, this.customText});
 
   final BudgetThresholdLevel level;
   final String? customText;
@@ -60,10 +61,7 @@ class BudgetStatusLabel extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(HorizonDimensions.radiusSM),
-        border: Border.all(
-          color: color.withValues(alpha: 0.30),
-          width: 0.8,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.30), width: 0.8),
       ),
       child: Text(
         text,

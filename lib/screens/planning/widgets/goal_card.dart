@@ -67,7 +67,10 @@ class GoalCard extends StatelessWidget {
     final colors = AppColors.of(context);
     final currency = context.watch<CurrencyProvider>();
     final statusColor = _getStatusColor(goal.intelligenceStatus, colors);
-    final statusLabel = _getStatusLabel(goal.intelligenceStatus, goal.isOverdue);
+    final statusLabel = _getStatusLabel(
+      goal.intelligenceStatus,
+      goal.isOverdue,
+    );
     final statusIcon = _getStatusIcon(goal.intelligenceStatus, goal.isOverdue);
 
     final progressRatio = (goal.progressPercentage / 100).clamp(0.0, 1.0);
@@ -102,9 +105,15 @@ class GoalCard extends StatelessWidget {
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: colors.primary.withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusMD,
+                      ),
                     ),
-                    child: Icon(Icons.flag_rounded, color: colors.primary, size: 22),
+                    child: Icon(
+                      Icons.flag_rounded,
+                      color: colors.primary,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -121,7 +130,8 @@ class GoalCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        if (goal.description != null && goal.description!.isNotEmpty)
+                        if (goal.description != null &&
+                            goal.description!.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
@@ -138,7 +148,10 @@ class GoalCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
@@ -239,7 +252,9 @@ class GoalCard extends StatelessWidget {
                         gradient: LinearGradient(
                           colors: [
                             colors.primary,
-                            goal.isAchieved ? AppColors.success : colors.secondary,
+                            goal.isAchieved
+                                ? AppColors.success
+                                : colors.secondary,
                           ],
                         ),
                         borderRadius: BorderRadius.circular(4),
@@ -276,12 +291,16 @@ class GoalCard extends StatelessWidget {
                           goal.isOverdue
                               ? 'Due date passed'
                               : goal.daysRemaining != null
-                                  ? '${goal.daysRemaining} days left'
-                                  : goal.targetDate!,
+                              ? '${goal.daysRemaining} days left'
+                              : goal.targetDate!,
                           style: TextStyle(
                             fontSize: 12,
-                            color: goal.isOverdue ? AppColors.danger : colors.textSecondary,
-                            fontWeight: goal.isOverdue ? FontWeight.bold : FontWeight.normal,
+                            color: goal.isOverdue
+                                ? AppColors.danger
+                                : colors.textSecondary,
+                            fontWeight: goal.isOverdue
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                       ],
@@ -297,10 +316,15 @@ class GoalCard extends StatelessWidget {
                 ],
               ),
 
-              if (goal.requiredMonthlySaving != null && !goal.isAchieved && !goal.isOverdue) ...[
+              if (goal.requiredMonthlySaving != null &&
+                  !goal.isAchieved &&
+                  !goal.isOverdue) ...[
                 const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),

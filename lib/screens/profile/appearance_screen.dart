@@ -29,7 +29,11 @@ class AppearanceScreen extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         leading: Navigator.of(context).canPop()
             ? IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: tokens.textHigh),
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                  color: tokens.textHigh,
+                ),
                 onPressed: () => Navigator.of(context).maybePop(),
               )
             : null,
@@ -70,7 +74,12 @@ class AppearanceScreen extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, HorizonDimensions.dockClearance),
+        padding: const EdgeInsets.fromLTRB(
+          16,
+          12,
+          16,
+          HorizonDimensions.dockClearance,
+        ),
         child: Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
@@ -121,7 +130,10 @@ class AppearanceScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: tokens.ionCyan.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(10),
@@ -139,7 +151,9 @@ class AppearanceScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Select your financial instrumentation identity and accents.',
-                  style: HorizonTypography.bodySm.copyWith(color: tokens.textMedium),
+                  style: HorizonTypography.bodySm.copyWith(
+                    color: tokens.textMedium,
+                  ),
                 ),
                 const SizedBox(height: 12),
 
@@ -149,14 +163,16 @@ class AppearanceScreen extends StatelessWidget {
                     currentCollection: themeProvider.collection,
                     isDark: isDark,
                     tokens: tokens,
-                    onSelect: (collection) => themeProvider.setCollection(collection),
+                    onSelect: (collection) =>
+                        themeProvider.setCollection(collection),
                   )
                 else
                   _MobileThemeList(
                     currentCollection: themeProvider.collection,
                     isDark: isDark,
                     tokens: tokens,
-                    onSelect: (collection) => themeProvider.setCollection(collection),
+                    onSelect: (collection) =>
+                        themeProvider.setCollection(collection),
                   ),
               ],
             ),
@@ -275,7 +291,11 @@ class _LiveMiniaturePreview extends StatelessWidget {
                         fontSize: 9,
                       ),
                     ),
-                    Icon(Icons.shield_outlined, size: 14, color: tokens.ionCyan),
+                    Icon(
+                      Icons.shield_outlined,
+                      size: 14,
+                      color: tokens.ionCyan,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -335,7 +355,10 @@ class _LiveMiniaturePreview extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: tokens.surface2,
                     borderRadius: BorderRadius.circular(8),
@@ -343,7 +366,11 @@ class _LiveMiniaturePreview extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.arrow_downward_rounded, size: 12, color: tokens.surplus),
+                      Icon(
+                        Icons.arrow_downward_rounded,
+                        size: 12,
+                        color: tokens.surplus,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Column(
@@ -362,11 +389,12 @@ class _LiveMiniaturePreview extends StatelessWidget {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 '+$currencySymbol 18,400',
-                                style: HorizonTypography.tabularAmountSm.copyWith(
-                                  color: tokens.surplus,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: HorizonTypography.tabularAmountSm
+                                    .copyWith(
+                                      color: tokens.surplus,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                               ),
                             ),
                           ],
@@ -379,7 +407,10 @@ class _LiveMiniaturePreview extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: tokens.surface2,
                     borderRadius: BorderRadius.circular(8),
@@ -387,7 +418,11 @@ class _LiveMiniaturePreview extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.arrow_upward_rounded, size: 12, color: tokens.outflow),
+                      Icon(
+                        Icons.arrow_upward_rounded,
+                        size: 12,
+                        color: tokens.outflow,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Column(
@@ -406,11 +441,12 @@ class _LiveMiniaturePreview extends StatelessWidget {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 '-$currencySymbol 6,250',
-                                style: HorizonTypography.tabularAmountSm.copyWith(
-                                  color: tokens.outflow,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: HorizonTypography.tabularAmountSm
+                                    .copyWith(
+                                      color: tokens.outflow,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                               ),
                             ),
                           ],
@@ -448,8 +484,8 @@ class _DisplayModeSelector extends StatelessWidget {
         final icon = mode == AppDisplayMode.system
             ? Icons.brightness_auto_rounded
             : mode == AppDisplayMode.dark
-                ? Icons.dark_mode_rounded
-                : Icons.light_mode_rounded;
+            ? Icons.dark_mode_rounded
+            : Icons.light_mode_rounded;
 
         return Expanded(
           child: Padding(
@@ -458,12 +494,17 @@ class _DisplayModeSelector extends StatelessWidget {
               onTap: () => onSelect(mode),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 8,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected ? tokens.surface3 : tokens.surface1,
                   borderRadius: HorizonDimensions.borderMD,
                   border: Border.all(
-                    color: isSelected ? tokens.rimCyanActive : tokens.rimNeutral,
+                    color: isSelected
+                        ? tokens.rimCyanActive
+                        : tokens.rimNeutral,
                     width: isSelected ? 1.5 : 1.0,
                   ),
                 ),
@@ -480,8 +521,12 @@ class _DisplayModeSelector extends StatelessWidget {
                       child: Text(
                         mode.displayName,
                         style: HorizonTypography.labelCaps.copyWith(
-                          color: isSelected ? tokens.textHigh : tokens.textMedium,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected
+                              ? tokens.textHigh
+                              : tokens.textMedium,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                           fontSize: 10,
                         ),
                       ),
@@ -705,7 +750,10 @@ class _SelectableThemeCard extends StatelessWidget {
                       if (spec.isDefault) ...[
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1.5,
+                          ),
                           decoration: BoxDecoration(
                             color: tokens.surface3,
                             borderRadius: BorderRadius.circular(4),
@@ -767,17 +815,17 @@ class _SelectableThemeCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: spec.swatches[i],
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: tokens.rimNeutral,
-                        width: 1,
-                      ),
+                      border: Border.all(color: tokens.rimNeutral, width: 1),
                     ),
                   ),
                 ],
                 const Spacer(),
                 if (isSelected)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: primaryColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(4),

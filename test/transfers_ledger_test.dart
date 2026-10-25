@@ -49,7 +49,8 @@ class MockAccountRepository extends Fake implements AccountRepository {
     return ApiResponse(
       success: true,
       message: 'Success',
-      data: mockBalance ??
+      data:
+          mockBalance ??
           AccountBalanceModel(
             accountId: id,
             displayName: 'Savings',
@@ -77,7 +78,8 @@ class MockAccountRepository extends Fake implements AccountRepository {
     return ApiResponse(
       success: true,
       message: 'Success',
-      data: mockActivity ??
+      data:
+          mockActivity ??
           AccountActivityListResponse(
             activities: [],
             total: 0,
@@ -197,37 +199,40 @@ void main() {
       expect(balance.totalExpense, '7500.00');
     });
 
-    test('AccountActivityModel handles diverse entry types and inflows/outflows', () {
-      final item1 = AccountActivityModel.fromJson({
-        'id': 'tx_1',
-        'activityType': 'transaction',
-        'type': 'income',
-        'title': 'Salary deposit',
-        'amount': '75000.00',
-        'date': '2026-10-01',
-      });
-      expect(item1.isIncomeOrInflow, isTrue);
+    test(
+      'AccountActivityModel handles diverse entry types and inflows/outflows',
+      () {
+        final item1 = AccountActivityModel.fromJson({
+          'id': 'tx_1',
+          'activityType': 'transaction',
+          'type': 'income',
+          'title': 'Salary deposit',
+          'amount': '75000.00',
+          'date': '2026-10-01',
+        });
+        expect(item1.isIncomeOrInflow, isTrue);
 
-      final item2 = AccountActivityModel.fromJson({
-        'id': 'tr_1',
-        'activityType': 'transfer',
-        'type': 'transfer_out',
-        'title': 'Transfer to Savings',
-        'amount': '20000.00',
-        'date': '2026-10-02',
-      });
-      expect(item2.isIncomeOrInflow, isFalse);
+        final item2 = AccountActivityModel.fromJson({
+          'id': 'tr_1',
+          'activityType': 'transfer',
+          'type': 'transfer_out',
+          'title': 'Transfer to Savings',
+          'amount': '20000.00',
+          'date': '2026-10-02',
+        });
+        expect(item2.isIncomeOrInflow, isFalse);
 
-      final item3 = AccountActivityModel.fromJson({
-        'id': 'adj_1',
-        'activityType': 'adjustment',
-        'type': 'adjustment_credit',
-        'title': 'Adjustment: Correction',
-        'amount': '150.00',
-        'date': '2026-10-03',
-      });
-      expect(item3.isIncomeOrInflow, isTrue);
-    });
+        final item3 = AccountActivityModel.fromJson({
+          'id': 'adj_1',
+          'activityType': 'adjustment',
+          'type': 'adjustment_credit',
+          'title': 'Adjustment: Correction',
+          'amount': '150.00',
+          'date': '2026-10-03',
+        });
+        expect(item3.isIncomeOrInflow, isTrue);
+      },
+    );
 
     test('AccountAdjustmentModel parses auditable adjustment record', () {
       final json = {
@@ -288,8 +293,9 @@ void main() {
   });
 
   group('Phase 3A.3 - TransferScreen UI Validation', () {
-    testWidgets('TransferScreen shows form elements and validates fields',
-        (tester) async {
+    testWidgets('TransferScreen shows form elements and validates fields', (
+      tester,
+    ) async {
       final mockRepo = MockAccountRepository();
       mockRepo.mockAccounts = [
         const AccountModel(

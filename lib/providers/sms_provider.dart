@@ -70,7 +70,8 @@ class SmsProvider extends ChangeNotifier {
         tx.confirmedTransactionId != null) {
       return 'This transaction is no longer pending.';
     }
-    final resolvedAccId = tx.accountId ??
+    final resolvedAccId =
+        tx.accountId ??
         (tx.isAccountAmbiguous ? null : tx.suggestedAccountId) ??
         fallbackDefaultAccountId;
     if ((resolvedAccId ?? 0) <= 0) {
@@ -133,12 +134,14 @@ class SmsProvider extends ChangeNotifier {
       _detectedTransactions.where((tx) => confirmationIssue(tx) == null).length;
 
   int eligibleCount({int? fallbackDefaultAccountId}) => _detectedTransactions
-      .where((tx) =>
-          confirmationIssue(
-            tx,
-            fallbackDefaultAccountId: fallbackDefaultAccountId,
-          ) ==
-          null)
+      .where(
+        (tx) =>
+            confirmationIssue(
+              tx,
+              fallbackDefaultAccountId: fallbackDefaultAccountId,
+            ) ==
+            null,
+      )
       .length;
 
   PermissionStatus? _permissionStatus;
@@ -276,7 +279,9 @@ class SmsProvider extends ChangeNotifier {
       if (sessionGeneration != _sessionGeneration) return;
       final responseData = e is DioException ? e.response?.data : null;
       _detectedErrorMessage = e is DioException
-          ? ((responseData is Map ? responseData['message']?.toString() : null) ??
+          ? ((responseData is Map
+                    ? responseData['message']?.toString()
+                    : null) ??
                 e.message ??
                 "Failed to load detected transactions")
           : e.toString().replaceAll("Exception: ", "");
@@ -414,7 +419,8 @@ class SmsProvider extends ChangeNotifier {
       final effectiveOverrides = Map<String, dynamic>.from(overrides ?? {});
       if (!effectiveOverrides.containsKey('account_id') &&
           candidate!.accountId == null &&
-          (candidate.suggestedAccountId == null || candidate.isAccountAmbiguous) &&
+          (candidate.suggestedAccountId == null ||
+              candidate.isAccountAmbiguous) &&
           fallbackDefaultAccountId != null) {
         effectiveOverrides['account_id'] = fallbackDefaultAccountId;
       }
@@ -568,13 +574,14 @@ class SmsProvider extends ChangeNotifier {
         final chunk = eligible.skip(start).take(100).toList();
         try {
           final res = await _smartRepo.batchConfirm([
-            for (final tx in chunk) {
-              'id': tx.id,
-              if (tx.accountId == null &&
-                  (tx.suggestedAccountId == null || tx.isAccountAmbiguous) &&
-                  fallbackDefaultAccountId != null)
-                'account_id': fallbackDefaultAccountId,
-            },
+            for (final tx in chunk)
+              {
+                'id': tx.id,
+                if (tx.accountId == null &&
+                    (tx.suggestedAccountId == null || tx.isAccountAmbiguous) &&
+                    fallbackDefaultAccountId != null)
+                  'account_id': fallbackDefaultAccountId,
+              },
           ]);
           if (operationSession != _sessionGeneration) return false;
           final confirmed = res.data['confirmed'] as List? ?? [];

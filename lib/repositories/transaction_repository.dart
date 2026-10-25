@@ -19,10 +19,7 @@ class TransactionRepository {
     int page = 1,
     int limit = 10,
   }) async {
-    final queryParams = <String, dynamic>{
-      'page': page,
-      'limit': limit,
-    };
+    final queryParams = <String, dynamic>{'page': page, 'limit': limit};
 
     if (type != null && type.isNotEmpty) queryParams['type'] = type;
     if (categoryId != null) queryParams['categoryId'] = categoryId;
@@ -72,10 +69,7 @@ class TransactionRepository {
       payload["accountId"] = accountId;
     }
 
-    final response = await _dio.post(
-      "transactions",
-      data: payload,
-    );
+    final response = await _dio.post("transactions", data: payload);
 
     return ApiResponse.fromJson(
       response.data,
@@ -105,10 +99,7 @@ class TransactionRepository {
       payload["accountId"] = accountId;
     }
 
-    final response = await _dio.put(
-      "transactions/$id",
-      data: payload,
-    );
+    final response = await _dio.put("transactions/$id", data: payload);
 
     return ApiResponse.fromJson(
       response.data,
@@ -118,10 +109,7 @@ class TransactionRepository {
 
   Future<ApiResponse<void>> removeTransaction(int id) async {
     final response = await _dio.delete("transactions/$id");
-    return ApiResponse.fromJson(
-      response.data,
-      (_) {},
-    );
+    return ApiResponse.fromJson(response.data, (_) {});
   }
 
   Future<ApiResponse<SmsImportResponse>> importSmsTransactions(

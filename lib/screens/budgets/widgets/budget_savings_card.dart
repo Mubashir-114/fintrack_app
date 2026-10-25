@@ -34,7 +34,9 @@ class BudgetSavingsCard extends StatelessWidget {
         ? (netSavingsNum / targetNum).clamp(0.0, 1.0)
         : 0.0;
 
-    final statusColor = isAchieved && targetNum > 0 ? tokens.surplus : tokens.electricIndigo;
+    final statusColor = isAchieved && targetNum > 0
+        ? tokens.surplus
+        : tokens.electricIndigo;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -58,10 +60,16 @@ class BudgetSavingsCard extends StatelessWidget {
                     height: 32,
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(HorizonDimensions.radiusSM),
+                      borderRadius: BorderRadius.circular(
+                        HorizonDimensions.radiusSM,
+                      ),
                     ),
                     alignment: Alignment.center,
-                    child: Icon(Icons.savings_rounded, size: 16, color: statusColor),
+                    child: Icon(
+                      Icons.savings_rounded,
+                      size: 16,
+                      color: statusColor,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Text(
@@ -75,10 +83,15 @@ class BudgetSavingsCard extends StatelessWidget {
                 ],
               ),
               HorizonPressable(
-                label: targetNum > 0 ? "Edit savings target" : "Set savings target",
+                label: targetNum > 0
+                    ? "Edit savings target"
+                    : "Set savings target",
                 onPressed: onEditTarget,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   child: Text(
                     targetNum > 0 ? "Edit Target" : "Set Target",
                     style: HorizonTypography.labelCaps.copyWith(
@@ -142,7 +155,10 @@ class BudgetSavingsCard extends StatelessWidget {
                 ),
                 if (isAchieved)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: tokens.surplus.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(4),

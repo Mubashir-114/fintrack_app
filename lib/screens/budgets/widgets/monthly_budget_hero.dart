@@ -25,8 +25,10 @@ class MonthlyBudgetHero extends StatelessWidget {
     final tokens = HorizonThemeTokens.of(context);
     final limitNum = double.tryParse(overall.budgetLimit) ?? 0.0;
     final spentNum = double.tryParse(overall.actualSpending) ?? 0.0;
-    final remainingNum = double.tryParse(overall.remainingAmount) ?? (limitNum - spentNum);
-    final utilizationNum = double.tryParse(overall.utilizationPercentage) ??
+    final remainingNum =
+        double.tryParse(overall.remainingAmount) ?? (limitNum - spentNum);
+    final utilizationNum =
+        double.tryParse(overall.utilizationPercentage) ??
         (limitNum > 0 ? (spentNum / limitNum * 100) : 0.0);
     final projectedNum = double.tryParse(overall.projectedSpending) ?? 0.0;
     final dailyBurnNum = double.tryParse(overall.dailyBurnRate) ?? 0.0;
@@ -98,10 +100,15 @@ class MonthlyBudgetHero extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(HorizonDimensions.radiusSM),
+                        borderRadius: BorderRadius.circular(
+                          HorizonDimensions.radiusSM,
+                        ),
                         border: Border.all(
                           color: statusColor.withValues(alpha: 0.3),
                           width: 1,
@@ -124,8 +131,11 @@ class MonthlyBudgetHero extends StatelessWidget {
                 // Main Presentation: Responsive Split or Stack
                 Builder(
                   builder: (context) {
-                    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
-                    final isNarrow = constraints.maxWidth < 350 || textScale > 1.3;
+                    final textScale = MediaQuery.textScalerOf(
+                      context,
+                    ).scale(1.0);
+                    final isNarrow =
+                        constraints.maxWidth < 350 || textScale > 1.3;
 
                     if (isWide) {
                       return Row(
@@ -244,17 +254,24 @@ class MonthlyBudgetHero extends StatelessWidget {
                 if (projectedNum > 0 && period.daysRemaining > 0) ...[
                   const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 7,
+                    ),
                     decoration: BoxDecoration(
                       color: tokens.surface2,
-                      borderRadius: BorderRadius.circular(HorizonDimensions.radiusSM),
+                      borderRadius: BorderRadius.circular(
+                        HorizonDimensions.radiusSM,
+                      ),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           isExceeded
                               ? Icons.info_outline_rounded
-                              : (isApproaching ? Icons.trending_up_rounded : Icons.check_circle_outline_rounded),
+                              : (isApproaching
+                                    ? Icons.trending_up_rounded
+                                    : Icons.check_circle_outline_rounded),
                           size: 13,
                           color: statusColor,
                         ),
@@ -264,8 +281,8 @@ class MonthlyBudgetHero extends StatelessWidget {
                             isExceeded
                                 ? "Current pace: You are likely to spend ${currency.format(projectedNum)} this month."
                                 : (isApproaching
-                                    ? "Current pace: Projected to reach ${currency.format(projectedNum)} by month end."
-                                    : "Current pace: Spending is on track within your monthly limit."),
+                                      ? "Current pace: Projected to reach ${currency.format(projectedNum)} by month end."
+                                      : "Current pace: Spending is on track within your monthly limit."),
                             style: HorizonTypography.bodySm.copyWith(
                               fontSize: 11,
                               color: tokens.textMedium,

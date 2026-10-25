@@ -7,15 +7,11 @@ import 'horizon_theme_tokens.dart';
 class HorizonTheme {
   HorizonTheme._();
 
-  static ThemeData get darkTheme => AppTheme.buildTheme(
-        ThemeCollection.midnightAurora,
-        Brightness.dark,
-      );
+  static ThemeData get darkTheme =>
+      AppTheme.buildTheme(ThemeCollection.midnightAurora, Brightness.dark);
 
-  static ThemeData get lightTheme => AppTheme.buildTheme(
-        ThemeCollection.midnightAurora,
-        Brightness.light,
-      );
+  static ThemeData get lightTheme =>
+      AppTheme.buildTheme(ThemeCollection.midnightAurora, Brightness.light);
 
   static ThemeData buildTheme(
     Brightness brightness, [

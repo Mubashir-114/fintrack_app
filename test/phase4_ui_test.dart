@@ -119,10 +119,16 @@ void main() {
       ),
     );
 
-    expect(tester.widget<EditableText>(find.byType(EditableText)).obscureText, isTrue);
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).obscureText,
+      isTrue,
+    );
     await tester.tap(find.byTooltip('Show password'));
     await tester.pump();
-    expect(tester.widget<EditableText>(find.byType(EditableText)).obscureText, isFalse);
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).obscureText,
+      isFalse,
+    );
     expect(find.byTooltip('Hide password'), findsOneWidget);
   });
 

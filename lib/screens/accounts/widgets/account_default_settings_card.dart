@@ -93,13 +93,17 @@ class AccountDefaultSettingsCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
           border: Border.all(
-            color: isDefault ? tokens.primary.withValues(alpha: 0.6) : tokens.divider,
+            color: isDefault
+                ? tokens.primary.withValues(alpha: 0.6)
+                : tokens.divider,
             width: isDefault ? 1.4 : 1.0,
           ),
           boxShadow: isDefault
               ? [
                   BoxShadow(
-                    color: tokens.primary.withValues(alpha: isDark ? 0.08 : 0.04),
+                    color: tokens.primary.withValues(
+                      alpha: isDark ? 0.08 : 0.04,
+                    ),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -110,7 +114,10 @@ class AccountDefaultSettingsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SwitchListTile.adaptive(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 4,
+              ),
               secondary: Container(
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
@@ -149,7 +156,10 @@ class AccountDefaultSettingsCard extends StatelessWidget {
             if (!hasExistingDefault)
               Container(
                 margin: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 7,
+                ),
                 decoration: BoxDecoration(
                   color: tokens.primary.withValues(alpha: isDark ? 0.12 : 0.08),
                   borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
@@ -159,7 +169,11 @@ class AccountDefaultSettingsCard extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline_rounded, size: 14, color: tokens.primary),
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 14,
+                      color: tokens.primary,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(

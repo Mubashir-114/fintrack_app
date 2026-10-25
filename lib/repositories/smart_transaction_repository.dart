@@ -56,7 +56,10 @@ class SmartTransactionRepository {
     final list = (dataObj["detectedTransactions"] as List<dynamic>?) ?? [];
 
     final transactions = list
-        .map((item) => DetectedTransactionModel.fromJson(item as Map<String, dynamic>))
+        .map(
+          (item) =>
+              DetectedTransactionModel.fromJson(item as Map<String, dynamic>),
+        )
         .toList();
 
     return ApiResponse<List<DetectedTransactionModel>>(
@@ -67,7 +70,9 @@ class SmartTransactionRepository {
   }
 
   /// Gets a single detected transaction by ID.
-  Future<ApiResponse<DetectedTransactionModel>> getDetectedTransactionById(int id) async {
+  Future<ApiResponse<DetectedTransactionModel>> getDetectedTransactionById(
+    int id,
+  ) async {
     final response = await _dio.get("smart-transactions/$id");
     final json = response.data as Map<String, dynamic>;
     final dataObj = json["data"] as Map<String, dynamic>? ?? {};
@@ -85,10 +90,7 @@ class SmartTransactionRepository {
     int id,
     Map<String, dynamic> changes,
   ) async {
-    final response = await _dio.put(
-      "smart-transactions/$id",
-      data: changes,
-    );
+    final response = await _dio.put("smart-transactions/$id", data: changes);
 
     final json = response.data as Map<String, dynamic>;
     final dataObj = json["data"] as Map<String, dynamic>? ?? {};
@@ -161,10 +163,7 @@ class SmartTransactionRepository {
   }) async {
     final response = await _dio.post(
       "smart-transactions/batch/reject",
-      data: {
-        "ids": ids,
-        "reason": reason ?? "Batch user rejection",
-      },
+      data: {"ids": ids, "reason": reason ?? "Batch user rejection"},
     );
 
     final json = response.data as Map<String, dynamic>;

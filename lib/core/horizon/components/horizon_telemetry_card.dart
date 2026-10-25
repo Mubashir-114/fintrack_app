@@ -60,11 +60,7 @@ class HorizonTelemetryCard extends StatelessWidget {
                 ),
               ),
               if (icon != null)
-                Icon(
-                  icon,
-                  size: 16,
-                  color: accentColor ?? tokens.ionCyan,
-                ),
+                Icon(icon, size: 16, color: accentColor ?? tokens.ionCyan),
             ],
           ),
           const SizedBox(height: HorizonDimensions.spaceSM),
@@ -81,7 +77,9 @@ class HorizonTelemetryCard extends StatelessWidget {
               children: [
                 if (isPositiveDelta != null)
                   Icon(
-                    isPositiveDelta! ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                    isPositiveDelta!
+                        ? Icons.arrow_upward_rounded
+                        : Icons.arrow_downward_rounded,
                     size: 14,
                     color: deltaColor,
                   ),

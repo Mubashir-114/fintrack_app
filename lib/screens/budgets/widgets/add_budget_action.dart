@@ -5,10 +5,7 @@ import '../../../core/horizon/horizon.dart';
 ///
 /// Compact visual footprint, crisp press feedback, and proper dock clearance.
 class AddBudgetAction extends StatelessWidget {
-  const AddBudgetAction({
-    super.key,
-    required this.onPressed,
-  });
+  const AddBudgetAction({super.key, required this.onPressed});
 
   final VoidCallback onPressed;
 

@@ -31,10 +31,7 @@ class _AnimatedBudgetProgressState extends State<AnimatedBudgetProgress>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
+    _controller = AnimationController(vsync: this, duration: widget.duration);
     _animation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeOutCubic,
@@ -88,7 +85,9 @@ class _AnimatedBudgetProgressState extends State<AnimatedBudgetProgress>
             child: AnimatedBuilder(
               animation: _controller,
               builder: (context, _) {
-                final ratio = reduceMotion ? clampedTarget : _animation.value * clampedTarget;
+                final ratio = reduceMotion
+                    ? clampedTarget
+                    : _animation.value * clampedTarget;
                 return Container(
                   height: widget.height,
                   width: totalWidth * ratio,

@@ -83,8 +83,10 @@ class _AnimatedBudgetArcState extends State<AnimatedBudgetArc>
     final targetRatio = widget.limit > 0
         ? (widget.spent / widget.limit).clamp(0.0, 1.0)
         : 0.0;
-    final isExceeded = widget.status == 'exceeded' || widget.spent > widget.limit;
-    final isApproaching = widget.status == 'approaching_limit' ||
+    final isExceeded =
+        widget.status == 'exceeded' || widget.spent > widget.limit;
+    final isApproaching =
+        widget.status == 'approaching_limit' ||
         (!isExceeded && widget.utilizationPercentage >= 70.0);
 
     Color activeColor;

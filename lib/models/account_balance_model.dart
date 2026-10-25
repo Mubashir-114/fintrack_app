@@ -64,7 +64,8 @@ class AccountBalanceModel {
       utilizationPercentage: json['utilizationPercentage'] as String?,
       billingInfo: json['billingInfo'] != null
           ? CreditCardBillingModel.fromJson(
-              json['billingInfo'] as Map<String, dynamic>)
+              json['billingInfo'] as Map<String, dynamic>,
+            )
           : null,
     );
   }

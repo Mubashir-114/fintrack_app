@@ -127,61 +127,97 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(GlobalFinOverlay), findsOneWidget);
-      expect(find.byKey(const ValueKey('global_fin_peeking_character')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('global_fin_peeking_character')),
+        findsOneWidget,
+      );
       expect(find.text('Dashboard Screen Content'), findsOneWidget);
 
       // Panel is closed initially
-      expect(find.byKey(const ValueKey('global_fin_action_panel')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('global_fin_action_panel')),
+        findsNothing,
+      );
     });
 
-    testWidgets('Tapping peeking character triggers emergence and reveals action panel', (
-      tester,
-    ) async {
-      final repo = _MockOverlayRepository();
-      final provider = AnalyticsProvider(repository: repo);
-      await provider.loadCompanionPreferences();
+    testWidgets(
+      'Tapping peeking character triggers emergence and reveals action panel',
+      (tester) async {
+        final repo = _MockOverlayRepository();
+        final provider = AnalyticsProvider(repository: repo);
+        await provider.loadCompanionPreferences();
 
-      await tester.pumpWidget(_createOverlayTestApp(provider: provider));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_createOverlayTestApp(provider: provider));
+        await tester.pumpAndSettle();
 
-      // Tap the peeking character
-      await tester.tap(find.byKey(const ValueKey('global_fin_peeking_character')));
-      await tester.pumpAndSettle();
+        // Tap the peeking character
+        await tester.tap(
+          find.byKey(const ValueKey('global_fin_peeking_character')),
+        );
+        await tester.pumpAndSettle();
 
-      // Action panel is now visible
-      expect(find.byKey(const ValueKey('global_fin_action_panel')), findsOneWidget);
-      expect(find.text('FIN is here'), findsOneWidget);
+        // Action panel is now visible
+        expect(
+          find.byKey(const ValueKey('global_fin_action_panel')),
+          findsOneWidget,
+        );
+        expect(find.text('FIN is here'), findsOneWidget);
 
-      // Functional action buttons are displayed
-      expect(find.byKey(const ValueKey('global_fin_action_talk')), findsOneWidget);
-      expect(find.byKey(const ValueKey('global_fin_action_spending')), findsOneWidget);
-      expect(find.byKey(const ValueKey('global_fin_action_budget')), findsOneWidget);
-      expect(find.byKey(const ValueKey('global_fin_action_close')), findsOneWidget);
-    });
+        // Functional action buttons are displayed
+        expect(
+          find.byKey(const ValueKey('global_fin_action_talk')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('global_fin_action_spending')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('global_fin_action_budget')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('global_fin_action_close')),
+          findsOneWidget,
+        );
+      },
+    );
 
-    testWidgets('Tapping Close dismisses the action panel back to peeking edge', (
-      tester,
-    ) async {
-      final repo = _MockOverlayRepository();
-      final provider = AnalyticsProvider(repository: repo);
-      await provider.loadCompanionPreferences();
+    testWidgets(
+      'Tapping Close dismisses the action panel back to peeking edge',
+      (tester) async {
+        final repo = _MockOverlayRepository();
+        final provider = AnalyticsProvider(repository: repo);
+        await provider.loadCompanionPreferences();
 
-      await tester.pumpWidget(_createOverlayTestApp(provider: provider));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_createOverlayTestApp(provider: provider));
+        await tester.pumpAndSettle();
 
-      // Open panel
-      await tester.tap(find.byKey(const ValueKey('global_fin_peeking_character')));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('global_fin_action_panel')), findsOneWidget);
+        // Open panel
+        await tester.tap(
+          find.byKey(const ValueKey('global_fin_peeking_character')),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('global_fin_action_panel')),
+          findsOneWidget,
+        );
 
-      // Tap Close button
-      await tester.tap(find.byKey(const ValueKey('global_fin_action_close')));
-      await tester.pumpAndSettle();
+        // Tap Close button
+        await tester.tap(find.byKey(const ValueKey('global_fin_action_close')));
+        await tester.pumpAndSettle();
 
-      // Panel is smoothly dismissed
-      expect(find.byKey(const ValueKey('global_fin_action_panel')), findsNothing);
-      expect(find.byKey(const ValueKey('global_fin_peeking_character')), findsOneWidget);
-    });
+        // Panel is smoothly dismissed
+        expect(
+          find.byKey(const ValueKey('global_fin_action_panel')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('global_fin_peeking_character')),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets('Edge switcher flips character between right and left edge', (
       tester,
@@ -194,7 +230,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Open panel
-      await tester.tap(find.byKey(const ValueKey('global_fin_peeking_character')));
+      await tester.tap(
+        find.byKey(const ValueKey('global_fin_peeking_character')),
+      );
       await tester.pumpAndSettle();
 
       // Tap edge switcher
@@ -205,41 +243,51 @@ void main() {
       expect(provider.companionPreferences.edgePosition, 'left');
     });
 
-    testWidgets('Suppressed on /analytics route to avoid duplicate character presence', (
-      tester,
-    ) async {
-      final repo = _MockOverlayRepository();
-      final provider = AnalyticsProvider(repository: repo);
-      await provider.loadCompanionPreferences();
+    testWidgets(
+      'Suppressed on /analytics route to avoid duplicate character presence',
+      (tester) async {
+        final repo = _MockOverlayRepository();
+        final provider = AnalyticsProvider(repository: repo);
+        await provider.loadCompanionPreferences();
 
-      await tester.pumpWidget(_createOverlayTestApp(
-        provider: provider,
-        initialLocation: '/analytics',
-      ));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _createOverlayTestApp(
+            provider: provider,
+            initialLocation: '/analytics',
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // On /analytics, peeking avatar is suppressed
-      expect(find.byKey(const ValueKey('global_fin_peeking_character')), findsNothing);
-      expect(find.text('FIN Full Conversation Screen'), findsOneWidget);
-    });
+        // On /analytics, peeking avatar is suppressed
+        expect(
+          find.byKey(const ValueKey('global_fin_peeking_character')),
+          findsNothing,
+        );
+        expect(find.text('FIN Full Conversation Screen'), findsOneWidget);
+      },
+    );
 
-    testWidgets('Hides completely when showAcrossApp preference is turned off', (
-      tester,
-    ) async {
-      final repo = _MockOverlayRepository();
-      final provider = AnalyticsProvider(repository: repo);
-      await provider.loadCompanionPreferences();
+    testWidgets(
+      'Hides completely when showAcrossApp preference is turned off',
+      (tester) async {
+        final repo = _MockOverlayRepository();
+        final provider = AnalyticsProvider(repository: repo);
+        await provider.loadCompanionPreferences();
 
-      // Turn off showAcrossApp
-      await provider.updateCompanionPreferences(
-        provider.companionPreferences.copyWith(showAcrossApp: false),
-      );
+        // Turn off showAcrossApp
+        await provider.updateCompanionPreferences(
+          provider.companionPreferences.copyWith(showAcrossApp: false),
+        );
 
-      await tester.pumpWidget(_createOverlayTestApp(provider: provider));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_createOverlayTestApp(provider: provider));
+        await tester.pumpAndSettle();
 
-      // Character is completely hidden
-      expect(find.byKey(const ValueKey('global_fin_peeking_avatar')), findsNothing);
-    });
+        // Character is completely hidden
+        expect(
+          find.byKey(const ValueKey('global_fin_peeking_avatar')),
+          findsNothing,
+        );
+      },
+    );
   });
 }

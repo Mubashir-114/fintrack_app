@@ -33,9 +33,10 @@ class _HorizonSkeletonState extends State<HorizonSkeleton>
       vsync: this,
       duration: const Duration(milliseconds: 1600),
     );
-    _animation = Tween<double>(begin: 0.35, end: 0.85).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 0.35,
+      end: 0.85,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _controller.repeat(reverse: true);
   }
 
@@ -60,7 +61,9 @@ class _HorizonSkeletonState extends State<HorizonSkeleton>
             color: tokens.surface2.withValues(alpha: _animation.value),
             borderRadius: radius,
             border: Border.all(
-              color: tokens.rimNeutral.withValues(alpha: _animation.value * 0.5),
+              color: tokens.rimNeutral.withValues(
+                alpha: _animation.value * 0.5,
+              ),
               width: 1,
             ),
           ),

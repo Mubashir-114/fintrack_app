@@ -21,7 +21,12 @@ class CustomToast {
     _show(context, message, AppColors.info, Icons.info_outline_rounded);
   }
 
-  static void _show(BuildContext context, String message, Color color, IconData icon) {
+  static void _show(
+    BuildContext context,
+    String message,
+    Color color,
+    IconData icon,
+  ) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

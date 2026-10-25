@@ -38,7 +38,9 @@ class BudgetProjection extends StatelessWidget {
           Icon(
             isExceeded
                 ? Icons.warning_amber_rounded
-                : (isApproaching ? Icons.trending_up_rounded : Icons.check_circle_outline_rounded),
+                : (isApproaching
+                      ? Icons.trending_up_rounded
+                      : Icons.check_circle_outline_rounded),
             size: 14,
             color: accentColor,
           ),
@@ -48,8 +50,8 @@ class BudgetProjection extends StatelessWidget {
               isExceeded
                   ? "Current pace: Likely to reach $projectedTotal this month."
                   : (isApproaching
-                      ? "Current pace: Likely to spend $projectedTotal this month."
-                      : "Current pace: Spending is on track for this cycle."),
+                        ? "Current pace: Likely to spend $projectedTotal this month."
+                        : "Current pace: Spending is on track for this cycle."),
               style: HorizonTypography.bodySm.copyWith(
                 fontSize: 11,
                 color: tokens.textMedium,

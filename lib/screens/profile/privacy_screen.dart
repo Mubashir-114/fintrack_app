@@ -61,7 +61,11 @@ class PrivacyScreen extends StatelessWidget {
                     tier: HorizonSurfaceTier.surface1,
                     child: Row(
                       children: [
-                        Icon(Icons.shield_outlined, color: tokens.ionCyan, size: 22),
+                        Icon(
+                          Icons.shield_outlined,
+                          color: tokens.ionCyan,
+                          size: 22,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -164,7 +168,8 @@ class PrivacyScreen extends StatelessWidget {
                         ),
                         if (!kIsWeb &&
                             (defaultTargetPlatform == TargetPlatform.android ||
-                                defaultTargetPlatform == TargetPlatform.iOS)) ...[
+                                defaultTargetPlatform ==
+                                    TargetPlatform.iOS)) ...[
                           const SizedBox(height: 14),
                           HorizonButton(
                             text: 'Open Device Permission Settings',

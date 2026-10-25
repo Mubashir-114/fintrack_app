@@ -159,7 +159,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
               DropdownButtonFormField<int>(
                 initialValue: selectedId,
                 dropdownColor: tokens.surface2,
-                style: HorizonTypography.bodyMd.copyWith(color: tokens.textHigh),
+                style: HorizonTypography.bodyMd.copyWith(
+                  color: tokens.textHigh,
+                ),
                 decoration: InputDecoration(
                   labelText: 'Default Account',
                   labelStyle: TextStyle(color: tokens.textMedium),
@@ -171,7 +173,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                 items: accounts.map((acc) {
                   return DropdownMenuItem<int>(
                     value: acc.id,
-                    child: Text(acc.displayName, overflow: TextOverflow.ellipsis),
+                    child: Text(
+                      acc.displayName,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   );
                 }).toList(),
                 onChanged: (val) {
@@ -214,7 +219,8 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
     final accountProvider = context.read<AccountProvider>();
     final defaultAcc = accountProvider.defaultAccount;
 
-    final hasResolvedAccount = tx.accountId != null ||
+    final hasResolvedAccount =
+        tx.accountId != null ||
         (tx.suggestedAccountId != null && !tx.isAccountAmbiguous) ||
         defaultAcc != null;
 
@@ -262,7 +268,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
         .where((tx) => all || sms.selectedDetectedIds.contains(tx.id))
         .toList();
     final needsDefault = candidates.any(
-      (tx) => tx.accountId == null && (tx.suggestedAccountId == null || tx.isAccountAmbiguous),
+      (tx) =>
+          tx.accountId == null &&
+          (tx.suggestedAccountId == null || tx.isAccountAmbiguous),
     );
 
     if (needsDefault && defaultAcc == null) {
@@ -319,11 +327,25 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
     final List<DetectedTransactionModel> filteredList;
     if (_selectedFilter == 'ready') {
       filteredList = sms.detectedTransactions
-          .where((t) => sms.confirmationIssue(t, fallbackDefaultAccountId: defaultAccId) == null)
+          .where(
+            (t) =>
+                sms.confirmationIssue(
+                  t,
+                  fallbackDefaultAccountId: defaultAccId,
+                ) ==
+                null,
+          )
           .toList();
     } else if (_selectedFilter == 'review') {
       filteredList = sms.detectedTransactions
-          .where((t) => sms.confirmationIssue(t, fallbackDefaultAccountId: defaultAccId) != null)
+          .where(
+            (t) =>
+                sms.confirmationIssue(
+                  t,
+                  fallbackDefaultAccountId: defaultAccId,
+                ) !=
+                null,
+          )
           .toList();
     } else {
       filteredList = sms.detectedTransactions;
@@ -371,13 +393,15 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                Flexible(child: Text(
-                  'SMART SMS // IMPORT',
-                  style: HorizonTypography.labelCaps.copyWith(
-                    color: tokens.ionCyan,
-                    letterSpacing: 1.5,
+                Flexible(
+                  child: Text(
+                    'SMART SMS // IMPORT',
+                    style: HorizonTypography.labelCaps.copyWith(
+                      color: tokens.ionCyan,
+                      letterSpacing: 1.5,
+                    ),
                   ),
-                )),
+                ),
               ],
             ),
             Text(
@@ -444,10 +468,15 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                 InkWell(
                   onTap: busy
                       ? null
-                      : () => sms.toggleSelectAllDetected(!sms.isAllDetectedSelected),
+                      : () => sms.toggleSelectAllDetected(
+                          !sms.isAllDetectedSelected,
+                        ),
                   borderRadius: BorderRadius.circular(999),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: tokens.surface3,
                       borderRadius: BorderRadius.circular(999),
@@ -457,7 +486,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          sms.isAllDetectedSelected ? Icons.done_all : Icons.select_all,
+                          sms.isAllDetectedSelected
+                              ? Icons.done_all
+                              : Icons.select_all,
                           size: 14,
                           color: tokens.ionCyan,
                         ),
@@ -495,7 +526,11 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                         spacing: 8,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Icon(Icons.cell_tower, color: tokens.ionCyan, size: 20),
+                          Icon(
+                            Icons.cell_tower,
+                            color: tokens.ionCyan,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             '${sms.detectedTransactions.length} Transactions Found',
@@ -507,7 +542,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                         ],
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: tokens.surface3,
                           borderRadius: BorderRadius.circular(8),
@@ -546,10 +584,11 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                               const SizedBox(height: 2),
                               Text(
                                 '+$symbol${detectedInflow.toStringAsFixed(2)}',
-                                style: HorizonTypography.tabularAmountMd.copyWith(
-                                  color: tokens.surplus,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: HorizonTypography.tabularAmountMd
+                                    .copyWith(
+                                      color: tokens.surplus,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                               ),
                               Text(
                                 '$inflowCount Detected Credits',
@@ -583,10 +622,11 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                               const SizedBox(height: 2),
                               Text(
                                 '-$symbol${detectedOutflow.toStringAsFixed(2)}',
-                                style: HorizonTypography.tabularAmountMd.copyWith(
-                                  color: tokens.outflow,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: HorizonTypography.tabularAmountMd
+                                    .copyWith(
+                                      color: tokens.outflow,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                               ),
                               Text(
                                 '$outflowCount Detected Debits',
@@ -607,11 +647,17 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     children: [
                       Expanded(
                         child: HorizonButton(
-                          text: 'Add Eligible (${sms.eligibleCount(fallbackDefaultAccountId: defaultAccId)})',
+                          text:
+                              'Add Eligible (${sms.eligibleCount(fallbackDefaultAccountId: defaultAccId)})',
                           icon: Icons.done_all,
                           variant: HorizonButtonVariant.primary,
                           isLoading: busy,
-                          onPressed: busy || sms.eligibleCount(fallbackDefaultAccountId: defaultAccId) == 0
+                          onPressed:
+                              busy ||
+                                  sms.eligibleCount(
+                                        fallbackDefaultAccountId: defaultAccId,
+                                      ) ==
+                                      0
                               ? null
                               : () => _addBatch(all: true),
                         ),
@@ -623,7 +669,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                             text: 'Add Selected (${sms.selectedDetectedCount})',
                             variant: HorizonButtonVariant.secondary,
                             isLoading: busy,
-                            onPressed: busy ? null : () => _addBatch(all: false),
+                            onPressed: busy
+                                ? null
+                                : () => _addBatch(all: false),
                           ),
                         ),
                       ],
@@ -648,13 +696,15 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                   HorizonChip(
                     label: 'Ready to Import',
                     selected: _selectedFilter == 'ready',
-                    onSelected: (_) => setState(() => _selectedFilter = 'ready'),
+                    onSelected: (_) =>
+                        setState(() => _selectedFilter = 'ready'),
                   ),
                   const SizedBox(width: 8),
                   HorizonChip(
                     label: 'Needs Review',
                     selected: _selectedFilter == 'review',
-                    onSelected: (_) => setState(() => _selectedFilter = 'review'),
+                    onSelected: (_) =>
+                        setState(() => _selectedFilter = 'review'),
                   ),
                 ],
               ),
@@ -663,7 +713,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
           ],
 
           if (busy) ...[
-            LinearProgressIndicator(color: tokens.ionCyan, backgroundColor: tokens.surface3),
+            LinearProgressIndicator(
+              color: tokens.ionCyan,
+              backgroundColor: tokens.surface3,
+            ),
             const SizedBox(height: 12),
           ],
 
@@ -676,13 +729,17 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                 children: [
                   Text(
                     error,
-                    style: HorizonTypography.bodyMd.copyWith(color: tokens.outflow),
+                    style: HorizonTypography.bodyMd.copyWith(
+                      color: tokens.outflow,
+                    ),
                   ),
                   if (sms.permissionStatus?.isDenied == true || denied) ...[
                     const SizedBox(height: 6),
                     Text(
                       'Android Settings > Apps > FinTrack > Permissions > SMS. Return here and scan again.',
-                      style: HorizonTypography.bodySm.copyWith(color: tokens.textMedium),
+                      style: HorizonTypography.bodySm.copyWith(
+                        color: tokens.textMedium,
+                      ),
                     ),
                   ],
                   const SizedBox(height: 10),
@@ -718,7 +775,8 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
             HorizonEmptyState(
               icon: Icons.mark_email_read_outlined,
               title: 'No candidates awaiting review',
-              description: 'Scan eligible bank messages, or enter transactions manually.',
+              description:
+                  'Scan eligible bank messages, or enter transactions manually.',
               actionLabel: 'Scan Financial SMS',
               onAction: _requestScan,
             ),
@@ -750,11 +808,14 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                         ),
                       ),
                       Text(
-                        tx.classification == 'income' || tx.classification == 'refund'
+                        tx.classification == 'income' ||
+                                tx.classification == 'refund'
                             ? '+$symbol${tx.amount}'
                             : '-$symbol${tx.amount}',
                         style: HorizonTypography.tabularAmountMd.copyWith(
-                          color: tx.classification == 'income' || tx.classification == 'refund'
+                          color:
+                              tx.classification == 'income' ||
+                                  tx.classification == 'refund'
                               ? tokens.surplus
                               : tokens.outflow,
                           fontWeight: FontWeight.w700,
@@ -768,7 +829,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     runSpacing: 4,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: tokens.surface3,
                           borderRadius: BorderRadius.circular(6),
@@ -782,7 +846,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: tokens.surface3,
                           borderRadius: BorderRadius.circular(6),
@@ -797,7 +864,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                       ),
                       if (tx.bank != null)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: tokens.surface3,
                             borderRadius: BorderRadius.circular(6),
@@ -816,21 +886,29 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                   // Resolved Account Routing (Requirement 6 & 7)
                   Builder(
                     builder: (context) {
-                      final defaultAcc = context.watch<AccountProvider>().defaultAccount;
+                      final defaultAcc = context
+                          .watch<AccountProvider>()
+                          .defaultAccount;
                       final String resolvedAccountDisplay;
                       final bool hasAccount;
 
                       if (tx.accountId != null) {
-                        resolvedAccountDisplay = tx.accountName ?? 'Account #${tx.accountId}';
+                        resolvedAccountDisplay =
+                            tx.accountName ?? 'Account #${tx.accountId}';
                         hasAccount = true;
-                      } else if (tx.suggestedAccountId != null && !tx.isAccountAmbiguous) {
-                        resolvedAccountDisplay = tx.suggestedAccountName ?? 'Account #${tx.suggestedAccountId}';
+                      } else if (tx.suggestedAccountId != null &&
+                          !tx.isAccountAmbiguous) {
+                        resolvedAccountDisplay =
+                            tx.suggestedAccountName ??
+                            'Account #${tx.suggestedAccountId}';
                         hasAccount = true;
                       } else if (defaultAcc != null) {
-                        resolvedAccountDisplay = '${defaultAcc.displayName} (Default)';
+                        resolvedAccountDisplay =
+                            '${defaultAcc.displayName} (Default)';
                         hasAccount = true;
                       } else {
-                        resolvedAccountDisplay = 'No default account designated';
+                        resolvedAccountDisplay =
+                            'No default account designated';
                         hasAccount = false;
                       }
 
@@ -856,7 +934,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                                   TextSpan(
                                     text: resolvedAccountDisplay,
                                     style: HorizonTypography.bodySm.copyWith(
-                                      color: hasAccount ? tokens.textHigh : tokens.outflow,
+                                      color: hasAccount
+                                          ? tokens.textHigh
+                                          : tokens.outflow,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 12,
                                     ),
@@ -869,7 +949,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                           GestureDetector(
                             onTap: busy ? null : () => _edit(tx),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
+                              ),
                               child: Text(
                                 'Change',
                                 style: HorizonTypography.labelCaps.copyWith(
@@ -893,15 +976,23 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     ),
                   ),
                   if (sms.confirmationErrors[tx.id] ??
-                          sms.confirmationIssue(tx, fallbackDefaultAccountId: defaultAccId)
+                          sms.confirmationIssue(
+                            tx,
+                            fallbackDefaultAccountId: defaultAccId,
+                          )
                       case final String issue) ...[
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: tokens.outflow.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: tokens.outflow.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: tokens.outflow.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Text(
                         issue,
@@ -1023,7 +1114,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                   children: [
                     TextFormField(
                       controller: merchant,
-                      style: HorizonTypography.bodyMd.copyWith(color: tokens.textHigh),
+                      style: HorizonTypography.bodyMd.copyWith(
+                        color: tokens.textHigh,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Merchant',
                         labelStyle: TextStyle(color: tokens.textMedium),
@@ -1035,7 +1128,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     ),
                     TextFormField(
                       controller: amount,
-                      style: HorizonTypography.bodyMd.copyWith(color: tokens.textHigh),
+                      style: HorizonTypography.bodyMd.copyWith(
+                        color: tokens.textHigh,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Amount',
                         labelStyle: TextStyle(color: tokens.textMedium),
@@ -1055,7 +1150,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     ),
                     TextFormField(
                       controller: date,
-                      style: HorizonTypography.bodyMd.copyWith(color: tokens.textHigh),
+                      style: HorizonTypography.bodyMd.copyWith(
+                        color: tokens.textHigh,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Date (YYYY-MM-DD)',
                         labelStyle: TextStyle(color: tokens.textMedium),
@@ -1071,7 +1168,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     DropdownButtonFormField<String>(
                       initialValue: classification,
                       dropdownColor: tokens.surface2,
-                      style: HorizonTypography.bodyMd.copyWith(color: tokens.textHigh),
+                      style: HorizonTypography.bodyMd.copyWith(
+                        color: tokens.textHigh,
+                      ),
                       isExpanded: true,
                       decoration: InputDecoration(
                         labelText: 'Type',
@@ -1098,7 +1197,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     DropdownButtonFormField<int>(
                       initialValue: account,
                       dropdownColor: tokens.surface2,
-                      style: HorizonTypography.bodyMd.copyWith(color: tokens.textHigh),
+                      style: HorizonTypography.bodyMd.copyWith(
+                        color: tokens.textHigh,
+                      ),
                       isExpanded: true,
                       decoration: InputDecoration(
                         labelText: 'Account',
@@ -1122,7 +1223,9 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
                     DropdownButtonFormField<int>(
                       initialValue: category,
                       dropdownColor: tokens.surface2,
-                      style: HorizonTypography.bodyMd.copyWith(color: tokens.textHigh),
+                      style: HorizonTypography.bodyMd.copyWith(
+                        color: tokens.textHigh,
+                      ),
                       isExpanded: true,
                       decoration: InputDecoration(
                         labelText: 'Category',
@@ -1150,7 +1253,10 @@ class _SmsImportScreenState extends State<SmsImportScreen> {
             actions: [
               TextButton(
                 onPressed: saving ? null : () => Navigator.pop(dialog),
-                child: Text('Cancel', style: TextStyle(color: tokens.textMedium)),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: tokens.textMedium),
+                ),
               ),
               TextButton(
                 onPressed: saving

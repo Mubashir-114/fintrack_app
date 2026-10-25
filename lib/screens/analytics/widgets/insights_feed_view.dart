@@ -87,7 +87,11 @@ class InsightsFeedView extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(Icons.notifications_off_outlined, color: colors.textSecondary, size: 40),
+            Icon(
+              Icons.notifications_off_outlined,
+              color: colors.textSecondary,
+              size: 40,
+            ),
             const SizedBox(height: 12),
             Text(
               "Proactive Insights Disabled",
@@ -108,7 +112,9 @@ class InsightsFeedView extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.primary,
                 foregroundColor: colors.isDark ? Colors.black : Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () => AlertPreferencesSheet.show(context),
               icon: const Icon(Icons.tune_rounded, size: 16),
@@ -157,7 +163,9 @@ class InsightsFeedView extends StatelessWidget {
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colors.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     onPressed: () => provider.resetDismissedAlerts(),
                     icon: const Icon(Icons.restore_rounded, size: 16),
@@ -196,7 +204,10 @@ class InsightsFeedView extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
@@ -216,12 +227,20 @@ class InsightsFeedView extends StatelessWidget {
               children: [
                 IconButton(
                   tooltip: "Preferences",
-                  icon: Icon(Icons.tune_rounded, size: 20, color: colors.textSecondary),
+                  icon: Icon(
+                    Icons.tune_rounded,
+                    size: 20,
+                    color: colors.textSecondary,
+                  ),
                   onPressed: () => AlertPreferencesSheet.show(context),
                 ),
                 IconButton(
                   tooltip: "Refresh alerts",
-                  icon: Icon(Icons.refresh_rounded, size: 20, color: colors.textSecondary),
+                  icon: Icon(
+                    Icons.refresh_rounded,
+                    size: 20,
+                    color: colors.textSecondary,
+                  ),
                   onPressed: () => provider.loadAlerts(),
                 ),
               ],
@@ -232,7 +251,9 @@ class InsightsFeedView extends StatelessWidget {
         const SizedBox(height: 10),
 
         // List of Active Prioritized Alert Cards
-        ...activeAlerts.map((alert) => _buildAlertCard(context, colors, provider, alert)),
+        ...activeAlerts.map(
+          (alert) => _buildAlertCard(context, colors, provider, alert),
+        ),
       ],
     );
   }
@@ -296,7 +317,10 @@ class InsightsFeedView extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: severityColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
@@ -319,7 +343,10 @@ class InsightsFeedView extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.elevated,
                     borderRadius: BorderRadius.circular(8),
@@ -338,7 +365,11 @@ class InsightsFeedView extends StatelessWidget {
                   tooltip: "Dismiss alert",
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                  icon: Icon(Icons.close_rounded, size: 18, color: colors.textSecondary),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: colors.textSecondary,
+                  ),
                   onPressed: () => provider.dismissAlert(alert.id),
                 ),
               ],
@@ -379,7 +410,10 @@ class InsightsFeedView extends StatelessWidget {
             // Provenance Tag (Privacy and Determinism Guarantee)
             if (alert.provenance != null) ...[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: colors.elevated,
                   borderRadius: BorderRadius.circular(8),
@@ -387,7 +421,11 @@ class InsightsFeedView extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.shield_outlined, size: 12, color: colors.primary),
+                    Icon(
+                      Icons.shield_outlined,
+                      size: 12,
+                      color: colors.primary,
+                    ),
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
@@ -440,7 +478,10 @@ class InsightsFeedView extends StatelessWidget {
         final label = entry.key
             .replaceAll('_', ' ')
             .split(' ')
-            .map((w) => w.isNotEmpty ? "${w[0].toUpperCase()}${w.substring(1)}" : "")
+            .map(
+              (w) =>
+                  w.isNotEmpty ? "${w[0].toUpperCase()}${w.substring(1)}" : "",
+            )
             .join(' ');
 
         return Container(

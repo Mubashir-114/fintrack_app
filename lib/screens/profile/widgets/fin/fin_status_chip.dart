@@ -46,8 +46,8 @@ class FinStatusChip extends StatelessWidget {
         border: Border.all(
           color: isActive
               ? (isDocked
-                  ? tokens.luminousGold.withValues(alpha: 0.35)
-                  : tokens.rimCyan)
+                    ? tokens.luminousGold.withValues(alpha: 0.35)
+                    : tokens.rimCyan)
               : tokens.rimNeutral,
         ),
       ),

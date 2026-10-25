@@ -11,30 +11,30 @@ import 'package:frontend/screens/accounts/widgets/money_text.dart';
 
 void main() {
   group('MoneyText widget', () {
-    testWidgets('renders exact decimal string with symbol without double conversions', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: MoneyText(
-              decimalString: '125000.50',
-              currencyCode: 'INR',
-              style: TextStyle(fontSize: 16),
+    testWidgets(
+      'renders exact decimal string with symbol without double conversions',
+      (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: MoneyText(
+                decimalString: '125000.50',
+                currencyCode: 'INR',
+                style: TextStyle(fontSize: 16),
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('₹1,25,000.50'), findsOneWidget);
-    });
+        expect(find.text('₹1,25,000.50'), findsOneWidget);
+      },
+    );
 
     testWidgets('renders zero decimal string accurately', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: MoneyText(
-              decimalString: '0.00',
-              currencyCode: 'INR',
-            ),
+            body: MoneyText(decimalString: '0.00', currencyCode: 'INR'),
           ),
         ),
       );
@@ -44,69 +44,69 @@ void main() {
   });
 
   group('AccountCard widget', () {
-    testWidgets('displays asset account badges and opening amount label correctly', (tester) async {
-      const account = AccountModel(
-        id: 1,
-        type: 'bank',
-        subtype: 'salary',
-        displayName: 'Salary Account',
-        institutionName: 'SBI',
-        maskedLast4: '1234',
-        currencyCode: 'INR',
-        openingAmount: '75000.00',
-        isDefault: true,
-        status: 'active',
-      );
+    testWidgets(
+      'displays asset account badges and opening amount label correctly',
+      (tester) async {
+        const account = AccountModel(
+          id: 1,
+          type: 'bank',
+          subtype: 'salary',
+          displayName: 'Salary Account',
+          institutionName: 'SBI',
+          maskedLast4: '1234',
+          currencyCode: 'INR',
+          openingAmount: '75000.00',
+          isDefault: true,
+          status: 'active',
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: AccountCard(
-              account: account,
-              onTap: () {},
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: AccountCard(account: account, onTap: () {}),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('Salary Account'), findsOneWidget);
-      expect(find.text('SBI · ••••1234'), findsOneWidget);
-      expect(find.text('Default'), findsOneWidget);
-      expect(find.text('Opening amount'), findsOneWidget);
-      expect(find.text('₹75,000.00'), findsOneWidget);
-    });
+        expect(find.text('Salary Account'), findsOneWidget);
+        expect(find.text('SBI · ••••1234'), findsOneWidget);
+        expect(find.text('Default'), findsOneWidget);
+        expect(find.text('Opening amount'), findsOneWidget);
+        expect(find.text('₹75,000.00'), findsOneWidget);
+      },
+    );
 
-    testWidgets('displays credit card with CREDIT LIMIT label and liability styling', (tester) async {
-      const account = AccountModel(
-        id: 2,
-        type: 'credit_card',
-        subtype: 'credit_card',
-        displayName: 'Amazon Pay ICICI',
-        institutionName: 'ICICI Bank',
-        maskedLast4: '9988',
-        currencyCode: 'INR',
-        openingAmount: '0.00',
-        creditLimit: '250000.00',
-        isDefault: false,
-        status: 'active',
-      );
+    testWidgets(
+      'displays credit card with CREDIT LIMIT label and liability styling',
+      (tester) async {
+        const account = AccountModel(
+          id: 2,
+          type: 'credit_card',
+          subtype: 'credit_card',
+          displayName: 'Amazon Pay ICICI',
+          institutionName: 'ICICI Bank',
+          maskedLast4: '9988',
+          currencyCode: 'INR',
+          openingAmount: '0.00',
+          creditLimit: '250000.00',
+          isDefault: false,
+          status: 'active',
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: AccountCard(
-              account: account,
-              onTap: () {},
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: AccountCard(account: account, onTap: () {}),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('Amazon Pay ICICI'), findsOneWidget);
-      expect(find.text('ICICI Bank · ••••9988'), findsOneWidget);
-      expect(find.text('Credit limit'), findsOneWidget);
-      expect(find.text('₹2,50,000.00'), findsOneWidget);
-    });
+        expect(find.text('Amazon Pay ICICI'), findsOneWidget);
+        expect(find.text('ICICI Bank · ••••9988'), findsOneWidget);
+        expect(find.text('Credit limit'), findsOneWidget);
+        expect(find.text('₹2,50,000.00'), findsOneWidget);
+      },
+    );
   });
 
   group('AccountIcon widget', () {

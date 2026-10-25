@@ -142,15 +142,18 @@ class FinDeactivateCard extends StatelessWidget {
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   backgroundColor: tokens.surface3,
-                  foregroundColor:
-                      isDeactivated ? tokens.ionCyan : tokens.outflow,
+                  foregroundColor: isDeactivated
+                      ? tokens.ionCyan
+                      : tokens.outflow,
                   side: BorderSide(
                     color: isDeactivated
                         ? tokens.ionCyan
                         : tokens.outflow.withValues(alpha: 0.4),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   shape: RoundedRectangleBorder(

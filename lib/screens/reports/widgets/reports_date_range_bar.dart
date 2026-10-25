@@ -81,7 +81,9 @@ class ReportsDateRangeBar extends StatelessWidget {
                       Icon(
                         Icons.calendar_today_rounded,
                         size: 15,
-                        color: hasFilter ? colors.primary : colors.textSecondary,
+                        color: hasFilter
+                            ? colors.primary
+                            : colors.textSecondary,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -91,8 +93,12 @@ class ReportsDateRangeBar extends StatelessWidget {
                               : "All Time (Complete History)",
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: hasFilter ? FontWeight.w600 : FontWeight.w500,
-                            color: hasFilter ? colors.textPrimary : colors.textSecondary,
+                            fontWeight: hasFilter
+                                ? FontWeight.w600
+                                : FontWeight.w500,
+                            color: hasFilter
+                                ? colors.textPrimary
+                                : colors.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -124,10 +130,7 @@ class ReportsDateRangeBar extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: colors.surface,
                     borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                    border: Border.all(
-                      color: colors.cardBorder,
-                      width: 1,
-                    ),
+                    border: Border.all(color: colors.cardBorder, width: 1),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

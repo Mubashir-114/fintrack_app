@@ -180,10 +180,7 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
               // Header with mini FIN
               Row(
                 children: [
-                  const FinCharacter(
-                    size: 46,
-                    state: FinCharacterState.idle,
-                  ),
+                  const FinCharacter(size: 46, state: FinCharacterState.idle),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
@@ -216,7 +213,10 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
               // About FIN — Official Expanded Identity Information Block
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: colors.primary.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(12),
@@ -274,10 +274,7 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
               const SizedBox(height: 2),
               Text(
                 "How FIN should address you in greetings and financial insights.",
-                style: TextStyle(
-                  fontSize: 11,
-                  color: colors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 11, color: colors.textSecondary),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -285,8 +282,10 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
                 style: TextStyle(color: colors.textPrimary, fontSize: 13),
                 decoration: InputDecoration(
                   hintText: "What should FIN call you? (optional)",
-                  hintStyle:
-                      TextStyle(fontSize: 13, color: colors.textSecondary),
+                  hintStyle: TextStyle(
+                    fontSize: 13,
+                    color: colors.textSecondary,
+                  ),
                   filled: true,
                   fillColor: colors.background,
                   border: OutlineInputBorder(
@@ -301,15 +300,19 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: colors.primary, width: 1.5),
                   ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
               if (_nameController.text.trim().isNotEmpty) ...[
                 const SizedBox(height: 6),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
@@ -319,8 +322,11 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.chat_bubble_outline_rounded,
-                          size: 14, color: colors.primary),
+                      Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 14,
+                        color: colors.primary,
+                      ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
@@ -351,10 +357,7 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
               const SizedBox(height: 2),
               Text(
                 "Choose how concise or detailed FIN's explanations should be.",
-                style: TextStyle(
-                  fontSize: 11,
-                  color: colors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 11, color: colors.textSecondary),
               ),
               const SizedBox(height: 10),
               Row(
@@ -446,12 +449,19 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
                           children: [
                             Text(
                               "Companion Edge Position",
-                              style: TextStyle(fontSize: 13, color: colors.textPrimary, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: colors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               "Which side of the screen FIN should peek from.",
-                              style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: colors.textSecondary,
+                              ),
                             ),
                           ],
                         ),
@@ -500,19 +510,25 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
                   color: colors.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: colors.primary.withValues(alpha: 0.2)),
+                    color: colors.primary.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.shield_outlined,
-                        size: 16, color: colors.primary),
+                    Icon(
+                      Icons.shield_outlined,
+                      size: 16,
+                      color: colors.primary,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         FinIdentity.privacyNotice,
                         style: TextStyle(
-                            fontSize: 11, color: colors.textSecondary),
+                          fontSize: 11,
+                          color: colors.textSecondary,
+                        ),
                       ),
                     ),
                   ],
@@ -526,8 +542,11 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
                 children: [
                   TextButton.icon(
                     onPressed: _isSaving ? null : _handleReset,
-                    icon: const Icon(Icons.delete_sweep_outlined,
-                        size: 16, color: Colors.redAccent),
+                    icon: const Icon(
+                      Icons.delete_sweep_outlined,
+                      size: 16,
+                      color: Colors.redAccent,
+                    ),
                     label: const Text(
                       "Clear Memory",
                       style: TextStyle(fontSize: 12, color: Colors.redAccent),
@@ -538,22 +557,30 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
                     onPressed: _isSaving ? null : _handleSave,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.primary,
-                      foregroundColor:
-                          colors.isDark ? Colors.black : Colors.white,
+                      foregroundColor: colors.isDark
+                          ? Colors.black
+                          : Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     child: _isSaving
                         ? const SizedBox(
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
-                        : const Text("Save Preferences",
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        : const Text(
+                            "Save Preferences",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                   ),
                 ],
               ),
@@ -609,10 +636,7 @@ class _CompanionPreferencesSheetState extends State<CompanionPreferencesSheet> {
               Text(
                 description,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: colors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 10, color: colors.textSecondary),
               ),
             ],
           ),

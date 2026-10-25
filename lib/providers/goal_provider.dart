@@ -9,7 +9,7 @@ class GoalProvider extends ChangeNotifier {
   final GoalRepository _repository;
 
   GoalProvider({GoalRepository? repository})
-      : _repository = repository ?? GoalRepository();
+    : _repository = repository ?? GoalRepository();
 
   bool _isLoading = false;
   bool _isActionLoading = false;
@@ -263,7 +263,8 @@ class GoalProvider extends ChangeNotifier {
       final response = await _repository.addContribution(goalId, data);
       if (response.success) {
         final updatedGoal = response.data['goal'] as GoalModel;
-        final contribution = response.data['contribution'] as GoalContributionModel;
+        final contribution =
+            response.data['contribution'] as GoalContributionModel;
 
         final index = _goals.indexWhere((g) => g.id == goalId);
         if (index != -1) {
@@ -271,7 +272,10 @@ class GoalProvider extends ChangeNotifier {
         }
 
         if (_selectedGoal?.id == goalId) {
-          final updatedRecent = [contribution, ..._selectedGoal!.recentContributions];
+          final updatedRecent = [
+            contribution,
+            ..._selectedGoal!.recentContributions,
+          ];
           _selectedGoal = updatedGoal.copyWith(
             recentContributions: updatedRecent,
             contributionsCount: _selectedGoal!.contributionsCount + 1,
@@ -305,10 +309,15 @@ class GoalProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _repository.updateContribution(goalId, contributionId, data);
+      final response = await _repository.updateContribution(
+        goalId,
+        contributionId,
+        data,
+      );
       if (response.success) {
         final updatedGoal = response.data['goal'] as GoalModel;
-        final updatedContribution = response.data['contribution'] as GoalContributionModel;
+        final updatedContribution =
+            response.data['contribution'] as GoalContributionModel;
 
         final index = _goals.indexWhere((g) => g.id == goalId);
         if (index != -1) {
@@ -345,7 +354,10 @@ class GoalProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _repository.deleteContribution(goalId, contributionId);
+      final response = await _repository.deleteContribution(
+        goalId,
+        contributionId,
+      );
       if (response.success) {
         final updatedGoal = response.data;
         final index = _goals.indexWhere((g) => g.id == goalId);
@@ -359,7 +371,10 @@ class GoalProvider extends ChangeNotifier {
               .toList();
           _selectedGoal = updatedGoal.copyWith(
             recentContributions: list,
-            contributionsCount: (_selectedGoal!.contributionsCount - 1).clamp(0, 99999),
+            contributionsCount: (_selectedGoal!.contributionsCount - 1).clamp(
+              0,
+              99999,
+            ),
           );
         }
 
@@ -387,7 +402,9 @@ class GoalProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _repository.getCashFlowForecast(horizon: targetHorizon);
+      final response = await _repository.getCashFlowForecast(
+        horizon: targetHorizon,
+      );
       if (currentGeneration != _sessionGeneration) return;
 
       if (response.success) {

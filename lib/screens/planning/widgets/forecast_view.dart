@@ -71,7 +71,9 @@ class _ForecastViewState extends State<ForecastView> {
                     h['label']!,
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                       color: isSelected ? colors.primary : colors.textSecondary,
                     ),
                   ),
@@ -148,10 +150,7 @@ class _ForecastViewState extends State<ForecastView> {
               const SizedBox(height: 3),
               Text(
                 subtitle,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: colors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 10, color: colors.textSecondary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -162,7 +161,10 @@ class _ForecastViewState extends State<ForecastView> {
     );
   }
 
-  Widget _buildSufficiencyBanner(CashFlowForecastModel forecast, dynamic colors) {
+  Widget _buildSufficiencyBanner(
+    CashFlowForecastModel forecast,
+    dynamic colors,
+  ) {
     if (forecast.isSufficient) return const SizedBox.shrink();
 
     final message = forecast.warnings.isNotEmpty
@@ -180,7 +182,11 @@ class _ForecastViewState extends State<ForecastView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline_rounded, color: AppColors.warning, size: 20),
+          const Icon(
+            Icons.info_outline_rounded,
+            color: AppColors.warning,
+            size: 20,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -240,7 +246,11 @@ class _ForecastViewState extends State<ForecastView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.cloud_off_rounded, size: 48, color: AppColors.danger),
+              const Icon(
+                Icons.cloud_off_rounded,
+                size: 48,
+                color: AppColors.danger,
+              ),
               const SizedBox(height: 12),
               Text(
                 'Unable to load cash-flow forecast',
@@ -277,7 +287,9 @@ class _ForecastViewState extends State<ForecastView> {
       return const SizedBox.shrink();
     }
 
-    final netColor = forecast.netMonthlyCashFlow >= 0 ? AppColors.success : AppColors.danger;
+    final netColor = forecast.netMonthlyCashFlow >= 0
+        ? AppColors.success
+        : AppColors.danger;
     final capacityColor = forecast.potentialMonthlySavingsCapacity >= 0
         ? colors.primary
         : AppColors.danger;
@@ -337,7 +349,9 @@ class _ForecastViewState extends State<ForecastView> {
               _buildMetricCard(
                 context: context,
                 title: 'Savings Capacity',
-                amount: currency.format(forecast.potentialMonthlySavingsCapacity),
+                amount: currency.format(
+                  forecast.potentialMonthlySavingsCapacity,
+                ),
                 subtitle: 'Free cash flow',
                 icon: Icons.savings_rounded,
                 color: capacityColor,
@@ -359,9 +373,7 @@ class _ForecastViewState extends State<ForecastView> {
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-              border: Border.all(
-                color: colors.primary.withValues(alpha: 0.3),
-              ),
+              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,7 +390,10 @@ class _ForecastViewState extends State<ForecastView> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: colors.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
@@ -414,7 +429,9 @@ class _ForecastViewState extends State<ForecastView> {
                 _buildProjectionRow(
                   'Projected Net Savings',
                   currency.format(forecast.projectedNetCashFlow),
-                  forecast.projectedNetCashFlow >= 0 ? AppColors.success : AppColors.danger,
+                  forecast.projectedNetCashFlow >= 0
+                      ? AppColors.success
+                      : AppColors.danger,
                   colors,
                   isBold: true,
                 ),
@@ -448,7 +465,11 @@ class _ForecastViewState extends State<ForecastView> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.rule_folder_rounded, size: 18, color: colors.primary),
+                    Icon(
+                      Icons.rule_folder_rounded,
+                      size: 18,
+                      color: colors.primary,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Deterministic Methodology',
@@ -463,12 +484,20 @@ class _ForecastViewState extends State<ForecastView> {
                 const SizedBox(height: 10),
                 Text(
                   '• Excluded transactions: Internal wallet transfers, goal allocations, refunds and reversals are strictly excluded to prevent double-counting.',
-                  style: TextStyle(fontSize: 11, color: colors.textSecondary, height: 1.4),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colors.textSecondary,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '• Baseline sample: Analyzed ${forecast.historicalMonthsSampled} historical months of confirmed stored transactions via read-only private analytics connection.',
-                  style: TextStyle(fontSize: 11, color: colors.textSecondary, height: 1.4),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colors.textSecondary,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(

@@ -15,7 +15,8 @@ import 'money_text.dart';
 /// - Adapts dynamically to Graphite & Champagne, Obsidian & Jade, and Arctic Blue themes.
 class LiveAccountPreviewCard extends StatelessWidget {
   final String type; // 'bank' | 'cash' | 'wallet' | 'credit_card'
-  final String subtype; // 'savings' | 'current' | 'salary' | 'cash' | 'stored_value' | 'credit_card'
+  final String
+  subtype; // 'savings' | 'current' | 'salary' | 'cash' | 'stored_value' | 'credit_card'
   final String displayName;
   final String? institutionName;
   final String? maskedLast4;
@@ -55,13 +56,16 @@ class LiveAccountPreviewCard extends StatelessWidget {
     final tokens = AppColors.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final disableAnimations = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final disableAnimations =
+        MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 
     return Semantics(
       label: 'Live preview of $displayName account',
       container: true,
       child: AnimatedSwitcher(
-        duration: disableAnimations ? Duration.zero : const Duration(milliseconds: 280),
+        duration: disableAnimations
+            ? Duration.zero
+            : const Duration(milliseconds: 280),
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
         transitionBuilder: (child, animation) {
@@ -114,7 +118,9 @@ class LiveAccountPreviewCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          tokens.primary.withValues(alpha: isDark ? 0.06 : 0.04),
+                          tokens.primary.withValues(
+                            alpha: isDark ? 0.06 : 0.04,
+                          ),
                           Colors.transparent,
                         ],
                         begin: Alignment.topLeft,
@@ -126,7 +132,10 @@ class LiveAccountPreviewCard extends StatelessWidget {
 
                 // Card content
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 18,
+                  ),
                   child: _buildCardContent(context, tokens, isDark),
                 ),
               ],
@@ -142,11 +151,7 @@ class LiveAccountPreviewCard extends StatelessWidget {
       case 'credit_card':
         return LinearGradient(
           colors: isDark
-              ? [
-                  tokens.elevated,
-                  tokens.surface,
-                  const Color(0xFF141720),
-                ]
+              ? [tokens.elevated, tokens.surface, const Color(0xFF141720)]
               : [
                   const Color(0xFF2B303C),
                   const Color(0xFF1F232D),
@@ -158,28 +163,16 @@ class LiveAccountPreviewCard extends StatelessWidget {
       case 'cash':
         return LinearGradient(
           colors: isDark
-              ? [
-                  tokens.elevated,
-                  tokens.surface,
-                ]
-              : [
-                  tokens.surface,
-                  tokens.elevated,
-                ],
+              ? [tokens.elevated, tokens.surface]
+              : [tokens.surface, tokens.elevated],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 'wallet':
         return LinearGradient(
           colors: isDark
-              ? [
-                  tokens.surface,
-                  tokens.background,
-                ]
-              : [
-                  tokens.surface,
-                  tokens.elevated,
-                ],
+              ? [tokens.surface, tokens.background]
+              : [tokens.surface, tokens.elevated],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
@@ -187,14 +180,8 @@ class LiveAccountPreviewCard extends StatelessWidget {
       default:
         return LinearGradient(
           colors: isDark
-              ? [
-                  tokens.surface,
-                  tokens.elevated,
-                ]
-              : [
-                  tokens.surface,
-                  tokens.elevated,
-                ],
+              ? [tokens.surface, tokens.elevated]
+              : [tokens.surface, tokens.elevated],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
@@ -215,20 +202,41 @@ class LiveAccountPreviewCard extends StatelessWidget {
   ) {
     final isCreditCardTheme = type == 'credit_card' && !isDark;
     final textColor = isCreditCardTheme ? Colors.white : tokens.textPrimary;
-    final secondaryTextColor =
-        isCreditCardTheme ? const Color(0xFFB5AFAB) : tokens.textSecondary;
+    final secondaryTextColor = isCreditCardTheme
+        ? const Color(0xFFB5AFAB)
+        : tokens.textSecondary;
 
     switch (type) {
       case 'bank':
-        return _buildBankContent(context, tokens, textColor, secondaryTextColor);
+        return _buildBankContent(
+          context,
+          tokens,
+          textColor,
+          secondaryTextColor,
+        );
       case 'cash':
-        return _buildCashContent(context, tokens, textColor, secondaryTextColor);
+        return _buildCashContent(
+          context,
+          tokens,
+          textColor,
+          secondaryTextColor,
+        );
       case 'wallet':
-        return _buildWalletContent(context, tokens, textColor, secondaryTextColor);
+        return _buildWalletContent(
+          context,
+          tokens,
+          textColor,
+          secondaryTextColor,
+        );
       case 'credit_card':
         return _buildCreditCardContent(context, tokens, isCreditCardTheme);
       default:
-        return _buildBankContent(context, tokens, textColor, secondaryTextColor);
+        return _buildBankContent(
+          context,
+          tokens,
+          textColor,
+          secondaryTextColor,
+        );
     }
   }
 
@@ -240,7 +248,9 @@ class LiveAccountPreviewCard extends StatelessWidget {
     Color secondaryTextColor,
   ) {
     final inst = institutionName?.trim();
-    final name = displayName.trim().isEmpty ? 'Primary Bank Account' : displayName.trim();
+    final name = displayName.trim().isEmpty
+        ? 'Primary Bank Account'
+        : displayName.trim();
     final digits = maskedLast4?.trim();
     final subtypeLabel = _bankSubtypeLabel(subtype);
 
@@ -368,7 +378,9 @@ class LiveAccountPreviewCard extends StatelessWidget {
     Color textColor,
     Color secondaryTextColor,
   ) {
-    final name = displayName.trim().isEmpty ? 'Cash Wallet' : displayName.trim();
+    final name = displayName.trim().isEmpty
+        ? 'Cash Wallet'
+        : displayName.trim();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,10 +424,7 @@ class LiveAccountPreviewCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Direct Cash Reserves · Hand-to-Hand',
-              style: TextStyle(
-                fontSize: 12,
-                color: secondaryTextColor,
-              ),
+              style: TextStyle(fontSize: 12, color: secondaryTextColor),
             ),
           ],
         ),
@@ -468,7 +477,9 @@ class LiveAccountPreviewCard extends StatelessWidget {
     Color secondaryTextColor,
   ) {
     final inst = institutionName?.trim();
-    final name = displayName.trim().isEmpty ? 'Digital Wallet' : displayName.trim();
+    final name = displayName.trim().isEmpty
+        ? 'Digital Wallet'
+        : displayName.trim();
     final digits = maskedLast4?.trim();
 
     return Column(
@@ -485,11 +496,7 @@ class LiveAccountPreviewCard extends StatelessWidget {
             ),
             Row(
               children: [
-                Icon(
-                  Icons.sensors_rounded,
-                  size: 16,
-                  color: tokens.primary,
-                ),
+                Icon(Icons.sensors_rounded, size: 16, color: tokens.primary),
                 const SizedBox(width: 4),
                 Text(
                   inst != null && inst.isNotEmpty ? inst : 'Prepaid Service',
@@ -591,7 +598,9 @@ class LiveAccountPreviewCard extends StatelessWidget {
     bool isCreditCardTheme,
   ) {
     final inst = institutionName?.trim();
-    final name = displayName.trim().isEmpty ? 'CARDHOLDER' : displayName.trim().toUpperCase();
+    final name = displayName.trim().isEmpty
+        ? 'CARDHOLDER'
+        : displayName.trim().toUpperCase();
     final digits = maskedLast4?.trim();
     final primaryColor = tokens.primary;
 
@@ -604,7 +613,9 @@ class LiveAccountPreviewCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              inst != null && inst.isNotEmpty ? inst.toUpperCase() : 'FINTRACK PLATINUM',
+              inst != null && inst.isNotEmpty
+                  ? inst.toUpperCase()
+                  : 'FINTRACK PLATINUM',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
@@ -615,7 +626,10 @@ class LiveAccountPreviewCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: tokens.danger.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
@@ -631,11 +645,7 @@ class LiveAccountPreviewCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(
-                  Icons.sensors_rounded,
-                  size: 18,
-                  color: primaryColor,
-                ),
+                Icon(Icons.sensors_rounded, size: 18, color: primaryColor),
               ],
             ),
           ],
@@ -650,7 +660,11 @@ class LiveAccountPreviewCard extends StatelessWidget {
               height: 28,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFE5C07B), Color(0xFFC99B49), Color(0xFFD4AF37)],
+                  colors: [
+                    Color(0xFFE5C07B),
+                    Color(0xFFC99B49),
+                    Color(0xFFD4AF37),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -662,7 +676,10 @@ class LiveAccountPreviewCard extends StatelessWidget {
                   width: 24,
                   height: 18,
                   decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFF805F1E), width: 0.6),
+                    border: Border.all(
+                      color: const Color(0xFF805F1E),
+                      width: 0.6,
+                    ),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -842,10 +859,6 @@ class _WatermarkEmblem extends StatelessWidget {
         icon = Icons.account_balance_rounded;
         break;
     }
-    return Icon(
-      icon,
-      size: 150,
-      color: tokens.primary,
-    );
+    return Icon(icon, size: 150, color: tokens.primary);
   }
 }

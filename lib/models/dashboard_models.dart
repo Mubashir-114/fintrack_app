@@ -185,11 +185,7 @@ class DailyTrend {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'date': date,
-      'amount': amount,
-      'count': count,
-    };
+    return {'date': date, 'amount': amount, 'count': count};
   }
 }
 
@@ -197,10 +193,7 @@ class FinancialInsight {
   final String type;
   final String message;
 
-  const FinancialInsight({
-    required this.type,
-    required this.message,
-  });
+  const FinancialInsight({required this.type, required this.message});
 
   factory FinancialInsight.fromJson(Map<String, dynamic> json) {
     return FinancialInsight(
@@ -210,10 +203,7 @@ class FinancialInsight {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'type': type,
-      'message': message,
-    };
+    return {'type': type, 'message': message};
   }
 }
 
@@ -258,33 +248,43 @@ class DashboardSummary {
     final rawBalance = json['balance'];
 
     final overviewJson = json['overview'] as Map<String, dynamic>?;
-    final overviewObj = overviewJson != null ? FinancialOverview.fromJson(overviewJson) : null;
+    final overviewObj = overviewJson != null
+        ? FinancialOverview.fromJson(overviewJson)
+        : null;
 
     final accountsJson = json['accounts'] as Map<String, dynamic>?;
-    final accountItems = (accountsJson?['items'] as List<dynamic>?)
-            ?.map((a) => DashboardAccountItem.fromJson(a as Map<String, dynamic>))
+    final accountItems =
+        (accountsJson?['items'] as List<dynamic>?)
+            ?.map(
+              (a) => DashboardAccountItem.fromJson(a as Map<String, dynamic>),
+            )
             .toList() ??
         const [];
 
     final spendingJson = json['spending'] as Map<String, dynamic>?;
-    final catList = (spendingJson?['byCategory'] as List<dynamic>?)
+    final catList =
+        (spendingJson?['byCategory'] as List<dynamic>?)
             ?.map((c) => CategorySummary.fromJson(c as Map<String, dynamic>))
             .toList() ??
         const [];
-    final topCatList = (spendingJson?['topCategories'] as List<dynamic>?)
+    final topCatList =
+        (spendingJson?['topCategories'] as List<dynamic>?)
             ?.map((c) => CategorySummary.fromJson(c as Map<String, dynamic>))
             .toList() ??
         const [];
-    final merchantList = (spendingJson?['topMerchants'] as List<dynamic>?)
+    final merchantList =
+        (spendingJson?['topMerchants'] as List<dynamic>?)
             ?.map((m) => SpendingMerchant.fromJson(m as Map<String, dynamic>))
             .toList() ??
         const [];
-    final trendsList = (spendingJson?['dailyTrends'] as List<dynamic>?)
+    final trendsList =
+        (spendingJson?['dailyTrends'] as List<dynamic>?)
             ?.map((d) => DailyTrend.fromJson(d as Map<String, dynamic>))
             .toList() ??
         const [];
 
-    final insightsList = (json['insights'] as List<dynamic>?)
+    final insightsList =
+        (json['insights'] as List<dynamic>?)
             ?.map((i) => FinancialInsight.fromJson(i as Map<String, dynamic>))
             .toList() ??
         const [];
@@ -292,9 +292,15 @@ class DashboardSummary {
     final periodJson = json['period'] as Map<String, dynamic>?;
 
     return DashboardSummary(
-      totalIncome: (rawIncome is num) ? rawIncome.toDouble() : (double.tryParse(overviewObj?.monthlyIncome ?? '0') ?? 0.0),
-      totalExpense: (rawExpense is num) ? rawExpense.toDouble() : (double.tryParse(overviewObj?.monthlyExpenses ?? '0') ?? 0.0),
-      balance: (rawBalance is num) ? rawBalance.toDouble() : (double.tryParse(overviewObj?.monthlyNetSavings ?? '0') ?? 0.0),
+      totalIncome: (rawIncome is num)
+          ? rawIncome.toDouble()
+          : (double.tryParse(overviewObj?.monthlyIncome ?? '0') ?? 0.0),
+      totalExpense: (rawExpense is num)
+          ? rawExpense.toDouble()
+          : (double.tryParse(overviewObj?.monthlyExpenses ?? '0') ?? 0.0),
+      balance: (rawBalance is num)
+          ? rawBalance.toDouble()
+          : (double.tryParse(overviewObj?.monthlyNetSavings ?? '0') ?? 0.0),
       smsImportedToday: json['smsImportedToday'] as int? ?? 0,
       totalSmsImported: json['totalSmsImported'] as int? ?? 0,
       overview: overviewObj,
@@ -317,9 +323,7 @@ class DashboardSummary {
       'smsImportedToday': smsImportedToday,
       'totalSmsImported': totalSmsImported,
       'overview': overview?.toJson(),
-      'accounts': {
-        'items': accounts.map((a) => a.toJson()).toList(),
-      },
+      'accounts': {'items': accounts.map((a) => a.toJson()).toList()},
       'spending': {
         'byCategory': categories.map((c) => c.toJson()).toList(),
         'topCategories': topCategories.map((c) => c.toJson()).toList(),
@@ -327,10 +331,7 @@ class DashboardSummary {
         'dailyTrends': dailyTrends.map((d) => d.toJson()).toList(),
       },
       'insights': insights.map((i) => i.toJson()).toList(),
-      'period': {
-        'selectedMonth': selectedMonth,
-        'type': periodType,
-      },
+      'period': {'selectedMonth': selectedMonth, 'type': periodType},
     };
   }
 }

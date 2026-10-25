@@ -102,9 +102,14 @@ class BudgetEmptyState extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: tokens.ionCyan,
                 foregroundColor: tokens.isDark ? Colors.black : Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                  borderRadius: BorderRadius.circular(
+                    HorizonDimensions.radiusMD,
+                  ),
                 ),
                 elevation: 0,
               ),
@@ -116,7 +121,10 @@ class BudgetEmptyState extends StatelessWidget {
               label: "Explore suggestions",
               onPressed: onExploreSuggestions,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 child: Text(
                   "Explore Suggestions",
                   style: HorizonTypography.labelCaps.copyWith(

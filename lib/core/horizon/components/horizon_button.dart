@@ -62,7 +62,9 @@ class _HorizonButtonState extends State<HorizonButton> {
     switch (widget.variant) {
       case HorizonButtonVariant.primary:
         bgColor = isEnabled
-            ? (_isPressed ? tokens.ionCyan.withValues(alpha: 0.85) : tokens.ionCyan)
+            ? (_isPressed
+                  ? tokens.ionCyan.withValues(alpha: 0.85)
+                  : tokens.ionCyan)
             : tokens.ionCyan.withValues(alpha: 0.35);
         fgColor = tokens.onPrimary;
         border = null;
@@ -82,15 +84,14 @@ class _HorizonButtonState extends State<HorizonButton> {
       case HorizonButtonVariant.ghost:
         bgColor = _isPressed ? tokens.surface1 : Colors.transparent;
         fgColor = isEnabled ? tokens.textMedium : tokens.textLow;
-        border = Border.all(
-          color: tokens.rimNeutral,
-          width: 1,
-        );
+        border = Border.all(color: tokens.rimNeutral, width: 1);
         break;
 
       case HorizonButtonVariant.destructive:
         bgColor = isEnabled
-            ? (_isPressed ? tokens.outflow.withValues(alpha: 0.85) : tokens.outflow)
+            ? (_isPressed
+                  ? tokens.outflow.withValues(alpha: 0.85)
+                  : tokens.outflow)
             : tokens.outflow.withValues(alpha: 0.35);
         fgColor = Colors.white;
         border = null;
@@ -140,7 +141,9 @@ class _HorizonButtonState extends State<HorizonButton> {
         duration: HorizonMotion.quick,
         height: widget.height,
         constraints: const BoxConstraints(minWidth: 88),
-        padding: const EdgeInsets.symmetric(horizontal: HorizonDimensions.marginMobile),
+        padding: const EdgeInsets.symmetric(
+          horizontal: HorizonDimensions.marginMobile,
+        ),
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: HorizonDimensions.borderDefault,
@@ -158,10 +161,14 @@ class _HorizonButtonState extends State<HorizonButton> {
       child: GestureDetector(
         onTapDown: isEnabled ? (_) => setState(() => _isPressed = true) : null,
         onTapUp: isEnabled ? (_) => setState(() => _isPressed = false) : null,
-        onTapCancel: isEnabled ? () => setState(() => _isPressed = false) : null,
+        onTapCancel: isEnabled
+            ? () => setState(() => _isPressed = false)
+            : null,
         onTap: isEnabled ? widget.onPressed : null,
         behavior: HitTestBehavior.opaque,
-        child: widget.expandWidth ? SizedBox(width: double.infinity, child: buttonWidget) : buttonWidget,
+        child: widget.expandWidth
+            ? SizedBox(width: double.infinity, child: buttonWidget)
+            : buttonWidget,
       ),
     );
   }

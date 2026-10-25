@@ -498,10 +498,7 @@ class HorizonThemeTokens extends ThemeExtension<HorizonThemeTokens> {
   /// Convenience lookup from active BuildContext.
   static HorizonThemeTokens of(BuildContext context) {
     return Theme.of(context).extension<HorizonThemeTokens>() ??
-        resolve(
-          ThemeCollection.midnightAurora,
-          Theme.of(context).brightness,
-        );
+        resolve(ThemeCollection.midnightAurora, Theme.of(context).brightness);
   }
 
   @override

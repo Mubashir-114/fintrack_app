@@ -94,8 +94,10 @@ class _AddEditGoalSheetState extends State<AddEditGoalSheet> {
 
     final currency = context.read<CurrencyProvider>().currencyCode;
     final name = _nameController.text.trim();
-    final targetAmount = double.tryParse(_targetAmountController.text.trim()) ?? 0;
-    final startingAmount = double.tryParse(_startingAmountController.text.trim()) ?? 0;
+    final targetAmount =
+        double.tryParse(_targetAmountController.text.trim()) ?? 0;
+    final startingAmount =
+        double.tryParse(_startingAmountController.text.trim()) ?? 0;
     final description = _descriptionController.text.trim().isEmpty
         ? null
         : _descriptionController.text.trim();
@@ -204,7 +206,10 @@ class _AddEditGoalSheetState extends State<AddEditGoalSheet> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close_rounded, color: colors.textSecondary),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: colors.textSecondary,
+                    ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -217,12 +222,18 @@ class _AddEditGoalSheetState extends State<AddEditGoalSheet> {
                 decoration: BoxDecoration(
                   color: colors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
-                  border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: colors.primary.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline_rounded, color: colors.primary, size: 20),
+                    Icon(
+                      Icons.info_outline_rounded,
+                      color: colors.primary,
+                      size: 20,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -248,12 +259,19 @@ class _AddEditGoalSheetState extends State<AddEditGoalSheet> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 18),
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        color: AppColors.danger,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _errorMessage!,
-                          style: const TextStyle(fontSize: 12, color: AppColors.danger),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.danger,
+                          ),
                         ),
                       ),
                     ],
@@ -272,7 +290,9 @@ class _AddEditGoalSheetState extends State<AddEditGoalSheet> {
                   prefixIcon: const Icon(Icons.flag_rounded),
                   counterText: '',
                   filled: true,
-                  fillColor: colors.isDark ? colors.elevated : colors.background,
+                  fillColor: colors.isDark
+                      ? colors.elevated
+                      : colors.background,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
                     borderSide: BorderSide.none,
@@ -290,13 +310,17 @@ class _AddEditGoalSheetState extends State<AddEditGoalSheet> {
               // Target Amount Field
               TextFormField(
                 controller: _targetAmountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
                   labelText: 'Target Amount *',
                   prefixText: '${currency.currencySymbol} ',
                   prefixIcon: const Icon(Icons.savings_rounded),
                   filled: true,
-                  fillColor: colors.isDark ? colors.elevated : colors.background,
+                  fillColor: colors.isDark
+                      ? colors.elevated
+                      : colors.background,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
                     borderSide: BorderSide.none,
@@ -320,14 +344,20 @@ class _AddEditGoalSheetState extends State<AddEditGoalSheet> {
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
                 onTap: _pickTargetDate,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.isDark ? colors.elevated : colors.background,
                     borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.calendar_month_rounded, color: colors.textSecondary),
+                      Icon(
+                        Icons.calendar_month_rounded,
+                        color: colors.textSecondary,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -343,7 +373,9 @@ class _AddEditGoalSheetState extends State<AddEditGoalSheet> {
                             const SizedBox(height: 2),
                             Text(
                               _selectedTargetDate != null
-                                  ? DateFormat('MMMM dd, yyyy').format(_selectedTargetDate!)
+                                  ? DateFormat(
+                                      'MMMM dd, yyyy',
+                                    ).format(_selectedTargetDate!)
                                   : 'No deadline set',
                               style: TextStyle(
                                 fontSize: 14,
@@ -377,16 +409,25 @@ class _AddEditGoalSheetState extends State<AddEditGoalSheet> {
               if (!_isEditing) ...[
                 TextFormField(
                   controller: _startingAmountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: InputDecoration(
                     labelText: 'Initial Saved Progress (Optional)',
                     prefixText: '${currency.currencySymbol} ',
-                    prefixIcon: const Icon(Icons.account_balance_wallet_outlined),
-                    helperText: 'Existing savings you already have towards this goal',
+                    prefixIcon: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                    ),
+                    helperText:
+                        'Existing savings you already have towards this goal',
                     filled: true,
-                    fillColor: colors.isDark ? colors.elevated : colors.background,
+                    fillColor: colors.isDark
+                        ? colors.elevated
+                        : colors.background,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusMD,
+                      ),
                       borderSide: BorderSide.none,
                     ),
                   ),
@@ -409,11 +450,14 @@ class _AddEditGoalSheetState extends State<AddEditGoalSheet> {
                 maxLength: 500,
                 decoration: InputDecoration(
                   labelText: 'Notes / Motivation (Optional)',
-                  hintText: 'e.g. For peace of mind or 3 months living expenses',
+                  hintText:
+                      'e.g. For peace of mind or 3 months living expenses',
                   prefixIcon: const Icon(Icons.notes_rounded),
                   counterText: '',
                   filled: true,
-                  fillColor: colors.isDark ? colors.elevated : colors.background,
+                  fillColor: colors.isDark
+                      ? colors.elevated
+                      : colors.background,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
                     borderSide: BorderSide.none,

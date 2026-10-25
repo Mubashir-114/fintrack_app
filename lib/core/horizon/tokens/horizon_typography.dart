@@ -185,10 +185,7 @@ class HorizonTypography {
       bodyLarge: bodyLg.copyWith(color: high),
       bodyMedium: bodyMd.copyWith(color: high),
       bodySmall: bodySm.copyWith(color: medium),
-      labelLarge: bodyMd.copyWith(
-        fontWeight: FontWeight.w600,
-        color: high,
-      ),
+      labelLarge: bodyMd.copyWith(fontWeight: FontWeight.w600, color: high),
       labelMedium: labelMd.copyWith(color: medium),
       labelSmall: labelCaps.copyWith(color: low),
     );

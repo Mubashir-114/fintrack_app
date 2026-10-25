@@ -22,10 +22,7 @@ typedef AddEditBudgetDialog = AddEditBudgetSheet;
 /// a modern category selector with configured status indication,
 /// lighter quick amount actions, and smooth keyboard handling.
 class AddEditBudgetSheet extends StatefulWidget {
-  const AddEditBudgetSheet({
-    super.key,
-    this.categoryBudget,
-  });
+  const AddEditBudgetSheet({super.key, this.categoryBudget});
 
   final BudgetCategoryProgressModel? categoryBudget;
 
@@ -60,7 +57,9 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
     final cb = widget.categoryBudget;
     final provider = context.read<BudgetProvider>();
 
-    _amountController = TextEditingController(text: cb != null ? cb.budgetLimit : '');
+    _amountController = TextEditingController(
+      text: cb != null ? cb.budgetLimit : '',
+    );
     _amountFocusNode = FocusNode();
     _selectedCategoryId = cb?.categoryId;
     _selectedMonth = provider.selectedMonth;
@@ -76,7 +75,9 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
             .where((b) => b.month == _selectedMonth && b.year == _selectedYear)
             .map((b) => b.categoryId),
       };
-      final unbudgeted = expenses.where((c) => !budgetedIds.contains(c.id)).toList();
+      final unbudgeted = expenses
+          .where((c) => !budgetedIds.contains(c.id))
+          .toList();
       if (unbudgeted.isNotEmpty) {
         _selectedCategoryId = unbudgeted.first.id;
       } else if (expenses.isNotEmpty) {
@@ -108,7 +109,10 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
 
     final category = CategoryModel.findById(_selectedCategoryId);
     if (category == null || category.type != 'expense') {
-      CustomToast.showError(context, "Selected category is not a valid expense category");
+      CustomToast.showError(
+        context,
+        "Selected category is not a valid expense category",
+      );
       return;
     }
 
@@ -123,14 +127,24 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
       );
     } else {
       // Explicit duplicate guard before dispatching add
-      final isAlreadyBudgeted = provider.budgetStatuses.any((b) => b.categoryId == _selectedCategoryId) ||
-          (provider.progress?.categoryBudgets.any((b) => b.categoryId == _selectedCategoryId) ?? false) ||
-          provider.budgets.any((b) =>
-              b.categoryId == _selectedCategoryId &&
-              b.month == _selectedMonth &&
-              b.year == _selectedYear);
+      final isAlreadyBudgeted =
+          provider.budgetStatuses.any(
+            (b) => b.categoryId == _selectedCategoryId,
+          ) ||
+          (provider.progress?.categoryBudgets.any(
+                (b) => b.categoryId == _selectedCategoryId,
+              ) ??
+              false) ||
+          provider.budgets.any(
+            (b) =>
+                b.categoryId == _selectedCategoryId &&
+                b.month == _selectedMonth &&
+                b.year == _selectedYear,
+          );
       if (isAlreadyBudgeted) {
-        final monthName = DateFormat('MMMM').format(DateTime(2026, _selectedMonth));
+        final monthName = DateFormat(
+          'MMMM',
+        ).format(DateTime(2026, _selectedMonth));
         CustomToast.showError(
           context,
           "${category.name} already has a budget for $monthName $_selectedYear",
@@ -183,7 +197,9 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
           ),
           title: Text(
             "Delete Budget",
-            style: HorizonTypography.headlineSm.copyWith(color: tokens.textHigh),
+            style: HorizonTypography.headlineSm.copyWith(
+              color: tokens.textHigh,
+            ),
           ),
           content: Text(
             "Are you sure you want to delete the budget limit for ${cb.category}?",
@@ -196,7 +212,13 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
             ),
             TextButton(
               onPressed: () => Navigator.pop(dialogCtx, true),
-              child: Text("DELETE", style: TextStyle(color: tokens.outflow, fontWeight: FontWeight.bold)),
+              child: Text(
+                "DELETE",
+                style: TextStyle(
+                  color: tokens.outflow,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
@@ -212,7 +234,10 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
           Navigator.pop(context);
           CustomToast.showSuccess(context, "Budget limit deleted");
         } else {
-          CustomToast.showError(context, provider.errorMessage ?? "Failed to delete");
+          CustomToast.showError(
+            context,
+            provider.errorMessage ?? "Failed to delete",
+          );
         }
       }
     }
@@ -244,7 +269,9 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
     return Container(
       decoration: BoxDecoration(
         color: tokens.surface1,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(HorizonDimensions.radiusXL)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(HorizonDimensions.radiusXL),
+        ),
         border: Border(top: BorderSide(color: tokens.rimNeutral)),
       ),
       padding: EdgeInsets.only(
@@ -308,7 +335,11 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                           color: tokens.surface2,
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.close_rounded, size: 18, color: tokens.textMedium),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: tokens.textMedium,
+                        ),
                       ),
                     ),
                   ],
@@ -330,10 +361,15 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                 if (isEditing)
                   // Fixed category badge when editing
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: tokens.surface2,
-                      borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                      borderRadius: BorderRadius.circular(
+                        HorizonDimensions.radiusMD,
+                      ),
                       border: Border.all(color: tokens.rimNeutral),
                     ),
                     child: Row(
@@ -360,23 +396,35 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                     initialValue: _selectedCategoryId,
                     isExpanded: true,
                     dropdownColor: tokens.surface2,
-                    icon: Icon(Icons.keyboard_arrow_down_rounded, color: tokens.textMedium),
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: tokens.textMedium,
+                    ),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: tokens.surface2,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                        borderRadius: BorderRadius.circular(
+                          HorizonDimensions.radiusMD,
+                        ),
                         borderSide: BorderSide(color: tokens.rimNeutral),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                        borderRadius: BorderRadius.circular(
+                          HorizonDimensions.radiusMD,
+                        ),
                         borderSide: BorderSide(color: tokens.rimNeutral),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                        borderRadius: BorderRadius.circular(
+                          HorizonDimensions.radiusMD,
+                        ),
                         borderSide: BorderSide(color: tokens.ionCyan),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                     ),
                     items: expenseCategories.map((c) {
                       final isConfigured = budgetedIds.contains(c.id);
@@ -393,7 +441,11 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                                 color: catColor.withValues(alpha: 0.14),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: Icon(getCategoryIcon(c.name), size: 15, color: catColor),
+                              child: Icon(
+                                getCategoryIcon(c.name),
+                                size: 15,
+                                color: catColor,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Text(
@@ -407,7 +459,10 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                             if (isConfigured) ...[
                               const Spacer(),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: tokens.warning.withValues(alpha: 0.14),
                                   borderRadius: BorderRadius.circular(4),
@@ -427,7 +482,9 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                       );
                     }).toList(),
                     onChanged: (val) {
-                      if (val != null) setState(() => _selectedCategoryId = val);
+                      if (val != null) {
+                        setState(() => _selectedCategoryId = val);
+                      }
                     },
                   ),
 
@@ -449,10 +506,7 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                   padding: const EdgeInsets.only(bottom: 4),
                   decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(
-                        color: tokens.ionCyan,
-                        width: 1.5,
-                      ),
+                      bottom: BorderSide(color: tokens.ionCyan, width: 1.5),
                     ),
                   ),
                   child: Row(
@@ -473,7 +527,9 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                           key: const ValueKey('budget-amount-field'),
                           controller: _amountController,
                           focusNode: _amountFocusNode,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
                           style: HorizonTypography.displayHero.copyWith(
                             fontSize: 38,
                             fontWeight: FontWeight.w800,
@@ -519,10 +575,15 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                         label: "Add ${currency.format(increment)}",
                         onPressed: () => _addQuickPreset(increment),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 7,
+                          ),
                           decoration: BoxDecoration(
                             color: tokens.surface2,
-                            borderRadius: BorderRadius.circular(HorizonDimensions.radiusSM),
+                            borderRadius: BorderRadius.circular(
+                              HorizonDimensions.radiusSM,
+                            ),
                             border: Border.all(color: tokens.rimNeutral),
                           ),
                           child: Text(
@@ -551,10 +612,18 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: tokens.outflow.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
-                            border: Border.all(color: tokens.outflow.withValues(alpha: 0.3)),
+                            borderRadius: BorderRadius.circular(
+                              HorizonDimensions.radiusMD,
+                            ),
+                            border: Border.all(
+                              color: tokens.outflow.withValues(alpha: 0.3),
+                            ),
                           ),
-                          child: Icon(Icons.delete_outline_rounded, color: tokens.outflow, size: 20),
+                          child: Icon(
+                            Icons.delete_outline_rounded,
+                            color: tokens.outflow,
+                            size: 20,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -564,11 +633,15 @@ class _AddEditBudgetSheetState extends State<AddEditBudgetSheet> {
                         onPressed: provider.isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: tokens.ionCyan,
-                          foregroundColor: tokens.isDark ? Colors.black : Colors.white,
+                          foregroundColor: tokens.isDark
+                              ? Colors.black
+                              : Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(HorizonDimensions.radiusMD),
+                            borderRadius: BorderRadius.circular(
+                              HorizonDimensions.radiusMD,
+                            ),
                           ),
                         ),
                         child: Text(

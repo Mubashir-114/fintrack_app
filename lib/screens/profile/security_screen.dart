@@ -181,11 +181,15 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         textInputAction: TextInputAction.next,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureCurrent ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            _obscureCurrent
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
                             color: tokens.textMedium,
                             size: 20,
                           ),
-                          onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                          onPressed: () => setState(
+                            () => _obscureCurrent = !_obscureCurrent,
+                          ),
                         ),
                         validator: (val) {
                           if (val == null || val.isEmpty) {
@@ -205,11 +209,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         textInputAction: TextInputAction.next,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureNew ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            _obscureNew
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
                             color: tokens.textMedium,
                             size: 20,
                           ),
-                          onPressed: () => setState(() => _obscureNew = !_obscureNew),
+                          onPressed: () =>
+                              setState(() => _obscureNew = !_obscureNew),
                         ),
                         validator: (val) {
                           if (val == null || val.isEmpty) {
@@ -233,11 +240,15 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         onSubmitted: (_) => _handleChangePassword(),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureConfirm ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            _obscureConfirm
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
                             color: tokens.textMedium,
                             size: 20,
                           ),
-                          onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                          onPressed: () => setState(
+                            () => _obscureConfirm = !_obscureConfirm,
+                          ),
                         ),
                         validator: (val) {
                           if (val == null || val.isEmpty) {

@@ -543,7 +543,11 @@ class FinTrackThemeTokens extends ThemeExtension<FinTrackThemeTokens> {
       info: Color.lerp(info, other.info, t)!,
       transfer: Color.lerp(transfer, other.transfer, t)!,
       cardBorder: Color.lerp(cardBorder, other.cardBorder, t)!,
-      midnightGradient: LinearGradient.lerp(midnightGradient, other.midnightGradient, t)!,
+      midnightGradient: LinearGradient.lerp(
+        midnightGradient,
+        other.midnightGradient,
+        t,
+      )!,
       cardGradient: LinearGradient.lerp(cardGradient, other.cardGradient, t)!,
     );
   }

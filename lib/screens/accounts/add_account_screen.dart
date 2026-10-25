@@ -112,7 +112,11 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   bool get _isCredit => _type == 'credit_card';
   bool get _isWallet => _type == 'wallet';
 
-  String? _validateDecimal(String? value, {bool required = true, bool allowNegative = false}) {
+  String? _validateDecimal(
+    String? value, {
+    bool required = true,
+    bool allowNegative = false,
+  }) {
     if (value == null || value.trim().isEmpty) {
       return required ? 'Amount is required' : null;
     }
@@ -154,16 +158,17 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     final String? institution = _isCash
         ? null
         : (_institutionController.text.trim().isNotEmpty
-            ? _institutionController.text.trim()
-            : null);
+              ? _institutionController.text.trim()
+              : null);
 
     final String? maskedDigits = _isCash
         ? null
         : (_maskedLast4Controller.text.trim().isNotEmpty
-            ? _maskedLast4Controller.text.trim()
-            : null);
+              ? _maskedLast4Controller.text.trim()
+              : null);
 
-    final String? creditLimit = _isCredit && _creditLimitController.text.trim().isNotEmpty
+    final String? creditLimit =
+        _isCredit && _creditLimitController.text.trim().isNotEmpty
         ? _creditLimitController.text.trim()
         : null;
 
@@ -187,9 +192,15 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
               const SizedBox(width: 8),
-              Expanded(child: Text('${account.displayName} created successfully')),
+              Expanded(
+                child: Text('${account.displayName} created successfully'),
+              ),
             ],
           ),
           backgroundColor: AppColors.success,
@@ -201,7 +212,9 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       HapticFeedback.vibrate();
       setState(() {
         _isSubmitting = false;
-        _submitError = provider.actionError ?? 'Failed to create account. Please check your inputs.';
+        _submitError =
+            provider.actionError ??
+            'Failed to create account. Please check your inputs.';
       });
       provider.resetActionStatus();
     }
@@ -214,7 +227,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final accountProvider = context.watch<AccountProvider>();
     final hasDefault = accountProvider.defaultAccount != null;
-    final disableAnimations = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final disableAnimations =
+        MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 
     return Scaffold(
       backgroundColor: tokens.background,
@@ -348,8 +362,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                             hintText: _type == 'bank'
                                 ? 'e.g. HDFC Salary Account'
                                 : (_type == 'credit_card'
-                                    ? 'e.g. Amazon Pay ICICI Card'
-                                    : 'e.g. Daily Cash Reserve'),
+                                      ? 'e.g. Amazon Pay ICICI Card'
+                                      : 'e.g. Daily Cash Reserve'),
                             prefixIcon: const Icon(Icons.label_rounded),
                           ),
                           textCapitalization: TextCapitalization.words,
@@ -396,11 +410,14 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                                       hintText: _isCredit
                                           ? 'e.g. ICICI Bank / HDFC'
                                           : (_isWallet
-                                              ? 'e.g. Paytm / Amazon Pay'
-                                              : 'e.g. State Bank of India'),
-                                      prefixIcon: const Icon(Icons.business_rounded),
+                                                ? 'e.g. Paytm / Amazon Pay'
+                                                : 'e.g. State Bank of India'),
+                                      prefixIcon: const Icon(
+                                        Icons.business_rounded,
+                                      ),
                                     ),
-                                    textCapitalization: TextCapitalization.words,
+                                    textCapitalization:
+                                        TextCapitalization.words,
                                     textInputAction: TextInputAction.next,
                                     onFieldSubmitted: (_) =>
                                         _maskedLast4Focus.requestFocus(),
@@ -436,7 +453,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                                       labelText: 'Last 4 Digits (Optional)',
                                       hintText: '1234',
                                       prefixIcon: Icon(Icons.pin_rounded),
-                                      helperText: 'For recognizable card or account masking',
+                                      helperText:
+                                          'For recognizable card or account masking',
                                     ),
                                     keyboardType: TextInputType.number,
                                     inputFormatters: [
@@ -468,12 +486,14 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                                 : 'Opening Balance *',
                             hintText: '0.00',
                             prefixText: '₹ ',
-                            prefixIcon: const Icon(Icons.currency_rupee_rounded),
+                            prefixIcon: const Icon(
+                              Icons.currency_rupee_rounded,
+                            ),
                             helperText: _type == 'bank' && _subtype == 'current'
                                 ? 'Negative amounts allowed for current accounts (overdraft)'
                                 : (_isCredit
-                                    ? 'Enter statement balance / debt. Enter 0.00 if fresh card.'
-                                    : 'Initial cleared funds on this account'),
+                                      ? 'Enter statement balance / debt. Enter 0.00 if fresh card.'
+                                      : 'Initial cleared funds on this account'),
                           ),
                           keyboardType: TextInputType.numberWithOptions(
                             decimal: true,
@@ -488,7 +508,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                           validator: (v) => _validateDecimal(
                             v,
                             required: true,
-                            allowNegative: _type == 'bank' && _subtype == 'current',
+                            allowNegative:
+                                _type == 'bank' && _subtype == 'current',
                           ),
                         ),
                         const SizedBox(height: 14),
@@ -509,12 +530,16 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                                       labelText: 'Credit Limit *',
                                       hintText: '100000.00',
                                       prefixText: '₹ ',
-                                      prefixIcon: Icon(Icons.credit_score_rounded),
-                                      helperText: 'Total revolving credit approved by card issuer',
+                                      prefixIcon: Icon(
+                                        Icons.credit_score_rounded,
+                                      ),
+                                      helperText:
+                                          'Total revolving credit approved by card issuer',
                                     ),
-                                    keyboardType: const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
                                     textInputAction: TextInputAction.done,
                                     validator: (v) {
                                       final err = _validateDecimal(
@@ -557,16 +582,20 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: tokens.danger.withValues(alpha: 0.12),
-                              borderRadius:
-                                  BorderRadius.circular(AppDimensions.radiusMD),
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.radiusMD,
+                              ),
                               border: Border.all(
                                 color: tokens.danger.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.error_outline_rounded,
-                                    color: tokens.danger, size: 20),
+                                Icon(
+                                  Icons.error_outline_rounded,
+                                  color: tokens.danger,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
@@ -596,7 +625,9 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   color: tokens.surface,
                   border: Border(
                     top: BorderSide(
-                      color: tokens.divider.withValues(alpha: isDark ? 0.6 : 0.8),
+                      color: tokens.divider.withValues(
+                        alpha: isDark ? 0.6 : 0.8,
+                      ),
                     ),
                   ),
                   boxShadow: [
@@ -623,9 +654,13 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                     onPressed: _isSubmitting ? null : _submit,
                     style: FilledButton.styleFrom(
                       backgroundColor: tokens.primary,
-                      foregroundColor: isDark ? const Color(0xFF171B24) : Colors.white,
+                      foregroundColor: isDark
+                          ? const Color(0xFF171B24)
+                          : Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusMD,
+                        ),
                       ),
                       elevation: 0,
                     ),

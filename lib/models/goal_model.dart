@@ -25,7 +25,10 @@ class GoalContributionModel {
       goalId: json['goalId'] ?? json['goal_id'] as int? ?? 0,
       userId: json['userId'] ?? json['user_id'] as int? ?? 0,
       amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
-      contributionDate: json['contributionDate'] ?? json['contribution_date'] as String? ?? '',
+      contributionDate:
+          json['contributionDate'] ??
+          json['contribution_date'] as String? ??
+          '',
       note: json['note'] as String?,
       createdAt: json['createdAt'] ?? json['created_at'] as String?,
       updatedAt: json['updatedAt'] ?? json['updated_at'] as String?,
@@ -66,7 +69,8 @@ class GoalModel {
   final String? estimatedCompletionDate;
   final String? estimationReason;
   final bool isEstimated;
-  final String intelligenceStatus; // on_track, behind_schedule, completed, in_progress, archived
+  final String
+  intelligenceStatus; // on_track, behind_schedule, completed, in_progress, archived
   final bool isAchieved;
   final int contributionsCount;
   final List<GoalContributionModel> recentContributions;
@@ -106,8 +110,11 @@ class GoalModel {
     final contributionsRaw = json['recentContributions'] as List<dynamic>?;
     final contributions = contributionsRaw != null
         ? contributionsRaw
-            .map((e) => GoalContributionModel.fromJson(e as Map<String, dynamic>))
-            .toList()
+              .map(
+                (e) =>
+                    GoalContributionModel.fromJson(e as Map<String, dynamic>),
+              )
+              .toList()
         : <GoalContributionModel>[];
 
     return GoalModel(
@@ -115,24 +122,42 @@ class GoalModel {
       userId: json['userId'] ?? json['user_id'] as int? ?? 0,
       name: json['name'] as String? ?? '',
       description: json['description'] as String?,
-      targetAmount: (json['targetAmount'] ?? json['target_amount'] as num?)?.toDouble() ?? 0.0,
+      targetAmount:
+          (json['targetAmount'] ?? json['target_amount'] as num?)?.toDouble() ??
+          0.0,
       currency: json['currency'] as String? ?? 'INR',
       targetDate: json['targetDate'] ?? json['target_date'] as String?,
-      startingAmount: (json['startingAmount'] ?? json['starting_amount'] as num?)?.toDouble() ?? 0.0,
-      savedAmount: (json['savedAmount'] ?? json['saved_amount'] as num?)?.toDouble() ?? 0.0,
-      remainingAmount: (json['remainingAmount'] ?? json['remaining_amount'] as num?)?.toDouble() ?? 0.0,
-      progressPercentage: (json['progressPercentage'] ?? json['progress_percentage'] as num?)?.toDouble() ?? 0.0,
+      startingAmount:
+          (json['startingAmount'] ?? json['starting_amount'] as num?)
+              ?.toDouble() ??
+          0.0,
+      savedAmount:
+          (json['savedAmount'] ?? json['saved_amount'] as num?)?.toDouble() ??
+          0.0,
+      remainingAmount:
+          (json['remainingAmount'] ?? json['remaining_amount'] as num?)
+              ?.toDouble() ??
+          0.0,
+      progressPercentage:
+          (json['progressPercentage'] ?? json['progress_percentage'] as num?)
+              ?.toDouble() ??
+          0.0,
       status: json['status'] as String? ?? 'active',
       daysRemaining: (json['daysRemaining'] as num?)?.toInt(),
       monthsRemaining: (json['monthsRemaining'] as num?)?.toDouble(),
       isOverdue: json['isOverdue'] as bool? ?? false,
-      requiredMonthlySaving: (json['requiredMonthlySaving'] as num?)?.toDouble(),
+      requiredMonthlySaving: (json['requiredMonthlySaving'] as num?)
+          ?.toDouble(),
       estimatedCompletionDate: est?['date'] as String?,
       estimationReason: est?['reason'] as String?,
       isEstimated: est?['isEstimated'] as bool? ?? false,
-      intelligenceStatus: json['intelligenceStatus'] as String? ?? 'in_progress',
+      intelligenceStatus:
+          json['intelligenceStatus'] as String? ?? 'in_progress',
       isAchieved: json['isAchieved'] as bool? ?? false,
-      contributionsCount: (json['contributionsCount'] ?? json['contributions_count'] as num?)?.toInt() ?? 0,
+      contributionsCount:
+          (json['contributionsCount'] ?? json['contributions_count'] as num?)
+              ?.toInt() ??
+          0,
       recentContributions: contributions,
       createdAt: json['createdAt'] ?? json['created_at'] as String?,
       updatedAt: json['updatedAt'] ?? json['updated_at'] as String?,
@@ -156,7 +181,8 @@ class GoalModel {
       if (daysRemaining != null) 'daysRemaining': daysRemaining,
       if (monthsRemaining != null) 'monthsRemaining': monthsRemaining,
       'isOverdue': isOverdue,
-      if (requiredMonthlySaving != null) 'requiredMonthlySaving': requiredMonthlySaving,
+      if (requiredMonthlySaving != null)
+        'requiredMonthlySaving': requiredMonthlySaving,
       'estimatedCompletion': {
         'date': estimatedCompletionDate,
         'reason': estimationReason,
@@ -165,7 +191,9 @@ class GoalModel {
       'intelligenceStatus': intelligenceStatus,
       'isAchieved': isAchieved,
       'contributionsCount': contributionsCount,
-      'recentContributions': recentContributions.map((c) => c.toJson()).toList(),
+      'recentContributions': recentContributions
+          .map((c) => c.toJson())
+          .toList(),
       if (createdAt != null) 'createdAt': createdAt,
       if (updatedAt != null) 'updatedAt': updatedAt,
     };
@@ -214,8 +242,10 @@ class GoalModel {
       daysRemaining: daysRemaining ?? this.daysRemaining,
       monthsRemaining: monthsRemaining ?? this.monthsRemaining,
       isOverdue: isOverdue ?? this.isOverdue,
-      requiredMonthlySaving: requiredMonthlySaving ?? this.requiredMonthlySaving,
-      estimatedCompletionDate: estimatedCompletionDate ?? this.estimatedCompletionDate,
+      requiredMonthlySaving:
+          requiredMonthlySaving ?? this.requiredMonthlySaving,
+      estimatedCompletionDate:
+          estimatedCompletionDate ?? this.estimatedCompletionDate,
       estimationReason: estimationReason ?? this.estimationReason,
       isEstimated: isEstimated ?? this.isEstimated,
       intelligenceStatus: intelligenceStatus ?? this.intelligenceStatus,
@@ -254,7 +284,8 @@ class GoalsSummaryModel {
       totalTarget: (json['totalTarget'] as num?)?.toDouble() ?? 0.0,
       totalSaved: (json['totalSaved'] as num?)?.toDouble() ?? 0.0,
       totalRemaining: (json['totalRemaining'] as num?)?.toDouble() ?? 0.0,
-      overallProgressPercentage: (json['overallProgressPercentage'] as num?)?.toDouble() ?? 0.0,
+      overallProgressPercentage:
+          (json['overallProgressPercentage'] as num?)?.toDouble() ?? 0.0,
       activeGoalsCount: (json['activeGoalsCount'] as num?)?.toInt() ?? 0,
       completedGoalsCount: (json['completedGoalsCount'] as num?)?.toInt() ?? 0,
       archivedGoalsCount: (json['archivedGoalsCount'] as num?)?.toInt() ?? 0,
@@ -321,20 +352,31 @@ class CashFlowForecastModel {
     return CashFlowForecastModel(
       horizon: json['horizon'] as String? ?? 'next_3_months',
       horizonMonths: (json['horizonMonths'] as num?)?.toInt() ?? 3,
-      historicalMonthsSampled: (json['historicalMonthsSampled'] as num?)?.toInt() ?? 0,
-      historicalAvgMonthlyIncome: (json['historicalAvgMonthlyIncome'] as num?)?.toDouble() ?? 0.0,
-      historicalAvgMonthlyExpense: (json['historicalAvgMonthlyExpense'] as num?)?.toDouble() ?? 0.0,
-      netMonthlyCashFlow: (json['netMonthlyCashFlow'] as num?)?.toDouble() ?? 0.0,
-      potentialMonthlySavingsCapacity: (json['potentialMonthlySavingsCapacity'] as num?)?.toDouble() ?? 0.0,
+      historicalMonthsSampled:
+          (json['historicalMonthsSampled'] as num?)?.toInt() ?? 0,
+      historicalAvgMonthlyIncome:
+          (json['historicalAvgMonthlyIncome'] as num?)?.toDouble() ?? 0.0,
+      historicalAvgMonthlyExpense:
+          (json['historicalAvgMonthlyExpense'] as num?)?.toDouble() ?? 0.0,
+      netMonthlyCashFlow:
+          (json['netMonthlyCashFlow'] as num?)?.toDouble() ?? 0.0,
+      potentialMonthlySavingsCapacity:
+          (json['potentialMonthlySavingsCapacity'] as num?)?.toDouble() ?? 0.0,
       projectedIncome: (json['projectedIncome'] as num?)?.toDouble() ?? 0.0,
       projectedExpenses: (json['projectedExpenses'] as num?)?.toDouble() ?? 0.0,
-      projectedNetCashFlow: (json['projectedNetCashFlow'] as num?)?.toDouble() ?? 0.0,
-      projectedSavingsCapacity: (json['projectedSavingsCapacity'] as num?)?.toDouble() ?? 0.0,
+      projectedNetCashFlow:
+          (json['projectedNetCashFlow'] as num?)?.toDouble() ?? 0.0,
+      projectedSavingsCapacity:
+          (json['projectedSavingsCapacity'] as num?)?.toDouble() ?? 0.0,
       isSufficient: suff?['isSufficient'] as bool? ?? false,
-      warnings: warningsRaw != null ? warningsRaw.map((e) => e.toString()).toList() : [],
+      warnings: warningsRaw != null
+          ? warningsRaw.map((e) => e.toString()).toList()
+          : [],
       samplePeriod: suff?['samplePeriod'] as String?,
       recordCount: (suff?['recordCount'] as num?)?.toInt() ?? 0,
-      assumptions: assumptionsRaw != null ? assumptionsRaw.map((e) => e.toString()).toList() : [],
+      assumptions: assumptionsRaw != null
+          ? assumptionsRaw.map((e) => e.toString()).toList()
+          : [],
     );
   }
 
@@ -414,21 +456,29 @@ class WhatIfSimulationModel {
       scenarioType: json['scenarioType'] as String? ?? 'savings_adjustment',
       baselineIncome: (base['monthlyIncome'] as num?)?.toDouble() ?? 0.0,
       baselineExpense: (base['monthlyExpense'] as num?)?.toDouble() ?? 0.0,
-      baselineNetCashFlow: (base['netMonthlyCashFlow'] as num?)?.toDouble() ?? 0.0,
-      baselineSavingsCapacity: (base['savingsCapacity'] as num?)?.toDouble() ?? 0.0,
+      baselineNetCashFlow:
+          (base['netMonthlyCashFlow'] as num?)?.toDouble() ?? 0.0,
+      baselineSavingsCapacity:
+          (base['savingsCapacity'] as num?)?.toDouble() ?? 0.0,
       baselineGoalName: goal?['name'] as String?,
       baselineGoalRemaining: (goal?['remainingAmount'] as num?)?.toDouble(),
-      baselineOriginalMonths: (goal?['originalMonthsRemaining'] as num?)?.toDouble(),
+      baselineOriginalMonths: (goal?['originalMonthsRemaining'] as num?)
+          ?.toDouble(),
       simulatedIncome: (sim['monthlyIncome'] as num?)?.toDouble() ?? 0.0,
       simulatedExpense: (sim['monthlyExpense'] as num?)?.toDouble() ?? 0.0,
-      simulatedNetCashFlow: (sim['netMonthlyCashFlow'] as num?)?.toDouble() ?? 0.0,
-      simulatedSavingsCapacity: (sim['savingsCapacity'] as num?)?.toDouble() ?? 0.0,
+      simulatedNetCashFlow:
+          (sim['netMonthlyCashFlow'] as num?)?.toDouble() ?? 0.0,
+      simulatedSavingsCapacity:
+          (sim['savingsCapacity'] as num?)?.toDouble() ?? 0.0,
       simulatedMonths: (timeline?['simulatedMonths'] as num?)?.toDouble(),
       monthsSaved: (timeline?['monthsSaved'] as num?)?.toDouble(),
-      requiredMonthlySaving: (timeline?['requiredMonthlySaving'] as num?)?.toDouble(),
+      requiredMonthlySaving: (timeline?['requiredMonthlySaving'] as num?)
+          ?.toDouble(),
       monthlyDifference: (json['monthlyDifference'] as num?)?.toDouble() ?? 0.0,
       explanation: json['explanation'] as String? ?? '',
-      assumptions: assumptionsRaw != null ? assumptionsRaw.map((e) => e.toString()).toList() : [],
+      assumptions: assumptionsRaw != null
+          ? assumptionsRaw.map((e) => e.toString()).toList()
+          : [],
     );
   }
 
@@ -455,7 +505,8 @@ class WhatIfSimulationModel {
         'timelineImpact': {
           if (simulatedMonths != null) 'simulatedMonths': simulatedMonths,
           if (monthsSaved != null) 'monthsSaved': monthsSaved,
-          if (requiredMonthlySaving != null) 'requiredMonthlySaving': requiredMonthlySaving,
+          if (requiredMonthlySaving != null)
+            'requiredMonthlySaving': requiredMonthlySaving,
         },
       },
       'monthlyDifference': monthlyDifference,

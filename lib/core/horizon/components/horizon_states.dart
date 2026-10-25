@@ -56,11 +56,7 @@ class HorizonEmptyState extends StatelessWidget {
                 ],
               ),
               alignment: Alignment.center,
-              child: Icon(
-                icon,
-                size: 30,
-                color: accent,
-              ),
+              child: Icon(icon, size: 30, color: accent),
             ),
             const SizedBox(height: HorizonDimensions.spaceLG),
 
@@ -116,16 +112,10 @@ class HorizonOfflineBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: tokens.outflow.withValues(alpha: 0.92),
-      ),
+      decoration: BoxDecoration(color: tokens.outflow.withValues(alpha: 0.92)),
       child: Row(
         children: [
-          const Icon(
-            Icons.wifi_off_rounded,
-            color: Colors.white,
-            size: 16,
-          ),
+          const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 16),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -184,7 +174,11 @@ class HorizonErrorCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.error_outline_rounded, size: 20, color: tokens.outflow),
+              Icon(
+                Icons.error_outline_rounded,
+                size: 20,
+                color: tokens.outflow,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

@@ -19,7 +19,7 @@ class AccountProvider extends ChangeNotifier {
   final AccountRepository _repository;
 
   AccountProvider({AccountRepository? repository})
-      : _repository = repository ?? AccountRepository();
+    : _repository = repository ?? AccountRepository();
 
   // ── Session isolation ─────────────────────────────────────────────────────
   int _sessionGeneration = 0;
@@ -121,8 +121,9 @@ class AccountProvider extends ChangeNotifier {
         if (cached != null) {
           try {
             final list = cached['accounts'] as List<dynamic>;
-            _accounts =
-                list.map((e) => AccountModel.fromJson(e as Map<String, dynamic>)).toList();
+            _accounts = list
+                .map((e) => AccountModel.fromJson(e as Map<String, dynamic>))
+                .toList();
             _total = cached['total'] as int? ?? _accounts.length;
             notifyListeners();
           } catch (_) {
@@ -268,9 +269,7 @@ class AccountProvider extends ChangeNotifier {
       if (sessionGeneration != _sessionGeneration) return null;
       _actionStatus = AccountActionStatus.success;
       // Update local list entry in-place and refresh cache.
-      _accounts = _accounts
-          .map((a) => a.id == id ? response.data : a)
-          .toList();
+      _accounts = _accounts.map((a) => a.id == id ? response.data : a).toList();
       await _persistListCache();
       notifyListeners();
       return response.data;

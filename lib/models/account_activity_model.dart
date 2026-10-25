@@ -1,7 +1,8 @@
 class AccountActivityModel {
   final String id;
   final String activityType; // "transaction" | "transfer" | "adjustment"
-  final String type; // "income" | "expense" | "transfer_in" | "transfer_out" | "adjustment_credit" | "adjustment_debit"
+  final String
+  type; // "income" | "expense" | "transfer_in" | "transfer_out" | "adjustment_credit" | "adjustment_debit"
   final String title;
   final String amount;
   final String date;
@@ -70,7 +71,10 @@ class AccountActivityListResponse {
     final list = (json['activities'] as List<dynamic>?) ?? [];
     return AccountActivityListResponse(
       activities: list
-          .map((item) => AccountActivityModel.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) =>
+                AccountActivityModel.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       total: json['total'] as int? ?? 0,
       page: json['page'] as int? ?? 1,

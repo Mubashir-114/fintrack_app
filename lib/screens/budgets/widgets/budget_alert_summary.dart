@@ -8,10 +8,7 @@ import '../../../models/budget_model.dart';
 /// Replaces the old giant yellow card with a sleek, quiet alert strip
 /// that expands on tap to review items without visual clutter.
 class BudgetAlertSummary extends StatefulWidget {
-  const BudgetAlertSummary({
-    super.key,
-    required this.alerts,
-  });
+  const BudgetAlertSummary({super.key, required this.alerts});
 
   final BudgetAlertsResponseModel alerts;
 
@@ -28,13 +25,17 @@ class _BudgetAlertSummaryState extends State<BudgetAlertSummary> {
     final alerts = widget.alerts;
     final alertItems = [...alerts.exceeded, ...alerts.approachingLimit];
 
-    if (alertItems.isEmpty && alerts.overallAlert == null && alerts.insights.isEmpty) {
+    if (alertItems.isEmpty &&
+        alerts.overallAlert == null &&
+        alerts.insights.isEmpty) {
       return const SizedBox.shrink();
     }
 
     final isCritical = alerts.exceeded.isNotEmpty;
     final accentColor = isCritical ? tokens.outflow : tokens.warning;
-    final totalCount = alerts.totalAlertsCount > 0 ? alerts.totalAlertsCount : alertItems.length;
+    final totalCount = alerts.totalAlertsCount > 0
+        ? alerts.totalAlertsCount
+        : alertItems.length;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -58,7 +59,9 @@ class _BudgetAlertSummaryState extends State<BudgetAlertSummary> {
               child: Row(
                 children: [
                   Icon(
-                    isCritical ? Icons.warning_amber_rounded : Icons.info_outline_rounded,
+                    isCritical
+                        ? Icons.warning_amber_rounded
+                        : Icons.info_outline_rounded,
                     size: 16,
                     color: accentColor,
                   ),
@@ -88,7 +91,9 @@ class _BudgetAlertSummaryState extends State<BudgetAlertSummary> {
                   ),
                   const SizedBox(width: 6),
                   Icon(
-                    _expanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                    _expanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
                     size: 18,
                     color: tokens.textMedium,
                   ),
@@ -129,7 +134,9 @@ class _BudgetAlertSummaryState extends State<BudgetAlertSummary> {
                             width: 5,
                             height: 5,
                             decoration: BoxDecoration(
-                              color: item.severity == 'critical' ? tokens.outflow : tokens.warning,
+                              color: item.severity == 'critical'
+                                  ? tokens.outflow
+                                  : tokens.warning,
                               shape: BoxShape.circle,
                             ),
                           ),

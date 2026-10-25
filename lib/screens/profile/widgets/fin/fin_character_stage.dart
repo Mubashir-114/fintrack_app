@@ -30,7 +30,9 @@ class FinCharacterStage extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < 360;
-        final responsiveCharSize = isCompact ? (characterSize * 0.88).clamp(95.0, 120.0) : characterSize;
+        final responsiveCharSize = isCompact
+            ? (characterSize * 0.88).clamp(95.0, 120.0)
+            : characterSize;
 
         return Container(
           width: double.infinity,
@@ -150,10 +152,14 @@ class FinCharacterStage extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: isSelected ? tokens.surface3 : tokens.surface2.withValues(alpha: 0.5),
+            color: isSelected
+                ? tokens.surface3
+                : tokens.surface2.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: isSelected ? tokens.rimCyan : tokens.rimNeutral.withValues(alpha: 0.6),
+              color: isSelected
+                  ? tokens.rimCyan
+                  : tokens.rimNeutral.withValues(alpha: 0.6),
               width: isSelected ? 1.2 : 0.8,
             ),
           ),

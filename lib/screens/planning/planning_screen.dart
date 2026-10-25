@@ -22,7 +22,8 @@ class PlanningScreen extends StatefulWidget {
   State<PlanningScreen> createState() => _PlanningScreenState();
 }
 
-class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProviderStateMixin {
+class _PlanningScreenState extends State<PlanningScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _selectedFilter = 'all'; // 'all', 'active', 'completed', 'archived'
 
@@ -60,7 +61,9 @@ class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProvid
       context: context,
       backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusXL)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppDimensions.radiusXL),
+        ),
       ),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(AppDimensions.lg),
@@ -88,7 +91,11 @@ class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProvid
               '• No financial data, account balances, or goal targets are ever shared with third-party model providers or external services.\n'
               '• Savings goal allocations are planning trackers only: they do not transfer funds or debit bank accounts.\n'
               '• What-if simulations are isolated scenario calculations and never modify your actual financial history.',
-              style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.5),
+              style: TextStyle(
+                fontSize: 12,
+                color: colors.textSecondary,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -121,7 +128,10 @@ class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProvid
     final progress = summary?.overallProgressPercentage ?? 0;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.md, vertical: 8),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.md,
+        vertical: 8,
+      ),
       padding: const EdgeInsets.all(AppDimensions.md),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -185,10 +195,7 @@ class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProvid
               const SizedBox(width: 8),
               Text(
                 'of ${currency.format(target)} target',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 12, color: colors.textSecondary),
               ),
             ],
           ),
@@ -235,7 +242,10 @@ class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProvid
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.md, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.md,
+        vertical: 4,
+      ),
       child: Row(
         children: filters.map((f) {
           final isSelected = _selectedFilter == f['id'];
@@ -279,11 +289,13 @@ class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProvid
     }
   }
 
-  Widget _buildGoalsTab(GoalProvider provider, dynamic colors, CurrencyProvider currency) {
+  Widget _buildGoalsTab(
+    GoalProvider provider,
+    dynamic colors,
+    CurrencyProvider currency,
+  ) {
     if (provider.isLoading && provider.goals.isEmpty) {
-      return Center(
-        child: CircularProgressIndicator(color: colors.primary),
-      );
+      return Center(child: CircularProgressIndicator(color: colors.primary));
     }
 
     if (provider.errorMessage != null && provider.goals.isEmpty) {
@@ -293,7 +305,11 @@ class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProvid
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.cloud_off_rounded, size: 48, color: AppColors.danger),
+              const Icon(
+                Icons.cloud_off_rounded,
+                size: 48,
+                color: AppColors.danger,
+              ),
               const SizedBox(height: 12),
               Text(
                 'Unable to load savings goals',
@@ -362,7 +378,10 @@ class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProvid
                     const SizedBox(height: 6),
                     Text(
                       'Define your aspirations—emergency funds, travel, gadgets—and track progress securely.',
-                      style: TextStyle(fontSize: 12, color: colors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.textSecondary,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
@@ -373,7 +392,10 @@ class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProvid
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                   ],
@@ -425,7 +447,10 @@ class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProvid
           unselectedLabelColor: colors.textSecondary,
           indicatorColor: colors.primary,
           indicatorWeight: 3,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
           tabs: const [
             Tab(text: 'Savings Goals'),
             Tab(text: 'Cash-Flow'),
@@ -439,7 +464,10 @@ class _PlanningScreenState extends State<PlanningScreen> with SingleTickerProvid
               backgroundColor: colors.primary,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.add_rounded),
-              label: const Text('New Goal', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: const Text(
+                'New Goal',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             )
           : null,
       body: TabBarView(

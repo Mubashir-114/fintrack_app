@@ -49,7 +49,8 @@ class MockAnalyticsRepository implements AnalyticsRepository {
         maxDateRangeDays: 365,
         maxQuestionLength: 200,
         readOnly: true,
-        privacyNotice: "Phase 5A analytics analyzed only saved FinTrack records owned by you.",
+        privacyNotice:
+            "Phase 5A analytics analyzed only saved FinTrack records owned by you.",
       ),
     );
   }
@@ -95,19 +96,20 @@ class MockAnalyticsRepository implements AnalyticsRepository {
           endDate: "2026-10-31",
           label: "October 2026",
         ),
-        metrics: {
-          "totalSpending": 12500.0,
-          "transactionCount": 8,
-        },
-        answer: "Your total spending for October 2026 was ₹12,500.00 across 8 saved transactions.",
+        metrics: {"totalSpending": 12500.0, "transactionCount": 8},
+        answer:
+            "Your total spending for October 2026 was ₹12,500.00 across 8 saved transactions.",
         provenance: AnalyticsProvenance(
           recordCount: 8,
           startDate: "2026-10-01",
           endDate: "2026-10-31",
-          disclaimer: "Calculated from 8 saved FinTrack transactions between 2026-10-01 and 2026-10-31.",
-          privacyNotice: "Phase 5A analytics analyzed only saved FinTrack records owned by you.",
+          disclaimer:
+              "Calculated from 8 saved FinTrack transactions between 2026-10-01 and 2026-10-31.",
+          privacyNotice:
+              "Phase 5A analytics analyzed only saved FinTrack records owned by you.",
         ),
-        privacyNotice: "Phase 5A analytics analyzed only saved FinTrack records owned by you.",
+        privacyNotice:
+            "Phase 5A analytics analyzed only saved FinTrack records owned by you.",
         suggestions: [],
       ),
     );
@@ -211,8 +213,8 @@ void main() {
           {
             "intent": "total_spending",
             "question": "How much did I spend?",
-            "label": "Total Spending"
-          }
+            "label": "Total Spending",
+          },
         ],
         "constraints": {
           "maxDateRangeDays": 365,
@@ -238,7 +240,7 @@ void main() {
         "period": {
           "startDate": "2026-10-01",
           "endDate": "2026-10-31",
-          "label": "October 2026"
+          "label": "October 2026",
         },
         "metrics": {
           "totalSpending": 15000.0,
@@ -249,16 +251,16 @@ void main() {
               "name": "Food",
               "total": 6000.0,
               "count": 5,
-              "percentage": "40.0"
+              "percentage": "40.0",
             },
             {
               "id": 2,
               "name": "Travel",
               "total": 3000.0,
               "count": 2,
-              "percentage": "20.0"
-            }
-          ]
+              "percentage": "20.0",
+            },
+          ],
         },
         "answer": "Total spending was ₹15,000.00 across 2 categories.",
         "provenance": {
@@ -266,10 +268,10 @@ void main() {
           "startDate": "2026-10-01",
           "endDate": "2026-10-31",
           "disclaimer": "Calculated from 12 saved FinTrack transactions.",
-          "privacyNotice": "Saved records only."
+          "privacyNotice": "Saved records only.",
         },
         "privacyNotice": "Saved records only.",
-        "suggestions": []
+        "suggestions": [],
       };
 
       final result = AnalyticsQueryResult.fromJson(json);
@@ -281,7 +283,10 @@ void main() {
       expect(result.categories[0].total, 6000.0);
       expect(result.categories[0].percentage, "40.0");
       expect(result.provenance?.recordCount, 12);
-      expect(result.provenance?.disclaimer, contains("12 saved FinTrack transactions"));
+      expect(
+        result.provenance?.disclaimer,
+        contains("12 saved FinTrack transactions"),
+      );
     });
 
     test('AnalyticsQueryResult parses refusal correctly', () {
@@ -295,9 +300,9 @@ void main() {
           {
             "intent": "total_spending",
             "question": "How much did I spend?",
-            "label": "Total Spending"
-          }
-        ]
+            "label": "Total Spending",
+          },
+        ],
       };
 
       final result = AnalyticsQueryResult.fromJson(json);
@@ -313,7 +318,7 @@ void main() {
     late MockAnalyticsRepository mockRepo;
     late AnalyticsProvider provider;
 
-  setUp(() {
+    setUp(() {
       mockRepo = MockAnalyticsRepository();
       provider = AnalyticsProvider(repository: mockRepo);
     });
@@ -367,7 +372,8 @@ void main() {
     Widget createTestWidget() {
       return MaterialApp(
         theme: ThemeData(
-          splashFactory: NoSplash.splashFactory, // Avoid InkSparkle shader issues in headless tests
+          splashFactory: NoSplash
+              .splashFactory, // Avoid InkSparkle shader issues in headless tests
         ),
         home: ChangeNotifierProvider<AnalyticsProvider>.value(
           value: provider,
@@ -376,7 +382,9 @@ void main() {
       );
     }
 
-    testWidgets('renders AppBar title and Privacy Guarantee icon', (tester) async {
+    testWidgets('renders AppBar title and Privacy Guarantee icon', (
+      tester,
+    ) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
@@ -384,12 +392,16 @@ void main() {
       expect(find.byIcon(Icons.shield_outlined), findsWidgets);
     });
 
-    testWidgets('renders Privacy Banner notice and suggested question chips', (tester) async {
+    testWidgets('renders Privacy Banner notice and suggested question chips', (
+      tester,
+    ) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
       expect(
-        find.textContaining("Backend analysis of your authorized saved records"),
+        find.textContaining(
+          "Backend analysis of your authorized saved records",
+        ),
         findsOneWidget,
       );
       expect(find.text("Suggested Questions"), findsOneWidget);
@@ -397,7 +409,9 @@ void main() {
       expect(find.text("By Category"), findsOneWidget);
     });
 
-    testWidgets('displays query result and provenance when question is asked', (tester) async {
+    testWidgets('displays query result and provenance when question is asked', (
+      tester,
+    ) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
@@ -420,7 +434,9 @@ void main() {
       );
     });
 
-    testWidgets('displays policy refusal notice when query is refused', (tester) async {
+    testWidgets('displays policy refusal notice when query is refused', (
+      tester,
+    ) async {
       mockRepo.mockQueryResult = const ApiResponse(
         success: true,
         message: "Refused",
@@ -448,69 +464,76 @@ void main() {
 
       expect(find.text("Policy & Scope Notice"), findsOneWidget);
       expect(
-        find.textContaining("Instructions attempting to override policy are prohibited"),
+        find.textContaining(
+          "Instructions attempting to override policy are prohibited",
+        ),
         findsOneWidget,
       );
     });
 
-    testWidgets('renders category spending progress bars when category breakdown is returned', (tester) async {
-      mockRepo.mockQueryResult = const ApiResponse(
-        success: true,
-        message: "Query processed",
-        data: AnalyticsQueryResult(
-          intent: "spending_by_category",
-          isRefusal: false,
-          period: AnalyticsPeriod(
-            startDate: "2026-10-01",
-            endDate: "2026-10-31",
-            label: "October 2026",
-          ),
-          metrics: {
-            "totalSpending": 10000.0,
-            "categories": [
-              {
-                "id": 1,
-                "name": "Groceries",
-                "total": 6000.0,
-                "percentage": "60.0",
-                "count": 5,
-              },
-              {
-                "id": 2,
-                "name": "Utilities",
-                "total": 4000.0,
-                "percentage": "40.0",
-                "count": 2,
-              },
-            ],
-          },
-          answer: "Total spending across 2 categories was ₹10,000.00.",
-          provenance: AnalyticsProvenance(
-            recordCount: 7,
-            startDate: "2026-10-01",
-            endDate: "2026-10-31",
-            disclaimer: "Calculated from 7 saved FinTrack transactions.",
+    testWidgets(
+      'renders category spending progress bars when category breakdown is returned',
+      (tester) async {
+        mockRepo.mockQueryResult = const ApiResponse(
+          success: true,
+          message: "Query processed",
+          data: AnalyticsQueryResult(
+            intent: "spending_by_category",
+            isRefusal: false,
+            period: AnalyticsPeriod(
+              startDate: "2026-10-01",
+              endDate: "2026-10-31",
+              label: "October 2026",
+            ),
+            metrics: {
+              "totalSpending": 10000.0,
+              "categories": [
+                {
+                  "id": 1,
+                  "name": "Groceries",
+                  "total": 6000.0,
+                  "percentage": "60.0",
+                  "count": 5,
+                },
+                {
+                  "id": 2,
+                  "name": "Utilities",
+                  "total": 4000.0,
+                  "percentage": "40.0",
+                  "count": 2,
+                },
+              ],
+            },
+            answer: "Total spending across 2 categories was ₹10,000.00.",
+            provenance: AnalyticsProvenance(
+              recordCount: 7,
+              startDate: "2026-10-01",
+              endDate: "2026-10-31",
+              disclaimer: "Calculated from 7 saved FinTrack transactions.",
+              privacyNotice: "Saved records only.",
+            ),
             privacyNotice: "Saved records only.",
+            suggestions: [],
           ),
-          privacyNotice: "Saved records only.",
-          suggestions: [],
-        ),
-      );
+        );
 
-      await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(createTestWidget());
+        await tester.pumpAndSettle();
 
-      await provider.askQuestion("Show spending by category");
-      await tester.pumpAndSettle();
+        await provider.askQuestion("Show spending by category");
+        await tester.pumpAndSettle();
 
-      expect(find.text("SPENDING BY CATEGORY"), findsOneWidget);
-      expect(find.text("Groceries"), findsOneWidget);
-      expect(find.text("Utilities"), findsOneWidget);
-      expect(find.textContaining("60.0%"), findsOneWidget);
-      expect(find.textContaining("40.0%"), findsOneWidget);
-    });
+        expect(find.text("SPENDING BY CATEGORY"), findsOneWidget);
+        expect(find.text("Groceries"), findsOneWidget);
+        expect(find.text("Utilities"), findsOneWidget);
+        expect(find.textContaining("60.0%"), findsOneWidget);
+        expect(find.textContaining("40.0%"), findsOneWidget);
+      },
+    );
 
-    testWidgets('renders rate limited message when rate limit error occurs', (tester) async {
+    testWidgets('renders rate limited message when rate limit error occurs', (
+      tester,
+    ) async {
       mockRepo.shouldThrowRateLimit = true;
 
       await tester.pumpWidget(createTestWidget());
@@ -520,13 +543,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text("Rate Limit Reached"), findsOneWidget);
-      expect(
-        find.textContaining("Too many requests"),
-        findsOneWidget,
-      );
+      expect(find.textContaining("Too many requests"), findsOneWidget);
     });
 
-    testWidgets('renders offline banner when connection error occurs', (tester) async {
+    testWidgets('renders offline banner when connection error occurs', (
+      tester,
+    ) async {
       mockRepo.shouldThrowConnectionError = true;
 
       await tester.pumpWidget(createTestWidget());
@@ -544,55 +566,66 @@ void main() {
 
     // ── Phase 5E.1 Mobile UX Cleanup & Reliability Widget Tests ──────────────
 
-    testWidgets('renders sticky composer with 48px touch target and clear button', (tester) async {
-      await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+    testWidgets(
+      'renders sticky composer with 48px touch target and clear button',
+      (tester) async {
+        await tester.pumpWidget(createTestWidget());
+        await tester.pumpAndSettle();
 
-      final inputFinder = find.byType(TextField);
-      expect(inputFinder, findsOneWidget);
-      expect(find.byTooltip("Ask Question"), findsOneWidget);
+        final inputFinder = find.byType(TextField);
+        expect(inputFinder, findsOneWidget);
+        expect(find.byTooltip("Ask Question"), findsOneWidget);
 
-      await tester.enterText(inputFinder, "What are my savings opportunities?");
-      await tester.pumpAndSettle();
+        await tester.enterText(
+          inputFinder,
+          "What are my savings opportunities?",
+        );
+        await tester.pumpAndSettle();
 
-      // Clear button appears when text is entered
-      expect(find.byTooltip("Clear"), findsOneWidget);
+        // Clear button appears when text is entered
+        expect(find.byTooltip("Clear"), findsOneWidget);
 
-      await tester.tap(find.byTooltip("Clear"));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip("Clear"));
+        await tester.pumpAndSettle();
 
-      expect(find.text("What are my savings opportunities?"), findsNothing);
-    });
+        expect(find.text("What are my savings opportunities?"), findsNothing);
+      },
+    );
 
-    testWidgets('tapping More Suggestions opens bottom sheet with categorized library', (tester) async {
-      await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+    testWidgets(
+      'tapping More Suggestions opens bottom sheet with categorized library',
+      (tester) async {
+        await tester.pumpWidget(createTestWidget());
+        await tester.pumpAndSettle();
 
-      final moreFinder = find.text("More Suggestions");
-      expect(moreFinder, findsOneWidget);
+        final moreFinder = find.text("More Suggestions");
+        expect(moreFinder, findsOneWidget);
 
-      await tester.ensureVisible(moreFinder);
-      await tester.pumpAndSettle();
-      await tester.tap(moreFinder);
-      await tester.pumpAndSettle();
+        await tester.ensureVisible(moreFinder);
+        await tester.pumpAndSettle();
+        await tester.tap(moreFinder);
+        await tester.pumpAndSettle();
 
-      // Verify bottom sheet title and categories
-      expect(find.text("More suggestions"), findsOneWidget);
-      expect(find.text("OVERVIEW"), findsOneWidget);
-      expect(find.text("SPENDING"), findsOneWidget);
+        // Verify bottom sheet title and categories
+        expect(find.text("More suggestions"), findsOneWidget);
+        expect(find.text("OVERVIEW"), findsOneWidget);
+        expect(find.text("SPENDING"), findsOneWidget);
 
-      // Verify top-level questions inside bottom sheet
-      expect(find.text("Income vs Expenses"), findsOneWidget);
-      expect(find.text("Financial Insights"), findsOneWidget);
+        // Verify top-level questions inside bottom sheet
+        expect(find.text("Income vs Expenses"), findsOneWidget);
+        expect(find.text("Financial Insights"), findsOneWidget);
 
-      // Tapping a question closes the sheet and triggers query
-      await tester.tap(find.text("Financial Insights"));
-      await tester.pumpAndSettle();
+        // Tapping a question closes the sheet and triggers query
+        await tester.tap(find.text("Financial Insights"));
+        await tester.pumpAndSettle();
 
-      expect(find.text("More suggestions"), findsNothing);
-    });
+        expect(find.text("More suggestions"), findsNothing);
+      },
+    );
 
-    testWidgets('renders contextual error with Retry button on failure', (tester) async {
+    testWidgets('renders contextual error with Retry button on failure', (
+      tester,
+    ) async {
       mockRepo.shouldThrowConnectionError = true;
 
       await tester.pumpWidget(createTestWidget());

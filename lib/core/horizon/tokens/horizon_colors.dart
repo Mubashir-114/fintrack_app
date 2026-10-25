@@ -148,11 +148,8 @@ class HorizonColors {
 
   /// Radial accent light for investment summary cards (top-right anchor).
   static RadialGradient cornerAccentLight(Color accent) => RadialGradient(
-        center: Alignment.topRight,
-        radius: 0.9,
-        colors: [
-          accent.withValues(alpha: 0.08),
-          accent.withValues(alpha: 0.0),
-        ],
-      );
+    center: Alignment.topRight,
+    radius: 0.9,
+    colors: [accent.withValues(alpha: 0.08), accent.withValues(alpha: 0.0)],
+  );
 }

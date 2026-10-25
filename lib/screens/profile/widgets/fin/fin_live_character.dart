@@ -65,9 +65,9 @@ class _FinLiveCharacterState extends State<FinLiveCharacter>
       widget.animationActive &&
       !MediaQuery.disableAnimationsOf(context) &&
       TickerMode.valuesOf(context).enabled &&
-      (!WidgetsBinding.instance.runtimeType
-              .toString()
-              .contains('TestWidgetsFlutterBinding') ||
+      (!WidgetsBinding.instance.runtimeType.toString().contains(
+            'TestWidgetsFlutterBinding',
+          ) ||
           widget.allowAnimationInTests);
 
   FinCharacterState get _effectiveCharacterState {
@@ -159,8 +159,11 @@ class _FinLiveCharacterState extends State<FinLiveCharacter>
                 _ => 4.0,
               };
 
-              final double floatPhase = _motionAllowed ? _floatController.value : 0.0;
-              final double floatOffset = -math.sin(floatPhase * math.pi * 2) * floatAmplitude;
+              final double floatPhase = _motionAllowed
+                  ? _floatController.value
+                  : 0.0;
+              final double floatOffset =
+                  -math.sin(floatPhase * math.pi * 2) * floatAmplitude;
 
               // Soft body sway (~1.2 degrees)
               final double swayAngle = _motionAllowed
@@ -175,8 +178,10 @@ class _FinLiveCharacterState extends State<FinLiveCharacter>
               final double totalY = floatOffset + bounceOffset;
 
               // Shadow scale and opacity inversely proportional to height
-              final double shadowScale =
-                  (1.0 - (totalY / 24.0)).clamp(0.85, 1.15);
+              final double shadowScale = (1.0 - (totalY / 24.0)).clamp(
+                0.85,
+                1.15,
+              );
               final double shadowAlpha = (isDark ? 0.45 : 0.20) * shadowScale;
 
               return Column(
@@ -210,7 +215,9 @@ class _FinLiveCharacterState extends State<FinLiveCharacter>
                           color: Colors.black.withValues(alpha: shadowAlpha),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: shadowAlpha * 0.8),
+                              color: Colors.black.withValues(
+                                alpha: shadowAlpha * 0.8,
+                              ),
                               blurRadius: 6,
                               spreadRadius: 1,
                             ),

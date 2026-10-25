@@ -112,47 +112,60 @@ class BudgetHistorySheet extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            CircularProgressIndicator(color: colors.primary, strokeWidth: 2.5),
+                            CircularProgressIndicator(
+                              color: colors.primary,
+                              strokeWidth: 2.5,
+                            ),
                             const SizedBox(height: 12),
                             Text(
                               "Loading budget records...",
-                              style: TextStyle(fontSize: 12, color: colors.textSecondary),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: colors.textSecondary,
+                              ),
                             ),
                           ],
                         ),
                       )
                     : provider.history.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.history_toggle_off_rounded, size: 40, color: colors.textSecondary),
-                                const SizedBox(height: 12),
-                                Text(
-                                  "No budget history recorded yet.",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: colors.textPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "Prior months will appear here as you maintain your monthly spending caps.",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 12, color: colors.textSecondary),
-                                ),
-                              ],
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.history_toggle_off_rounded,
+                              size: 40,
+                              color: colors.textSecondary,
                             ),
-                          )
-                        : ListView.builder(
-                            controller: scrollController,
-                            itemCount: provider.history.length,
-                            itemBuilder: (context, index) {
-                              final h = provider.history[index];
-                              return _HistoryItemCard(history: h);
-                            },
-                          ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "No budget history recorded yet.",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: colors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Prior months will appear here as you maintain your monthly spending caps.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: colors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollController,
+                        itemCount: provider.history.length,
+                        itemBuilder: (context, index) {
+                          final h = provider.history[index];
+                          return _HistoryItemCard(history: h);
+                        },
+                      ),
               ),
             ],
           ),
@@ -170,12 +183,16 @@ class _HistoryItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final monthName = DateFormat('MMMM').format(DateTime(history.year, history.month));
+    final monthName = DateFormat(
+      'MMMM',
+    ).format(DateTime(history.year, history.month));
     final isOver = history.status == "exceeded";
 
     final spentNum = double.tryParse(history.totalSpent) ?? 0.0;
     final budgetNum = double.tryParse(history.totalBudget) ?? 0.0;
-    final progress = budgetNum > 0 ? (spentNum / budgetNum).clamp(0.0, 1.0) : 0.0;
+    final progress = budgetNum > 0
+        ? (spentNum / budgetNum).clamp(0.0, 1.0)
+        : 0.0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -183,7 +200,9 @@ class _HistoryItemCard extends StatelessWidget {
         color: colors.elevated,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
         border: Border.all(
-          color: isOver ? colors.danger.withValues(alpha: 0.35) : colors.cardBorder,
+          color: isOver
+              ? colors.danger.withValues(alpha: 0.35)
+              : colors.cardBorder,
         ),
       ),
       child: Padding(

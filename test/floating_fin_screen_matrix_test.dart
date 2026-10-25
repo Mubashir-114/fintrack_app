@@ -167,8 +167,13 @@ void main() {
       }
     }
     await loader.load();
-    for (final entry in {'Space Grotesk': 'SpaceGrotesk', 'Plus Jakarta Sans': 'PlusJakartaSans'}.entries) {
-      await (FontLoader(entry.key)..addFont(rootBundle.load('assets/fonts/${entry.value}.ttf'))).load();
+    for (final entry in {
+      'Space Grotesk': 'SpaceGrotesk',
+      'Plus Jakarta Sans': 'PlusJakartaSans',
+    }.entries) {
+      await (FontLoader(
+        entry.key,
+      )..addFont(rootBundle.load('assets/fonts/${entry.value}.ttf'))).load();
     }
     await (FontLoader(
       'MaterialIcons',
@@ -392,17 +397,21 @@ void main() {
             final navigation = find.byType(FloatingBottomNavigation);
             expect(tester.getSize(navigation).width, width);
             expect(
-              tester.getSize(
-                find.byKey(const ValueKey('floating_navigation_card')),
-              ).height,
+              tester
+                  .getSize(
+                    find.byKey(const ValueKey('floating_navigation_card')),
+                  )
+                  .height,
               FloatingBottomNavigation.cardHeight,
             );
             expect(
-              tester.getSize(
-                find.byKey(
-                  const ValueKey('floating_navigation_active_pill'),
-                ),
-              ).height,
+              tester
+                  .getSize(
+                    find.byKey(
+                      const ValueKey('floating_navigation_active_pill'),
+                    ),
+                  )
+                  .height,
               FloatingBottomNavigation.activePillHeight,
             );
             await tester.tap(

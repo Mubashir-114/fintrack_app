@@ -113,47 +113,60 @@ class SmartSuggestionsSheet extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            CircularProgressIndicator(color: colors.primary, strokeWidth: 2.5),
+                            CircularProgressIndicator(
+                              color: colors.primary,
+                              strokeWidth: 2.5,
+                            ),
                             const SizedBox(height: 12),
                             Text(
                               "Analyzing spending trends...",
-                              style: TextStyle(fontSize: 12, color: colors.textSecondary),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: colors.textSecondary,
+                              ),
                             ),
                           ],
                         ),
                       )
                     : provider.suggestions.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.insights_rounded, size: 40, color: colors.textSecondary),
-                                const SizedBox(height: 12),
-                                Text(
-                                  "No suggestions available yet.",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: colors.textPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "Keep tracking regular expenses to generate historical spending insights.",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 12, color: colors.textSecondary),
-                                ),
-                              ],
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.insights_rounded,
+                              size: 40,
+                              color: colors.textSecondary,
                             ),
-                          )
-                        : ListView.builder(
-                            controller: scrollController,
-                            itemCount: provider.suggestions.length,
-                            itemBuilder: (context, index) {
-                              final s = provider.suggestions[index];
-                              return _SuggestionCard(suggestion: s);
-                            },
-                          ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "No suggestions available yet.",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: colors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Keep tracking regular expenses to generate historical spending insights.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: colors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollController,
+                        itemCount: provider.suggestions.length,
+                        itemBuilder: (context, index) {
+                          final s = provider.suggestions[index];
+                          return _SuggestionCard(suggestion: s);
+                        },
+                      ),
               ),
             ],
           ),
@@ -235,7 +248,10 @@ class _SuggestionCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: trendColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
@@ -283,9 +299,18 @@ class _SuggestionCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _FactItem(label: "Last Month", amount: "₹${suggestion.historicalFacts.lastMonthSpent}"),
-                  _FactItem(label: "2 Mo Ago", amount: "₹${suggestion.historicalFacts.twoMonthsAgoSpent}"),
-                  _FactItem(label: "3 Mo Avg", amount: "₹${suggestion.historicalFacts.threeMonthAverage}"),
+                  _FactItem(
+                    label: "Last Month",
+                    amount: "₹${suggestion.historicalFacts.lastMonthSpent}",
+                  ),
+                  _FactItem(
+                    label: "2 Mo Ago",
+                    amount: "₹${suggestion.historicalFacts.twoMonthsAgoSpent}",
+                  ),
+                  _FactItem(
+                    label: "3 Mo Avg",
+                    amount: "₹${suggestion.historicalFacts.threeMonthAverage}",
+                  ),
                 ],
               ),
             ),
@@ -296,11 +321,19 @@ class _SuggestionCard extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.check_rounded, size: 16),
-                label: const Text("APPLY", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
+                label: const Text(
+                  "APPLY",
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.primary,
-                  foregroundColor: colors.isDark ? const Color(0xFF0B111A) : Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  foregroundColor: colors.isDark
+                      ? const Color(0xFF0B111A)
+                      : Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   minimumSize: const Size(80, 34),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -308,17 +341,29 @@ class _SuggestionCard extends StatelessWidget {
                   elevation: 0,
                 ),
                 onPressed: () async {
-                  final isAlreadyBudgeted = provider.budgetStatuses.any((b) => b.categoryId == suggestion.categoryId) ||
-                      (provider.progress?.categoryBudgets.any((b) => b.categoryId == suggestion.categoryId) ?? false) ||
-                      provider.budgets.any((b) =>
-                          b.categoryId == suggestion.categoryId &&
-                          b.month == provider.selectedMonth &&
-                          b.year == provider.selectedYear);
+                  final isAlreadyBudgeted =
+                      provider.budgetStatuses.any(
+                        (b) => b.categoryId == suggestion.categoryId,
+                      ) ||
+                      (provider.progress?.categoryBudgets.any(
+                            (b) => b.categoryId == suggestion.categoryId,
+                          ) ??
+                          false) ||
+                      provider.budgets.any(
+                        (b) =>
+                            b.categoryId == suggestion.categoryId &&
+                            b.month == provider.selectedMonth &&
+                            b.year == provider.selectedYear,
+                      );
 
                   final confirmed = await showDialog<bool>(
                     context: context,
                     builder: (dialogCtx) => AlertDialog(
-                      title: Text(isAlreadyBudgeted ? "Update Existing Budget" : "Confirm Budget"),
+                      title: Text(
+                        isAlreadyBudgeted
+                            ? "Update Existing Budget"
+                            : "Confirm Budget",
+                      ),
                       content: Text(
                         isAlreadyBudgeted
                             ? "A budget for ${suggestion.categoryName} already exists in this period. Update its limit to ₹${suggestion.estimates.suggestedBudget}?"
@@ -383,7 +428,11 @@ class _FactItem extends StatelessWidget {
         const SizedBox(height: 1),
         Text(
           amount,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: colors.textPrimary),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: colors.textPrimary,
+          ),
         ),
       ],
     );

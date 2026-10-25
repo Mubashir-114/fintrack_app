@@ -66,10 +66,7 @@ class _HorizonSurfaceState extends State<HorizonSurface> {
 
       case HorizonSurfaceTier.surface1:
         bgColor = tokens.surface1;
-        border = Border.all(
-          color: tokens.rimNeutral,
-          width: 1,
-        );
+        border = Border.all(color: tokens.rimNeutral, width: 1);
         shadows = [
           BoxShadow(
             color: Colors.black.withValues(alpha: tokens.isDark ? 0.4 : 0.04),
@@ -81,10 +78,7 @@ class _HorizonSurfaceState extends State<HorizonSurface> {
 
       case HorizonSurfaceTier.surface2:
         bgColor = tokens.surface2;
-        border = Border.all(
-          color: tokens.rimCyan,
-          width: 1,
-        );
+        border = Border.all(color: tokens.rimCyan, width: 1);
         shadows = [
           BoxShadow(
             color: Colors.black.withValues(alpha: tokens.isDark ? 0.6 : 0.06),
@@ -96,10 +90,7 @@ class _HorizonSurfaceState extends State<HorizonSurface> {
 
       case HorizonSurfaceTier.surface3:
         bgColor = tokens.surface3;
-        border = Border.all(
-          color: tokens.rimCyanActive,
-          width: 1,
-        );
+        border = Border.all(color: tokens.rimCyanActive, width: 1);
         shadows = [
           BoxShadow(
             color: Colors.black.withValues(alpha: tokens.isDark ? 0.8 : 0.08),
@@ -140,23 +131,26 @@ class _HorizonSurfaceState extends State<HorizonSurface> {
               ),
 
             // Top hairline rim highlight
-            if (widget.useTopRimHighlight && tokens.isDark && widget.tier != HorizonSurfaceTier.canvas)
+            if (widget.useTopRimHighlight &&
+                tokens.isDark &&
+                widget.tier != HorizonSurfaceTier.canvas)
               Positioned(
                 top: 0,
                 left: 0,
                 right: 0,
                 height: 1,
                 child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: tokens.rimTopHighlight,
-                  ),
+                  decoration: BoxDecoration(color: tokens.rimTopHighlight),
                 ),
               ),
 
             // Main content
             Padding(
               padding: widget.padding,
-              child: Material(type: MaterialType.transparency, child: widget.child),
+              child: Material(
+                type: MaterialType.transparency,
+                child: widget.child,
+              ),
             ),
           ],
         ),

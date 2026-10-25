@@ -15,7 +15,8 @@ class SimulatorView extends StatefulWidget {
 }
 
 class _SimulatorViewState extends State<SimulatorView> {
-  String _selectedScenario = 'savings_adjustment'; // 'savings_adjustment', 'expense_reduction', 'target_deadline', 'income_change'
+  String _selectedScenario =
+      'savings_adjustment'; // 'savings_adjustment', 'expense_reduction', 'target_deadline', 'income_change'
   int? _selectedGoalId;
 
   // Controllers for inputs
@@ -51,9 +52,7 @@ class _SimulatorViewState extends State<SimulatorView> {
 
   Future<void> _runSimulation() async {
     final provider = context.read<GoalProvider>();
-    final Map<String, dynamic> scenario = {
-      'scenarioType': _selectedScenario,
-    };
+    final Map<String, dynamic> scenario = {'scenarioType': _selectedScenario};
 
     if (_selectedScenario != 'income_change' && _selectedGoalId != null) {
       scenario['goalId'] = _selectedGoalId;
@@ -62,26 +61,32 @@ class _SimulatorViewState extends State<SimulatorView> {
     switch (_selectedScenario) {
       case 'savings_adjustment':
         scenario['parameters'] = {
-          'savingAmount': double.tryParse(_savingAmountController.text.trim()) ?? 0,
+          'savingAmount':
+              double.tryParse(_savingAmountController.text.trim()) ?? 0,
         };
         break;
       case 'expense_reduction':
         if (_usePercentageReduction) {
-          scenario['parameters'] = {'reductionPercentage': _reductionPercentage};
+          scenario['parameters'] = {
+            'reductionPercentage': _reductionPercentage,
+          };
         } else {
           scenario['parameters'] = {
-            'reductionAmount': double.tryParse(_reductionAmountController.text.trim()) ?? 0,
+            'reductionAmount':
+                double.tryParse(_reductionAmountController.text.trim()) ?? 0,
           };
         }
         break;
       case 'target_deadline':
         scenario['parameters'] = {
-          'targetMonths': int.tryParse(_targetMonthsController.text.trim()) ?? 6,
+          'targetMonths':
+              int.tryParse(_targetMonthsController.text.trim()) ?? 6,
         };
         break;
       case 'income_change':
         scenario['parameters'] = {
-          'incomeChangeAmount': double.tryParse(_incomeChangeController.text.trim()) ?? 0,
+          'incomeChangeAmount':
+              double.tryParse(_incomeChangeController.text.trim()) ?? 0,
         };
         break;
     }
@@ -106,7 +111,9 @@ class _SimulatorViewState extends State<SimulatorView> {
     final colors = AppColors.of(context);
     final currency = context.watch<CurrencyProvider>();
     final provider = context.watch<GoalProvider>();
-    final activeGoals = provider.goals.where((g) => g.status != 'archived').toList();
+    final activeGoals = provider.goals
+        .where((g) => g.status != 'archived')
+        .toList();
 
     return ListView(
       padding: const EdgeInsets.all(AppDimensions.md),
@@ -231,13 +238,19 @@ class _SimulatorViewState extends State<SimulatorView> {
                       ? _selectedGoalId
                       : activeGoals.first.id,
                   isExpanded: true,
-                  icon: Icon(Icons.arrow_drop_down_rounded, color: colors.primary),
+                  icon: Icon(
+                    Icons.arrow_drop_down_rounded,
+                    color: colors.primary,
+                  ),
                   items: activeGoals.map((g) {
                     return DropdownMenuItem<int>(
                       value: g.id,
                       child: Text(
                         '${g.name} (Target: ${currency.format(g.targetAmount)}, Saved: ${currency.format(g.savedAmount)})',
-                        style: TextStyle(fontSize: 13, color: colors.textPrimary),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colors.textPrimary,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     );
@@ -263,8 +276,8 @@ class _SimulatorViewState extends State<SimulatorView> {
             borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
             border: Border.all(
               color: colors.isDark
-                ? colors.surface.withValues(alpha: 0.8)
-                : colors.divider.withValues(alpha: 0.7),
+                  ? colors.surface.withValues(alpha: 0.8)
+                  : colors.divider.withValues(alpha: 0.7),
             ),
           ),
           child: Column(
@@ -299,7 +312,9 @@ class _SimulatorViewState extends State<SimulatorView> {
                             )
                           : const Icon(Icons.play_arrow_rounded, size: 18),
                       label: Text(
-                        provider.isSimulating ? 'Simulating...' : 'Run Simulation',
+                        provider.isSimulating
+                            ? 'Simulating...'
+                            : 'Run Simulation',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -307,7 +322,9 @@ class _SimulatorViewState extends State<SimulatorView> {
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMD,
+                          ),
                         ),
                       ),
                     ),
@@ -320,9 +337,14 @@ class _SimulatorViewState extends State<SimulatorView> {
                       label: const Text('Reset'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: colors.textSecondary,
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                          horizontal: 16,
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMD,
+                          ),
                         ),
                       ),
                     ),
@@ -344,12 +366,19 @@ class _SimulatorViewState extends State<SimulatorView> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 18),
+                const Icon(
+                  Icons.error_outline_rounded,
+                  color: AppColors.danger,
+                  size: 18,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     provider.errorMessage!,
-                    style: const TextStyle(fontSize: 12, color: AppColors.danger),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.danger,
+                    ),
                   ),
                 ),
               ],
@@ -400,7 +429,10 @@ class _SimulatorViewState extends State<SimulatorView> {
     );
   }
 
-  Widget _buildScenarioSpecificInputs(dynamic colors, CurrencyProvider currency) {
+  Widget _buildScenarioSpecificInputs(
+    dynamic colors,
+    CurrencyProvider currency,
+  ) {
     switch (_selectedScenario) {
       case 'savings_adjustment':
         return Column(
@@ -413,7 +445,9 @@ class _SimulatorViewState extends State<SimulatorView> {
             const SizedBox(height: 6),
             TextFormField(
               controller: _savingAmountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: InputDecoration(
                 prefixText: '${currency.currencySymbol} ',
                 hintText: 'e.g. 2000 or 3500',
@@ -448,7 +482,9 @@ class _SimulatorViewState extends State<SimulatorView> {
                     });
                   },
                   child: Text(
-                    _usePercentageReduction ? 'Switch to Fixed Amount' : 'Switch to Percentage',
+                    _usePercentageReduction
+                        ? 'Switch to Fixed Amount'
+                        : 'Switch to Percentage',
                     style: TextStyle(fontSize: 11, color: colors.primary),
                   ),
                 ),
@@ -471,13 +507,17 @@ class _SimulatorViewState extends State<SimulatorView> {
             ] else ...[
               TextFormField(
                 controller: _reductionAmountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
                   prefixText: '${currency.currencySymbol} ',
                   hintText: 'e.g. 1500',
                   helperText: 'Monthly reduction redirected to savings',
                   filled: true,
-                  fillColor: colors.isDark ? colors.elevated : colors.background,
+                  fillColor: colors.isDark
+                      ? colors.elevated
+                      : colors.background,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
                     borderSide: BorderSide.none,
@@ -526,7 +566,10 @@ class _SimulatorViewState extends State<SimulatorView> {
             const SizedBox(height: 6),
             TextFormField(
               controller: _incomeChangeController,
-              keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                signed: true,
+                decimal: true,
+              ),
               decoration: InputDecoration(
                 prefixText: '${currency.currencySymbol} ',
                 hintText: 'e.g. 5000 or -3000',
@@ -570,7 +613,11 @@ class _SimulatorViewState extends State<SimulatorView> {
                   color: colors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
                 ),
-                child: Icon(Icons.assessment_outlined, color: colors.primary, size: 18),
+                child: Icon(
+                  Icons.assessment_outlined,
+                  color: colors.primary,
+                  size: 18,
+                ),
               ),
               const SizedBox(width: 8),
               Text(
@@ -608,7 +655,10 @@ class _SimulatorViewState extends State<SimulatorView> {
                   children: [
                     Text(
                       'Baseline Cash Flow',
-                      style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: colors.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -622,11 +672,7 @@ class _SimulatorViewState extends State<SimulatorView> {
                   ],
                 ),
               ),
-              Container(
-                height: 36,
-                width: 1,
-                color: colors.divider,
-              ),
+              Container(height: 36, width: 1, color: colors.divider),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -657,8 +703,11 @@ class _SimulatorViewState extends State<SimulatorView> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: (result.monthsSaved! > 0 ? AppColors.success : AppColors.danger)
-                    .withValues(alpha: 0.12),
+                color:
+                    (result.monthsSaved! > 0
+                            ? AppColors.success
+                            : AppColors.danger)
+                        .withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
               ),
               child: Row(
@@ -720,7 +769,11 @@ class _SimulatorViewState extends State<SimulatorView> {
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(
                   '• $a',
-                  style: TextStyle(fontSize: 10, color: colors.textSecondary, height: 1.3),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: colors.textSecondary,
+                    height: 1.3,
+                  ),
                 ),
               ),
             ),

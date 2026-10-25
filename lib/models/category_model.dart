@@ -18,11 +18,7 @@ class CategoryModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "name": name,
-      "type": type,
-    };
+    return {"id": id, "name": name, "type": type};
   }
 
   // Pre-seeded database categories (synced with MySQL categories table)

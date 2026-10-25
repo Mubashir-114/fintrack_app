@@ -64,7 +64,11 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.swap_horiz_rounded, color: tokens.textMedium, size: 22),
+            icon: Icon(
+              Icons.swap_horiz_rounded,
+              color: tokens.textMedium,
+              size: 22,
+            ),
             tooltip: 'Transfer',
             onPressed: () => context.push('/accounts/transfer'),
           ),
@@ -91,11 +95,11 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
             return _EmptyView(onAdd: () => context.push('/accounts/add'));
           }
 
-          final activeAccounts =
-              provider.accounts.where((a) => a.isActive).toList();
+          final activeAccounts = provider.accounts
+              .where((a) => a.isActive)
+              .toList();
           final assets = activeAccounts.where((a) => a.isAsset).toList();
-          final liabilities =
-              activeAccounts.where((a) => !a.isAsset).toList();
+          final liabilities = activeAccounts.where((a) => !a.isAsset).toList();
 
           return RefreshIndicator(
             color: tokens.ionCyan,
@@ -108,9 +112,7 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: AccountTypeSummary(
-                      accounts: activeAccounts,
-                    ),
+                    child: AccountTypeSummary(accounts: activeAccounts),
                   ),
                 ),
 
@@ -125,7 +127,9 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
                     delegate: SliverChildBuilderDelegate(
                       (context, i) => Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 6),
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
                         child: AccountCard(
                           account: assets[i],
                           onTap: () =>
@@ -148,7 +152,9 @@ class _AccountsListScreenState extends State<AccountsListScreen> {
                     delegate: SliverChildBuilderDelegate(
                       (context, i) => Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 6),
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
                         child: AccountCard(
                           account: liabilities[i],
                           onTap: () =>
@@ -248,20 +254,25 @@ class _ErrorView extends StatelessWidget {
                 color: tokens.danger.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.wifi_off_rounded,
-                  size: 40, color: tokens.danger),
+              child: Icon(
+                Icons.wifi_off_rounded,
+                size: 40,
+                color: tokens.danger,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
               'Could not load accounts',
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: tokens.textSecondary),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: tokens.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -305,20 +316,25 @@ class _EmptyView extends StatelessWidget {
                 ),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.account_balance_rounded,
-                  size: 48, color: tokens.primary),
+              child: Icon(
+                Icons.account_balance_rounded,
+                size: 48,
+                color: tokens.primary,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
               'No accounts yet',
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Add your bank accounts, cash, wallets\nor credit cards to get started.',
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: tokens.textSecondary),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: tokens.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
@@ -328,7 +344,9 @@ class _EmptyView extends StatelessWidget {
               label: const Text('Add First Account'),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 28, vertical: 14),
+                  horizontal: 28,
+                  vertical: 14,
+                ),
               ),
             ),
           ],
@@ -377,12 +395,10 @@ class _SectionHeader extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusSM),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
               ),
               child: Text(
                 '$count',

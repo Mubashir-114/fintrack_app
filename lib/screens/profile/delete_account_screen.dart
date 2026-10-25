@@ -52,7 +52,10 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Keep account', style: TextStyle(color: tokens.textMedium)),
+            child: Text(
+              'Keep account',
+              style: TextStyle(color: tokens.textMedium),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -156,7 +159,9 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                             decoration: BoxDecoration(
                               color: tokens.outflow.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: tokens.outflow.withValues(alpha: 0.4)),
+                              border: Border.all(
+                                color: tokens.outflow.withValues(alpha: 0.4),
+                              ),
                             ),
                             child: Icon(
                               Icons.warning_amber_rounded,
@@ -214,11 +219,15 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                             obscureText: _obscurePassword,
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
                                 color: tokens.textMedium,
                                 size: 20,
                               ),
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                              onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
                             ),
                             validator: (value) => value == null || value.isEmpty
                                 ? 'Enter your current password'
@@ -230,8 +239,9 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                             label: 'Type DELETE to confirm',
                             hintText: 'DELETE',
                             prefixIcon: Icons.delete_outline,
-                            validator: (value) =>
-                                value != 'DELETE' ? 'Type DELETE exactly' : null,
+                            validator: (value) => value != 'DELETE'
+                                ? 'Type DELETE exactly'
+                                : null,
                           ),
                         ],
                       ),
@@ -240,11 +250,16 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                     if (_error != null) ...[
                       const SizedBox(height: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: tokens.outflow.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: tokens.outflow.withValues(alpha: 0.4)),
+                          border: Border.all(
+                            color: tokens.outflow.withValues(alpha: 0.4),
+                          ),
                         ),
                         child: Text(
                           _error!,

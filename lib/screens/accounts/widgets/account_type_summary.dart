@@ -31,9 +31,7 @@ class AccountTypeSummary extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-        border: Border.all(
-          color: tokens.primary.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: tokens.primary.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -102,10 +100,7 @@ class _TypeChip extends StatelessWidget {
             color: color,
           ),
         ),
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
-        ),
+        Text(label, style: theme.textTheme.bodySmall?.copyWith(fontSize: 10)),
       ],
     );
   }

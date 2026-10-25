@@ -56,7 +56,10 @@ class _FinSettingsScreenState extends State<FinSettingsScreen> {
     });
   }
 
-  void _handleResetPosition(AnalyticsProvider provider, HorizonThemeTokens tokens) {
+  void _handleResetPosition(
+    AnalyticsProvider provider,
+    HorizonThemeTokens tokens,
+  ) {
     provider.restoreFinNow();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -166,119 +169,129 @@ class _FinSettingsScreenState extends State<FinSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-              // ── 1. FIN Companion Hero (Living Preview Stage) ────────────────
-              FinCompanionHero(
-                currentMotion: _isDeactivated ? FinMotionState.docked : _currentMotion,
-                onMotionChanged: (motion) => setState(() => _currentMotion = motion),
-                isActive: !_isDeactivated,
-                isDocked: _placement == 'Dock Trigger' || _currentMotion == FinMotionState.docked,
-                placement: _placement,
-                currentQuote: _quotes[_quoteIndex],
-                quoteIndex: _quoteIndex,
-                totalQuotes: _quotes.length,
-                onCycleQuote: _cycleQuote,
-                animationsEnabled: prefs.animationsEnabled,
-              ),
-              const SizedBox(height: HorizonDimensions.spaceLG),
-
-              // ── 2. Presence & Visibility ────────────────────────────────────
-              _buildSectionHeader(tokens, 'PRESENCE & VISIBILITY'),
-              const SizedBox(height: 8),
-              HorizonSurface(
-                tier: HorizonSurfaceTier.surface2,
-                padding: const EdgeInsets.all(HorizonDimensions.marginMobile),
-                child: Column(
-                  children: [
-                    FinPresenceToggleRow(
-                      icon: Icons.dashboard_outlined,
-                      iconColor: tokens.ionCyan,
-                      title: 'Show FIN on Home Dashboard',
-                      subtitle: 'Daily balance highlights and proactive spending pacing',
-                      value: _showOnHome,
-                      onChanged: _isDeactivated
-                          ? null
-                          : (val) => setState(() => _showOnHome = val),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Divider(height: 1, color: tokens.rimNeutral),
-                    ),
-                    FinPresenceToggleRow(
-                      icon: Icons.mail_outline,
-                      iconColor: tokens.electricIndigo,
-                      title: 'Show FIN in Budgets & Envelopes',
-                      subtitle: 'Envelope pacing, category limits, and rollover advice',
-                      value: _showOnBudgets,
-                      onChanged: _isDeactivated
-                          ? null
-                          : (val) => setState(() => _showOnBudgets = val),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Divider(height: 1, color: tokens.rimNeutral),
-                    ),
-                    FinDeactivateCard(
-                      isDeactivated: _isDeactivated,
-                      onToggle: () {
-                        setState(() {
-                          _isDeactivated = !_isDeactivated;
-                          if (_isDeactivated) {
-                            _showOnHome = false;
-                            _showOnBudgets = false;
-                            _currentMotion = FinMotionState.docked;
-                            provider.visualController.dismissFloating();
-                          } else {
-                            _showOnHome = true;
-                            _showOnBudgets = true;
-                            _currentMotion = FinMotionState.idle;
-                            provider.restoreFinNow();
-                          }
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: HorizonDimensions.spaceLG),
-
-              // ── 3. Placement & Screen Docking ───────────────────────────────
-              _buildSectionHeader(tokens, 'PLACEMENT & DOCKING'),
-              const SizedBox(height: 8),
-              HorizonSurface(
-                tier: HorizonSurfaceTier.surface2,
-                padding: const EdgeInsets.all(HorizonDimensions.marginMobile),
-                child: FinPlacementSelector(
+                // ── 1. FIN Companion Hero (Living Preview Stage) ────────────────
+                FinCompanionHero(
+                  currentMotion: _isDeactivated
+                      ? FinMotionState.docked
+                      : _currentMotion,
+                  onMotionChanged: (motion) =>
+                      setState(() => _currentMotion = motion),
+                  isActive: !_isDeactivated,
+                  isDocked:
+                      _placement == 'Dock Trigger' ||
+                      _currentMotion == FinMotionState.docked,
                   placement: _placement,
-                  onPlacementChanged: (mode) => setState(() => _placement = mode),
-                  onResetPosition: () => _handleResetPosition(provider, tokens),
+                  currentQuote: _quotes[_quoteIndex],
+                  quoteIndex: _quoteIndex,
+                  totalQuotes: _quotes.length,
+                  onCycleQuote: _cycleQuote,
+                  animationsEnabled: prefs.animationsEnabled,
                 ),
-              ),
-              const SizedBox(height: HorizonDimensions.spaceLG),
+                const SizedBox(height: HorizonDimensions.spaceLG),
 
-              // ── 4. Guidance Frequency ───────────────────────────────────────
-              _buildSectionHeader(tokens, 'GUIDANCE FREQUENCY'),
-              const SizedBox(height: 8),
-              HorizonSurface(
-                tier: HorizonSurfaceTier.surface2,
-                padding: const EdgeInsets.all(HorizonDimensions.marginMobile),
-                child: FinGuidanceStyleCard(
-                  frequency: _frequency,
-                  onFrequencyChanged: (freq) => setState(() => _frequency = freq),
+                // ── 2. Presence & Visibility ────────────────────────────────────
+                _buildSectionHeader(tokens, 'PRESENCE & VISIBILITY'),
+                const SizedBox(height: 8),
+                HorizonSurface(
+                  tier: HorizonSurfaceTier.surface2,
+                  padding: const EdgeInsets.all(HorizonDimensions.marginMobile),
+                  child: Column(
+                    children: [
+                      FinPresenceToggleRow(
+                        icon: Icons.dashboard_outlined,
+                        iconColor: tokens.ionCyan,
+                        title: 'Show FIN on Home Dashboard',
+                        subtitle:
+                            'Daily balance highlights and proactive spending pacing',
+                        value: _showOnHome,
+                        onChanged: _isDeactivated
+                            ? null
+                            : (val) => setState(() => _showOnHome = val),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Divider(height: 1, color: tokens.rimNeutral),
+                      ),
+                      FinPresenceToggleRow(
+                        icon: Icons.mail_outline,
+                        iconColor: tokens.electricIndigo,
+                        title: 'Show FIN in Budgets & Envelopes',
+                        subtitle:
+                            'Envelope pacing, category limits, and rollover advice',
+                        value: _showOnBudgets,
+                        onChanged: _isDeactivated
+                            ? null
+                            : (val) => setState(() => _showOnBudgets = val),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Divider(height: 1, color: tokens.rimNeutral),
+                      ),
+                      FinDeactivateCard(
+                        isDeactivated: _isDeactivated,
+                        onToggle: () {
+                          setState(() {
+                            _isDeactivated = !_isDeactivated;
+                            if (_isDeactivated) {
+                              _showOnHome = false;
+                              _showOnBudgets = false;
+                              _currentMotion = FinMotionState.docked;
+                              provider.visualController.dismissFloating();
+                            } else {
+                              _showOnHome = true;
+                              _showOnBudgets = true;
+                              _currentMotion = FinMotionState.idle;
+                              provider.restoreFinNow();
+                            }
+                          });
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: HorizonDimensions.spaceLG),
+                const SizedBox(height: HorizonDimensions.spaceLG),
 
-              // ── 5. Data Boundaries & Privacy Panel ─────────────────────────
-              FinDataBoundaryPanel(),
-              const SizedBox(height: HorizonDimensions.spaceLG + 4),
+                // ── 3. Placement & Screen Docking ───────────────────────────────
+                _buildSectionHeader(tokens, 'PLACEMENT & DOCKING'),
+                const SizedBox(height: 8),
+                HorizonSurface(
+                  tier: HorizonSurfaceTier.surface2,
+                  padding: const EdgeInsets.all(HorizonDimensions.marginMobile),
+                  child: FinPlacementSelector(
+                    placement: _placement,
+                    onPlacementChanged: (mode) =>
+                        setState(() => _placement = mode),
+                    onResetPosition: () =>
+                        _handleResetPosition(provider, tokens),
+                  ),
+                ),
+                const SizedBox(height: HorizonDimensions.spaceLG),
 
-              // ── 6. Save Preferences Action Bar ──────────────────────────────
-              FinSavePreferencesBar(
-                onSave: () => _savePreferences(provider, tokens),
-              ),
-            ],
-          ),
-        );
+                // ── 4. Guidance Frequency ───────────────────────────────────────
+                _buildSectionHeader(tokens, 'GUIDANCE FREQUENCY'),
+                const SizedBox(height: 8),
+                HorizonSurface(
+                  tier: HorizonSurfaceTier.surface2,
+                  padding: const EdgeInsets.all(HorizonDimensions.marginMobile),
+                  child: FinGuidanceStyleCard(
+                    frequency: _frequency,
+                    onFrequencyChanged: (freq) =>
+                        setState(() => _frequency = freq),
+                  ),
+                ),
+                const SizedBox(height: HorizonDimensions.spaceLG),
+
+                // ── 5. Data Boundaries & Privacy Panel ─────────────────────────
+                FinDataBoundaryPanel(),
+                const SizedBox(height: HorizonDimensions.spaceLG + 4),
+
+                // ── 6. Save Preferences Action Bar ──────────────────────────────
+                FinSavePreferencesBar(
+                  onSave: () => _savePreferences(provider, tokens),
+                ),
+              ],
+            ),
+          );
         },
       ),
     );

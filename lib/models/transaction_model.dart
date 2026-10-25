@@ -41,21 +41,28 @@ class TransactionModel {
     return TransactionModel(
       id: json["id"] as int,
       userId: json["user_id"] as int? ?? json["userId"] as int? ?? 0,
-      categoryId: json["category_id"] as int? ?? json["categoryId"] as int? ?? 0,
+      categoryId:
+          json["category_id"] as int? ?? json["categoryId"] as int? ?? 0,
       type: json["type"] as String,
       title: json["title"] as String,
       amount: double.tryParse(json["amount"].toString()) ?? 0.0,
-      transactionDate: json["transaction_date"] as String? ?? json["transactionDate"] as String? ?? '',
+      transactionDate:
+          json["transaction_date"] as String? ??
+          json["transactionDate"] as String? ??
+          '',
       note: json["note"] as String?,
       category: json["category"] as String? ?? '',
       createdAt: json["created_at"] as String? ?? json["createdAt"] as String?,
       source: json["source"] as String? ?? 'manual',
       bank: json["bank"] as String?,
       sender: json["sender"] as String?,
-      referenceNumber: json["reference_number"] as String? ?? json["referenceNumber"] as String?,
+      referenceNumber:
+          json["reference_number"] as String? ??
+          json["referenceNumber"] as String?,
       smsHash: json["sms_hash"] as String? ?? json["smsHash"] as String?,
       accountId: json["account_id"] as int? ?? json["accountId"] as int?,
-      accountName: json["account_name"] as String? ?? json["accountName"] as String?,
+      accountName:
+          json["account_name"] as String? ?? json["accountName"] as String?,
     );
   }
 
@@ -124,7 +131,6 @@ class TransactionModel {
   }
 }
 
-
 class TransactionResponse {
   final List<TransactionModel> transactions;
   final int total;
@@ -141,7 +147,9 @@ class TransactionResponse {
   factory TransactionResponse.fromJson(Map<String, dynamic> json) {
     final list = json["transactions"] as List;
     return TransactionResponse(
-      transactions: list.map((item) => TransactionModel.fromJson(item)).toList(),
+      transactions: list
+          .map((item) => TransactionModel.fromJson(item))
+          .toList(),
       total: json["total"] as int,
       page: json["page"] as int,
       limit: json["limit"] as int,

@@ -31,10 +31,7 @@ class ClarificationOption {
   final String label;
   final String question;
 
-  const ClarificationOption({
-    required this.label,
-    required this.question,
-  });
+  const ClarificationOption({required this.label, required this.question});
 
   factory ClarificationOption.fromJson(Map<String, dynamic> json) {
     return ClarificationOption(
@@ -43,10 +40,7 @@ class ClarificationOption {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'label': label,
-    'question': question,
-  };
+  Map<String, dynamic> toJson() => {'label': label, 'question': question};
 }
 
 class ConversationContext {
@@ -461,13 +455,15 @@ class AnalyticsQueryResult {
     final followUpList = (json['followUpSuggestions'] as List<dynamic>? ?? [])
         .map((s) => SuggestedQuestion.fromJson(s as Map<String, dynamic>))
         .toList();
-    final clarificationList = (json['clarificationOptions'] as List<dynamic>? ?? [])
-        .map((c) => ClarificationOption.fromJson(c as Map<String, dynamic>))
-        .toList();
+    final clarificationList =
+        (json['clarificationOptions'] as List<dynamic>? ?? [])
+            .map((c) => ClarificationOption.fromJson(c as Map<String, dynamic>))
+            .toList();
     final contextJson = json['conversationContext'] as Map<String, dynamic>?;
 
     final actionPreviewJson = json['actionPreview'] as Map<String, dynamic>?;
-    final navigationActionJson = json['navigationAction'] as Map<String, dynamic>?;
+    final navigationActionJson =
+        json['navigationAction'] as Map<String, dynamic>?;
 
     return AnalyticsQueryResult(
       intent: json['intent'] as String? ?? 'unsupported',
@@ -476,16 +472,26 @@ class AnalyticsQueryResult {
       period: periodJson != null ? AnalyticsPeriod.fromJson(periodJson) : null,
       metrics: json['metrics'] as Map<String, dynamic>?,
       answer: json['answer'] as String? ?? '',
-      provenance: provenanceJson != null ? AnalyticsProvenance.fromJson(provenanceJson) : null,
+      provenance: provenanceJson != null
+          ? AnalyticsProvenance.fromJson(provenanceJson)
+          : null,
       privacyNotice: json['privacyNotice'] as String? ?? '',
       suggestions: suggestionsList,
-      followUpSuggestions: followUpList.isNotEmpty ? followUpList : suggestionsList,
+      followUpSuggestions: followUpList.isNotEmpty
+          ? followUpList
+          : suggestionsList,
       clarificationOptions: clarificationList,
       confidence: json['confidence'] as String?,
-      conversationContext: contextJson != null ? ConversationContext.fromJson(contextJson) : null,
+      conversationContext: contextJson != null
+          ? ConversationContext.fromJson(contextJson)
+          : null,
       characterState: json['characterState'] as String? ?? 'idle',
-      actionPreview: actionPreviewJson != null ? FinActionPreview.fromJson(actionPreviewJson) : null,
-      navigationAction: navigationActionJson != null ? FinNavigationAction.fromJson(navigationActionJson) : null,
+      actionPreview: actionPreviewJson != null
+          ? FinActionPreview.fromJson(actionPreviewJson)
+          : null,
+      navigationAction: navigationActionJson != null
+          ? FinNavigationAction.fromJson(navigationActionJson)
+          : null,
       responseStyle: json['responseStyle'] as String? ?? 'friendly',
     );
   }
@@ -494,13 +500,17 @@ class AnalyticsQueryResult {
   List<CategorySpendingItem> get categories {
     final list = metrics?['categories'] as List<dynamic>?;
     if (list == null) return [];
-    return list.map((c) => CategorySpendingItem.fromJson(c as Map<String, dynamic>)).toList();
+    return list
+        .map((c) => CategorySpendingItem.fromJson(c as Map<String, dynamic>))
+        .toList();
   }
 
   List<AnalyticsBudgetItem> get budgetItems {
     final list = metrics?['items'] as List<dynamic>?;
     if (list == null) return [];
-    return list.map((b) => AnalyticsBudgetItem.fromJson(b as Map<String, dynamic>)).toList();
+    return list
+        .map((b) => AnalyticsBudgetItem.fromJson(b as Map<String, dynamic>))
+        .toList();
   }
 
   CategoryBudgetDetail? get categoryBudget {
@@ -512,7 +522,9 @@ class AnalyticsQueryResult {
   List<CategoryComparisonItem> get comparisonCategories {
     final list = metrics?['categories'] as List<dynamic>?;
     if (list == null || intent != 'category_comparison') return [];
-    return list.map((c) => CategoryComparisonItem.fromJson(c as Map<String, dynamic>)).toList();
+    return list
+        .map((c) => CategoryComparisonItem.fromJson(c as Map<String, dynamic>))
+        .toList();
   }
 
   CategoryComparisonItem? get largestIncrease {
@@ -530,19 +542,30 @@ class AnalyticsQueryResult {
   List<UnusualSpendingIndicator> get unusualIndicators {
     final list = metrics?['indicators'] as List<dynamic>?;
     if (list == null) return [];
-    return list.map((i) => UnusualSpendingIndicator.fromJson(i as Map<String, dynamic>)).toList();
+    return list
+        .map(
+          (i) => UnusualSpendingIndicator.fromJson(i as Map<String, dynamic>),
+        )
+        .toList();
   }
 
   List<SavingsOpportunityItem> get savingsOpportunities {
     final list = metrics?['opportunities'] as List<dynamic>?;
     if (list == null) return [];
-    return list.map((o) => SavingsOpportunityItem.fromJson(o as Map<String, dynamic>)).toList();
+    return list
+        .map((o) => SavingsOpportunityItem.fromJson(o as Map<String, dynamic>))
+        .toList();
   }
 
   List<AnalyticsLargestExpenseItem> get largestExpenses {
     final list = metrics?['largestExpenses'] as List<dynamic>?;
     if (list == null) return [];
-    return list.map((e) => AnalyticsLargestExpenseItem.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map(
+          (e) =>
+              AnalyticsLargestExpenseItem.fromJson(e as Map<String, dynamic>),
+        )
+        .toList();
   }
 }
 
@@ -601,7 +624,8 @@ class SmartAlertProvenance {
       source: json['source'] as String? ?? 'transactions and budgets',
       evaluatedAt: json['evaluatedAt'] as String? ?? '',
       formula: json['formula'] as String?,
-      sampleCount: (json['sampleCount'] ?? json['recordCount'] as num?)?.toInt(),
+      sampleCount: (json['sampleCount'] ?? json['recordCount'] as num?)
+          ?.toInt(),
       privacyGuarantee: json['privacyGuarantee'] as String? ?? '',
       period: json['period'] as String?,
     );
@@ -673,16 +697,17 @@ class SmartAlertItem {
       category: json['category'] as String?,
       categoryId: (json['categoryId'] as num?)?.toInt(),
       period: period,
-      calculatedValues: (json['calculatedValues'] as Map<String, dynamic>?) ?? {},
-      provenance: provJson != null ? SmartAlertProvenance.fromJson(provJson) : null,
+      calculatedValues:
+          (json['calculatedValues'] as Map<String, dynamic>?) ?? {},
+      provenance: provJson != null
+          ? SmartAlertProvenance.fromJson(provJson)
+          : null,
       suggestedQuestions: questionsList,
       isDismissed: json['isDismissed'] as bool? ?? false,
     );
   }
 
-  SmartAlertItem copyWith({
-    bool? isDismissed,
-  }) {
+  SmartAlertItem copyWith({bool? isDismissed}) {
     return SmartAlertItem(
       id: id,
       type: type,
@@ -753,7 +778,8 @@ class AlertPreferences {
       enableUnusualAlerts: enableUnusualAlerts ?? enableAnomalyAlerts ?? true,
       enableSavingsAlerts: enableSavingsAlerts,
       enableSpendingTrends: enableSpendingTrends,
-      budgetWarningThreshold: budgetWarningThreshold ??
+      budgetWarningThreshold:
+          budgetWarningThreshold ??
           (budgetThreshold != null ? (budgetThreshold * 100).round() : 80),
     );
   }
@@ -762,15 +788,22 @@ class AlertPreferences {
     return AlertPreferences(
       enableProactiveInsights: json['enableProactiveInsights'] as bool? ?? true,
       enableBudgetAlerts: json['enableBudgetAlerts'] as bool? ?? true,
-      enableUnusualAlerts: (json['enableUnusualAlerts'] ?? json['enableAnomalyAlerts']) as bool? ?? true,
+      enableUnusualAlerts:
+          (json['enableUnusualAlerts'] ?? json['enableAnomalyAlerts'])
+              as bool? ??
+          true,
       enableSavingsAlerts: json['enableSavingsAlerts'] as bool? ?? true,
       enableSpendingTrends: json['enableSpendingTrends'] as bool? ?? true,
-      budgetWarningThreshold: (json['budgetWarningThreshold'] ??
-          (json['budgetThreshold'] != null
-              ? (json['budgetThreshold'] is double
-                  ? (json['budgetThreshold'] as double) * 100
-                  : json['budgetThreshold'])
-              : null) as num?)?.toInt() ?? 80,
+      budgetWarningThreshold:
+          (json['budgetWarningThreshold'] ??
+                  (json['budgetThreshold'] != null
+                          ? (json['budgetThreshold'] is double
+                                ? (json['budgetThreshold'] as double) * 100
+                                : json['budgetThreshold'])
+                          : null)
+                      as num?)
+              ?.toInt() ??
+          80,
     );
   }
 
@@ -803,13 +836,20 @@ class AlertPreferences {
     double? budgetThreshold,
   }) {
     return AlertPreferences(
-      enableProactiveInsights: enableProactiveInsights ?? this.enableProactiveInsights,
+      enableProactiveInsights:
+          enableProactiveInsights ?? this.enableProactiveInsights,
       enableBudgetAlerts: enableBudgetAlerts ?? this.enableBudgetAlerts,
-      enableUnusualAlerts: enableUnusualAlerts ?? enableAnomalyAlerts ?? this.enableUnusualAlerts,
+      enableUnusualAlerts:
+          enableUnusualAlerts ??
+          enableAnomalyAlerts ??
+          this.enableUnusualAlerts,
       enableSavingsAlerts: enableSavingsAlerts ?? this.enableSavingsAlerts,
       enableSpendingTrends: enableSpendingTrends ?? this.enableSpendingTrends,
-      budgetWarningThreshold: budgetWarningThreshold ??
-          (budgetThreshold != null ? (budgetThreshold * 100).round() : this.budgetWarningThreshold),
+      budgetWarningThreshold:
+          budgetWarningThreshold ??
+          (budgetThreshold != null
+              ? (budgetThreshold * 100).round()
+              : this.budgetWarningThreshold),
     );
   }
 }

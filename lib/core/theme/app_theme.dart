@@ -14,15 +14,11 @@ import 'theme_collection.dart';
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get lightTheme => buildTheme(
-        ThemeCollection.midnightAurora,
-        Brightness.light,
-      );
+  static ThemeData get lightTheme =>
+      buildTheme(ThemeCollection.midnightAurora, Brightness.light);
 
-  static ThemeData get darkTheme => buildTheme(
-        ThemeCollection.midnightAurora,
-        Brightness.dark,
-      );
+  static ThemeData get darkTheme =>
+      buildTheme(ThemeCollection.midnightAurora, Brightness.dark);
 
   static ThemeData buildTheme(
     ThemeCollection collection,
@@ -40,15 +36,21 @@ class AppTheme {
       onPrimaryContainer: hTokens.textHigh,
       secondary: hTokens.electricIndigo,
       onSecondary: Colors.white,
-      secondaryContainer: isDark ? const Color(0xFF313EA0) : const Color(0xFFDFE0FF),
+      secondaryContainer: isDark
+          ? const Color(0xFF313EA0)
+          : const Color(0xFFDFE0FF),
       onSecondaryContainer: hTokens.textHigh,
       tertiary: hTokens.luminousGold,
       onTertiary: Colors.black,
-      tertiaryContainer: isDark ? const Color(0xFF74520C) : const Color(0xFFFFDEAB),
+      tertiaryContainer: isDark
+          ? const Color(0xFF74520C)
+          : const Color(0xFFFFDEAB),
       onTertiaryContainer: hTokens.textHigh,
       error: hTokens.outflow,
       onError: Colors.white,
-      errorContainer: isDark ? const Color(0xFF93000A) : const Color(0xFFFFDAD6),
+      errorContainer: isDark
+          ? const Color(0xFF93000A)
+          : const Color(0xFFFFDAD6),
       onErrorContainer: hTokens.textHigh,
       surface: hTokens.surface1,
       onSurface: hTokens.textHigh,
@@ -57,8 +59,12 @@ class AppTheme {
       outlineVariant: hTokens.rimCyan,
       shadow: Colors.black,
       scrim: Colors.black,
-      inverseSurface: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF0E1626),
-      onInverseSurface: isDark ? const Color(0xFF0F172A) : const Color(0xFFF5F8FC),
+      inverseSurface: isDark
+          ? const Color(0xFFFFFFFF)
+          : const Color(0xFF0E1626),
+      onInverseSurface: isDark
+          ? const Color(0xFF0F172A)
+          : const Color(0xFFF5F8FC),
       inversePrimary: hTokens.ionCyan,
     );
 
@@ -68,7 +74,10 @@ class AppTheme {
       hTokens.textLow,
     );
 
-    OutlineInputBorder createInputBorder(Color borderColor, [double width = 1]) {
+    OutlineInputBorder createInputBorder(
+      Color borderColor, [
+      double width = 1,
+    ]) {
       return OutlineInputBorder(
         borderRadius: HorizonDimensions.borderDefault,
         borderSide: BorderSide(color: borderColor, width: width),
@@ -105,10 +114,7 @@ class AppTheme {
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
       ),
-      extensions: [
-        finTokens,
-        hTokens,
-      ],
+      extensions: [finTokens, hTokens],
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
@@ -143,7 +149,9 @@ class AppTheme {
         focusedBorder: createInputBorder(hTokens.ionCyan, 1.5),
         errorBorder: createInputBorder(hTokens.outflow),
         focusedErrorBorder: createInputBorder(hTokens.outflow, 1.5),
-        labelStyle: HorizonTypography.bodyMd.copyWith(color: hTokens.textMedium),
+        labelStyle: HorizonTypography.bodyMd.copyWith(
+          color: hTokens.textMedium,
+        ),
         hintStyle: HorizonTypography.bodyMd.copyWith(color: hTokens.textLow),
         prefixStyle: HorizonTypography.headlineSm.copyWith(
           color: hTokens.ionCyan,
@@ -198,9 +206,7 @@ class AppTheme {
         hoverElevation: 4,
         backgroundColor: hTokens.ionCyan,
         foregroundColor: hTokens.onPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: HorizonDimensions.borderMD,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: HorizonDimensions.borderMD),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
@@ -219,8 +225,12 @@ class AppTheme {
         unselectedLabelColor: hTokens.textMedium,
         indicatorColor: hTokens.ionCyan,
         dividerColor: hTokens.rowDivider,
-        labelStyle: HorizonTypography.labelCaps.copyWith(fontWeight: FontWeight.w700),
-        unselectedLabelStyle: HorizonTypography.labelCaps.copyWith(fontWeight: FontWeight.w500),
+        labelStyle: HorizonTypography.labelCaps.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
+        unselectedLabelStyle: HorizonTypography.labelCaps.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: hTokens.surface1,
@@ -229,7 +239,9 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: HorizonDimensions.borderDefault,
         ),
-        labelStyle: HorizonTypography.bodySm.copyWith(color: hTokens.textMedium),
+        labelStyle: HorizonTypography.bodySm.copyWith(
+          color: hTokens.textMedium,
+        ),
         secondaryLabelStyle: HorizonTypography.bodySm.copyWith(
           color: hTokens.ionCyan,
           fontWeight: FontWeight.w600,
@@ -315,7 +327,9 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: isDark ? hTokens.surface3 : hTokens.surface4,
-        contentTextStyle: HorizonTypography.bodySm.copyWith(color: hTokens.textHigh),
+        contentTextStyle: HorizonTypography.bodySm.copyWith(
+          color: hTokens.textHigh,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
           side: BorderSide(color: hTokens.rimNeutral),

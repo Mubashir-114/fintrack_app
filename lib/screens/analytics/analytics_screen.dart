@@ -1213,8 +1213,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF75DEED).withValues(alpha: colors.isDark ? 0.20 : 0.12),
-                      const Color(0xFF6CD6E4).withValues(alpha: colors.isDark ? 0.08 : 0.04),
+                      const Color(
+                        0xFF75DEED,
+                      ).withValues(alpha: colors.isDark ? 0.20 : 0.12),
+                      const Color(
+                        0xFF6CD6E4,
+                      ).withValues(alpha: colors.isDark ? 0.08 : 0.04),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 0.55, 1.0],
@@ -1228,10 +1232,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   width: characterSize * 0.58,
                   height: 16,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.elliptical(characterSize * 0.58, 16)),
+                    borderRadius: BorderRadius.all(
+                      Radius.elliptical(characterSize * 0.58, 16),
+                    ),
                     gradient: RadialGradient(
                       colors: [
-                        const Color(0xFF75DEED).withValues(alpha: colors.isDark ? 0.35 : 0.22),
+                        const Color(
+                          0xFF75DEED,
+                        ).withValues(alpha: colors.isDark ? 0.35 : 0.22),
                         const Color(0xFF171C26).withValues(alpha: 0.12),
                         Colors.transparent,
                       ],
@@ -1239,7 +1247,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF75DEED).withValues(alpha: colors.isDark ? 0.22 : 0.12),
+                        color: const Color(
+                          0xFF75DEED,
+                        ).withValues(alpha: colors.isDark ? 0.22 : 0.12),
                         blurRadius: 14,
                         spreadRadius: 2,
                       ),
@@ -1254,7 +1264,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 top: 4,
                 right: 4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2.5,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.isDark
                         ? const Color(0xFF303540).withValues(alpha: 0.85)
@@ -1294,7 +1307,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           );
           if (stacked) {
             return Column(
-              children: [characterArena, const SizedBox(height: 12), introduction],
+              children: [
+                characterArena,
+                const SizedBox(height: 12),
+                introduction,
+              ],
             );
           }
           return Row(

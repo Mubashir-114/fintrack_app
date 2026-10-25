@@ -142,7 +142,8 @@ class SmsParser {
     final amountMatch = _amountRegex.firstMatch(body);
     if (amountMatch == null) return null;
 
-    final rawAmount = (amountMatch.group(1) ?? amountMatch.group(2))?.replaceAll(',', '');
+    final rawAmount = (amountMatch.group(1) ?? amountMatch.group(2))
+        ?.replaceAll(',', '');
     if (rawAmount == null) return null;
 
     final amount = double.tryParse(rawAmount);

@@ -222,7 +222,8 @@ class MockBudgetProvider extends BudgetProvider {
         budgetLimit: (2000.0 + amount).toStringAsFixed(2),
         actualSpending: "450.00",
         remainingAmount: ((2000.0 + amount) - 450.0).toStringAsFixed(2),
-        utilizationPercentage: (((450.0) / (2000.0 + amount)) * 100).toStringAsFixed(1),
+        utilizationPercentage: (((450.0) / (2000.0 + amount)) * 100)
+            .toStringAsFixed(1),
         dailyBurnRate: "37.50",
         projectedSpending: "1162.50",
         status: "on_track",
@@ -321,170 +322,217 @@ void main() {
     await CacheService.initialize();
   });
 
-  group('Food Budget Regression Suite: Creation -> Persistence -> Refresh -> Visibility', () {
-    testWidgets(
-      'Full lifecycle: Food budget creation correctly maps ID 3, persists, refreshes, and renders Food card with ₹450 spending',
-      (tester) async {
-        final budgetProvider = MockBudgetProvider();
-        final reportProvider = MockReportProvider();
-        final currencyProvider = CurrencyProvider();
-        await currencyProvider.setCurrency('INR');
+  group(
+    'Food Budget Regression Suite: Creation -> Persistence -> Refresh -> Visibility',
+    () {
+      testWidgets(
+        'Full lifecycle: Food budget creation correctly maps ID 3, persists, refreshes, and renders Food card with ₹450 spending',
+        (tester) async {
+          final budgetProvider = MockBudgetProvider();
+          final reportProvider = MockReportProvider();
+          final currencyProvider = CurrencyProvider();
+          await currencyProvider.setCurrency('INR');
 
-        // 1. Initial State: October 2026 has Healthcare (₹1,000) & Entertainment (₹1,000)
-        budgetProvider.initializeOctober2026WithHealthcareAndEntertainment();
+          // 1. Initial State: October 2026 has Healthcare (₹1,000) & Entertainment (₹1,000)
+          budgetProvider.initializeOctober2026WithHealthcareAndEntertainment();
 
-        tester.view.physicalSize = const Size(800, 2000);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+          tester.view.physicalSize = const Size(800, 2000);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() {
+            tester.view.resetPhysicalSize();
+            tester.view.resetDevicePixelRatio();
+          });
 
-        await tester.pumpWidget(
-          buildTestWidget(
-            budgetProvider: budgetProvider,
-            reportProvider: reportProvider,
-            currencyProvider: currencyProvider,
-          ),
-        );
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(
+            buildTestWidget(
+              budgetProvider: budgetProvider,
+              reportProvider: reportProvider,
+              currencyProvider: currencyProvider,
+            ),
+          );
+          await tester.pumpAndSettle();
 
-        // Verify initial state: Category Budgets (2), Healthcare and Entertainment visible, Food missing
-        expect(find.text("Category Budgets (2)"), findsOneWidget);
-        expect(find.text("Healthcare"), findsOneWidget);
-        expect(find.text("Entertainment"), findsOneWidget);
-        expect(find.text("Food"), findsNothing);
-        expect(find.byType(CategoryBudgetCard), findsNWidgets(2));
+          // Verify initial state: Category Budgets (2), Healthcare and Entertainment visible, Food missing
+          expect(find.text("Category Budgets (2)"), findsOneWidget);
+          expect(find.text("Healthcare"), findsOneWidget);
+          expect(find.text("Entertainment"), findsOneWidget);
+          expect(find.text("Food"), findsNothing);
+          expect(find.byType(CategoryBudgetCard), findsNWidgets(2));
 
-        // 2. Open Add Budget Sheet
-        final fab = find.byType(FloatingActionButton);
-        expect(fab, findsOneWidget);
-        await tester.tap(fab);
-        await tester.pumpAndSettle();
+          // 2. Open Add Budget Sheet
+          final fab = find.byType(FloatingActionButton);
+          expect(fab, findsOneWidget);
+          await tester.tap(fab);
+          await tester.pumpAndSettle();
 
-        expect(find.byType(AddEditBudgetSheet), findsOneWidget);
-        expect(find.text("Add Budget Limit"), findsOneWidget);
-        expect(find.text("Target Period: October 2026"), findsOneWidget);
+          expect(find.byType(AddEditBudgetSheet), findsOneWidget);
+          expect(find.text("Add Budget Limit"), findsOneWidget);
+          expect(find.text("Target Period: October 2026"), findsOneWidget);
 
-        // Verify default unbudgeted category is Food (id: 3)
-        expect(find.text("Food"), findsOneWidget);
+          // Verify default unbudgeted category is Food (id: 3)
+          expect(find.text("Food"), findsOneWidget);
 
-        // 3. Enter amount ₹1,000 for Food
-        final amountField = find.byType(TextFormField).first;
-        await tester.enterText(amountField, "1000");
-        await tester.pumpAndSettle();
+          // 3. Enter amount ₹1,000 for Food
+          final amountField = find.byType(TextFormField).first;
+          await tester.enterText(amountField, "1000");
+          await tester.pumpAndSettle();
 
-        // 4. Submit budget creation
-        final submitButton = find.widgetWithText(ElevatedButton, "SAVE BUDGET");
-        expect(submitButton, findsOneWidget);
-        await tester.tap(submitButton);
-        await tester.pumpAndSettle();
+          // 4. Submit budget creation
+          final submitButton = find.widgetWithText(
+            ElevatedButton,
+            "SAVE BUDGET",
+          );
+          expect(submitButton, findsOneWidget);
+          await tester.tap(submitButton);
+          await tester.pumpAndSettle();
 
-        // 5. Verify backend payload submission
-        expect(budgetProvider.addBudgetCalls, 1);
-        expect(budgetProvider.lastAddedCategoryId, 3, reason: "Food category must submit categoryId: 3");
-        expect(budgetProvider.lastAddedAmount, 1000.0);
-        expect(budgetProvider.lastAddedMonth, 10);
-        expect(budgetProvider.lastAddedYear, 2026);
+          // 5. Verify backend payload submission
+          expect(budgetProvider.addBudgetCalls, 1);
+          expect(
+            budgetProvider.lastAddedCategoryId,
+            3,
+            reason: "Food category must submit categoryId: 3",
+          );
+          expect(budgetProvider.lastAddedAmount, 1000.0);
+          expect(budgetProvider.lastAddedMonth, 10);
+          expect(budgetProvider.lastAddedYear, 2026);
 
-        // Sheet closed
-        expect(find.byType(AddEditBudgetSheet), findsNothing);
+          // Sheet closed
+          expect(find.byType(AddEditBudgetSheet), findsNothing);
 
-        // 6. Verify populated view: Category Budgets (3), Food card now visible with ₹450 spending
-        expect(find.text("Category Budgets (3)"), findsOneWidget);
-        expect(find.text("Food"), findsOneWidget);
-        expect(find.text("Healthcare"), findsOneWidget);
-        expect(find.text("Entertainment"), findsOneWidget);
-        expect(find.byType(CategoryBudgetCard), findsNWidgets(3));
+          // 6. Verify populated view: Category Budgets (3), Food card now visible with ₹450 spending
+          expect(find.text("Category Budgets (3)"), findsOneWidget);
+          expect(find.text("Food"), findsOneWidget);
+          expect(find.text("Healthcare"), findsOneWidget);
+          expect(find.text("Entertainment"), findsOneWidget);
+          expect(find.byType(CategoryBudgetCard), findsNWidgets(3));
 
-        // Food budget card shows ₹450 spent against ₹1,000 budget limit
-        final foodCard = find.widgetWithText(CategoryBudgetCard, "Food");
-        expect(foodCard, findsOneWidget);
-        expect(find.descendant(of: foodCard, matching: find.text("Spent: ₹450.00")), findsOneWidget);
-        expect(find.descendant(of: foodCard, matching: find.text("Limit: ₹1,000.00")), findsOneWidget);
-        expect(find.descendant(of: foodCard, matching: find.text("Remaining: ₹550.00")), findsOneWidget);
+          // Food budget card shows ₹450 spent against ₹1,000 budget limit
+          final foodCard = find.widgetWithText(CategoryBudgetCard, "Food");
+          expect(foodCard, findsOneWidget);
+          expect(
+            find.descendant(
+              of: foodCard,
+              matching: find.text("Spent: ₹450.00"),
+            ),
+            findsOneWidget,
+          );
+          expect(
+            find.descendant(
+              of: foodCard,
+              matching: find.text("Limit: ₹1,000.00"),
+            ),
+            findsOneWidget,
+          );
+          expect(
+            find.descendant(
+              of: foodCard,
+              matching: find.text("Remaining: ₹550.00"),
+            ),
+            findsOneWidget,
+          );
 
-        // 7. Verify refresh / reload retains Food card
-        await budgetProvider.loadAllBudgetData(forceRefresh: true);
-        await tester.pumpAndSettle();
+          // 7. Verify refresh / reload retains Food card
+          await budgetProvider.loadAllBudgetData(forceRefresh: true);
+          await tester.pumpAndSettle();
 
-        expect(find.text("Category Budgets (3)"), findsOneWidget);
-        expect(find.widgetWithText(CategoryBudgetCard, "Food"), findsOneWidget);
-        expect(find.widgetWithText(CategoryBudgetCard, "Healthcare"), findsOneWidget);
-        expect(find.widgetWithText(CategoryBudgetCard, "Entertainment"), findsOneWidget);
-      },
-    );
+          expect(find.text("Category Budgets (3)"), findsOneWidget);
+          expect(
+            find.widgetWithText(CategoryBudgetCard, "Food"),
+            findsOneWidget,
+          );
+          expect(
+            find.widgetWithText(CategoryBudgetCard, "Healthcare"),
+            findsOneWidget,
+          );
+          expect(
+            find.widgetWithText(CategoryBudgetCard, "Entertainment"),
+            findsOneWidget,
+          );
+        },
+      );
 
-    testWidgets(
-      'Duplicate guard: Attempting to create duplicate Food budget for same period is rejected with clear error',
-      (tester) async {
-        final budgetProvider = MockBudgetProvider();
-        final reportProvider = MockReportProvider();
-        final currencyProvider = CurrencyProvider();
-        await currencyProvider.setCurrency('INR');
+      testWidgets(
+        'Duplicate guard: Attempting to create duplicate Food budget for same period is rejected with clear error',
+        (tester) async {
+          final budgetProvider = MockBudgetProvider();
+          final reportProvider = MockReportProvider();
+          final currencyProvider = CurrencyProvider();
+          await currencyProvider.setCurrency('INR');
 
-        budgetProvider.initializeOctober2026WithHealthcareAndEntertainment();
+          budgetProvider.initializeOctober2026WithHealthcareAndEntertainment();
 
-        tester.view.physicalSize = const Size(800, 2000);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+          tester.view.physicalSize = const Size(800, 2000);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() {
+            tester.view.resetPhysicalSize();
+            tester.view.resetDevicePixelRatio();
+          });
 
-        await tester.pumpWidget(
-          buildTestWidget(
-            budgetProvider: budgetProvider,
-            reportProvider: reportProvider,
-            currencyProvider: currencyProvider,
-          ),
-        );
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(
+            buildTestWidget(
+              budgetProvider: budgetProvider,
+              reportProvider: reportProvider,
+              currencyProvider: currencyProvider,
+            ),
+          );
+          await tester.pumpAndSettle();
 
-        // Add Food budget first
-        await budgetProvider.addBudget(
-          categoryId: 3,
-          amount: 1000.0,
-          month: 10,
-          year: 2026,
-        );
-        await tester.pumpAndSettle();
-        expect(budgetProvider.addBudgetCalls, 1);
+          // Add Food budget first
+          await budgetProvider.addBudget(
+            categoryId: 3,
+            amount: 1000.0,
+            month: 10,
+            year: 2026,
+          );
+          await tester.pumpAndSettle();
+          expect(budgetProvider.addBudgetCalls, 1);
 
-        // Open Add Budget Sheet again
-        final fab = find.byType(FloatingActionButton);
-        await tester.tap(fab);
-        await tester.pumpAndSettle();
+          // Open Add Budget Sheet again
+          final fab = find.byType(FloatingActionButton);
+          await tester.tap(fab);
+          await tester.pumpAndSettle();
 
-        // Open Category Dropdown to inspect options
-        final dropdownFinder = find.byType(DropdownButtonFormField<int>);
-        expect(dropdownFinder, findsOneWidget);
-        await tester.tap(dropdownFinder);
-        await tester.pumpAndSettle();
+          // Open Category Dropdown to inspect options
+          final dropdownFinder = find.byType(DropdownButtonFormField<int>);
+          expect(dropdownFinder, findsOneWidget);
+          await tester.tap(dropdownFinder);
+          await tester.pumpAndSettle();
 
-        // Dropdown menu overlay displays (Configured) badges for existing categories
-        expect(find.text("Configured"), findsWidgets);
+          // Dropdown menu overlay displays (Configured) badges for existing categories
+          expect(find.text("Configured"), findsWidgets);
 
-        // Select Food (which is already configured)
-        final foodOption = find.text("Food").last;
-        await tester.tap(foodOption);
-        await tester.pumpAndSettle();
+          // Select Food (which is already configured)
+          final foodOption = find.text("Food").last;
+          await tester.tap(foodOption);
+          await tester.pumpAndSettle();
 
-        // Try submitting Food again
-        final amountField = find.byType(TextFormField).first;
-        await tester.enterText(amountField, "500");
-        await tester.pumpAndSettle();
+          // Try submitting Food again
+          final amountField = find.byType(TextFormField).first;
+          await tester.enterText(amountField, "500");
+          await tester.pumpAndSettle();
 
-        final submitButton = find.widgetWithText(ElevatedButton, "SAVE BUDGET");
-        await tester.tap(submitButton);
-        await tester.pumpAndSettle();
+          final submitButton = find.widgetWithText(
+            ElevatedButton,
+            "SAVE BUDGET",
+          );
+          await tester.tap(submitButton);
+          await tester.pumpAndSettle();
 
-        // Validation error appears informing user that budget already exists
-        expect(find.text("Food already has a budget for October 2026"), findsOneWidget);
+          // Validation error appears informing user that budget already exists
+          expect(
+            find.text("Food already has a budget for October 2026"),
+            findsOneWidget,
+          );
 
-        // Submit must NOT dispatch addBudget to provider/backend
-        expect(budgetProvider.addBudgetCalls, 1, reason: "Duplicate submission must be guarded and rejected");
-      },
-    );
-  });
+          // Submit must NOT dispatch addBudget to provider/backend
+          expect(
+            budgetProvider.addBudgetCalls,
+            1,
+            reason: "Duplicate submission must be guarded and rejected",
+          );
+        },
+      );
+    },
+  );
 }

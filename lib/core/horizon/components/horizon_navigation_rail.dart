@@ -30,12 +30,7 @@ class HorizonNavigationRail extends StatelessWidget {
       width: 88,
       decoration: BoxDecoration(
         color: tokens.surface1,
-        border: Border(
-          right: BorderSide(
-            color: tokens.rimNeutral,
-            width: 1,
-          ),
-        ),
+        border: Border(right: BorderSide(color: tokens.rimNeutral, width: 1)),
       ),
       child: SafeArea(
         right: false,
@@ -53,10 +48,7 @@ class HorizonNavigationRail extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: tokens.surface2,
                   borderRadius: HorizonDimensions.borderMD,
-                  border: Border.all(
-                    color: tokens.rimCyan,
-                    width: 1,
-                  ),
+                  border: Border.all(color: tokens.rimCyan, width: 1),
                 ),
                 alignment: Alignment.center,
                 child: Icon(
@@ -70,7 +62,8 @@ class HorizonNavigationRail extends StatelessWidget {
             Expanded(
               child: ListView.separated(
                 itemCount: destinations.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 16),
                 itemBuilder: (context, index) {
                   final dest = destinations[index];
                   final isSelected = index == selectedIndex;
@@ -82,10 +75,7 @@ class HorizonNavigationRail extends StatelessWidget {
                 },
               ),
             ),
-            if (trailing != null) ...[
-              trailing!,
-              const SizedBox(height: 16),
-            ],
+            if (trailing != null) ...[trailing!, const SizedBox(height: 16)],
           ],
         ),
       ),
@@ -145,7 +135,9 @@ class _HorizonRailItem extends StatelessWidget {
                               ? (destination.selectedIcon ?? destination.icon)
                               : destination.icon,
                           size: 22,
-                          color: isSelected ? tokens.ionCyan : tokens.textMedium,
+                          color: isSelected
+                              ? tokens.ionCyan
+                              : tokens.textMedium,
                         ),
                         if (isSelected) ...[
                           const SizedBox(height: 3),
@@ -166,7 +158,9 @@ class _HorizonRailItem extends StatelessWidget {
                     destination.label,
                     style: HorizonTypography.labelCaps.copyWith(
                       fontSize: 10,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                       color: isSelected ? tokens.textHigh : tokens.textLow,
                     ),
                   ),

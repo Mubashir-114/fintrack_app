@@ -46,10 +46,7 @@ class HorizonChip extends StatelessWidget {
             decoration: BoxDecoration(
               color: bgColor,
               borderRadius: HorizonDimensions.borderDefault,
-              border: Border.all(
-                color: borderColor,
-                width: 1,
-              ),
+              border: Border.all(color: borderColor, width: 1),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

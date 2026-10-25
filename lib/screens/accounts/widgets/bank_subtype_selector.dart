@@ -93,8 +93,11 @@ class _SubtypeCard extends StatelessWidget {
     final tokens = AppColors.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final disableAnimations = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    final duration = disableAnimations ? Duration.zero : const Duration(milliseconds: 200);
+    final disableAnimations =
+        MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final duration = disableAnimations
+        ? Duration.zero
+        : const Duration(milliseconds: 200);
 
     return Semantics(
       button: true,

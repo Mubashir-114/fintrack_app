@@ -46,7 +46,9 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
       _error = null;
     });
     final provider = context.read<AccountProvider>();
-    final cached = provider.accounts.where((a) => a.id == widget.accountId).firstOrNull;
+    final cached = provider.accounts
+        .where((a) => a.id == widget.accountId)
+        .firstOrNull;
     if (cached != null) {
       setState(() {
         _account = cached;
@@ -105,18 +107,19 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
     if (!mounted) return;
     setState(() {
       _balance = results[0] as AccountBalanceModel?;
-      _activities = (results[1] as AccountActivityListResponse?)?.activities ?? [];
+      _activities =
+          (results[1] as AccountActivityListResponse?)?.activities ?? [];
       _cardDetails = results[2] as CreditCardDetailsModel?;
-      _cardPayments = (results[3] as CreditCardPaymentListResponse?)?.payments ?? [];
+      _cardPayments =
+          (results[3] as CreditCardPaymentListResponse?)?.payments ?? [];
       _loadingLedger = false;
     });
   }
 
   Future<void> _showRepayDialog() async {
     if (_account == null) return;
-    final debt = _cardDetails?.outstandingDebt ??
-        _balance?.outstandingDebt ??
-        '0.00';
+    final debt =
+        _cardDetails?.outstandingDebt ?? _balance?.outstandingDebt ?? '0.00';
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => CreditCardRepaymentDialog(
@@ -134,10 +137,12 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
 
   Future<void> _showEditBillingDialog() async {
     if (_account == null) return;
-    final closingDay = _cardDetails?.statementClosingDay ??
+    final closingDay =
+        _cardDetails?.statementClosingDay ??
         _account!.statementClosingDay ??
         _balance?.billingInfo?.statementClosingDay;
-    final dueDay = _cardDetails?.paymentDueDay ??
+    final dueDay =
+        _cardDetails?.paymentDueDay ??
         _account!.paymentDueDay ??
         _balance?.billingInfo?.paymentDueDay;
 
@@ -177,7 +182,10 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
                     children: [
                       Text(
                         'Record an auditable correction or reconciliation entry.',
-                        style: TextStyle(fontSize: 12, color: AppColors.of(context).textSecondary),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.of(context).textSecondary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -186,7 +194,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
                             child: ChoiceChip(
                               label: const Text('+ Inflow'),
                               selected: isCredit,
-                              onSelected: (val) => setDialogState(() => isCredit = true),
+                              onSelected: (val) =>
+                                  setDialogState(() => isCredit = true),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -194,7 +203,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
                             child: ChoiceChip(
                               label: const Text('- Outflow'),
                               selected: !isCredit,
-                              onSelected: (val) => setDialogState(() => isCredit = false),
+                              onSelected: (val) =>
+                                  setDialogState(() => isCredit = false),
                             ),
                           ),
                         ],
@@ -202,16 +212,23 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: amountController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         decoration: InputDecoration(
-                          labelText: 'Amount (${_account?.currencyCode ?? 'INR'})',
+                          labelText:
+                              'Amount (${_account?.currencyCode ?? 'INR'})',
                           hintText: '0.00',
                           border: const OutlineInputBorder(),
                         ),
                         validator: (val) {
-                          if (val == null || val.trim().isEmpty) return 'Enter amount';
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Enter amount';
+                          }
                           final n = double.tryParse(val.trim());
-                          if (n == null || n <= 0) return 'Enter valid positive number';
+                          if (n == null || n <= 0) {
+                            return 'Enter valid positive number';
+                          }
                           return null;
                         },
                       ),
@@ -224,7 +241,9 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
                           border: OutlineInputBorder(),
                         ),
                         validator: (val) {
-                          if (val == null || val.trim().isEmpty) return 'Reason is required';
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Reason is required';
+                          }
                           return null;
                         },
                       ),
@@ -255,7 +274,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
     if (result == true && mounted) {
       final sign = isCredit ? '' : '-';
       final formattedAmount = '$sign${amountController.text.trim()}';
-      final clientKey = 'adj_${DateTime.now().millisecondsSinceEpoch}_${widget.accountId}';
+      final clientKey =
+          'adj_${DateTime.now().millisecondsSinceEpoch}_${widget.accountId}';
       final dateStr = adjustDate.toIso8601String().substring(0, 10);
 
       final provider = context.read<AccountProvider>();
@@ -294,18 +314,22 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
     final ok = await provider.setDefault(widget.accountId);
     if (!mounted) return;
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Default account updated'),
-        backgroundColor: AppColors.of(context).success,
-        behavior: SnackBarBehavior.floating,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Default account updated'),
+          backgroundColor: AppColors.of(context).success,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       _loadAccount();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(provider.actionError ?? 'Failed to set default'),
-        backgroundColor: AppColors.of(context).danger,
-        behavior: SnackBarBehavior.floating,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(provider.actionError ?? 'Failed to set default'),
+          backgroundColor: AppColors.of(context).danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
     provider.resetActionStatus();
   }
@@ -321,9 +345,13 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => ctx.pop(false), child: const Text('Cancel')),
+            onPressed: () => ctx.pop(false),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.of(context).danger),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.of(context).danger,
+            ),
             onPressed: () => ctx.pop(true),
             child: const Text('Archive'),
           ),
@@ -338,11 +366,13 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
     if (ok) {
       context.pop(); // Return to list
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(provider.actionError ?? 'Failed to archive'),
-        backgroundColor: AppColors.of(context).danger,
-        behavior: SnackBarBehavior.floating,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(provider.actionError ?? 'Failed to archive'),
+          backgroundColor: AppColors.of(context).danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
     provider.resetActionStatus();
   }
@@ -355,7 +385,9 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: horizonTokens.canvas,
-        body: Center(child: CircularProgressIndicator(color: horizonTokens.ionCyan)),
+        body: Center(
+          child: CircularProgressIndicator(color: horizonTokens.ionCyan),
+        ),
       );
     }
     if (_error != null || _account == null) {
@@ -382,7 +414,9 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
 
     final account = _account!;
     final isCredit = account.type == 'credit_card';
-    final accentColor = isCredit ? horizonTokens.outflow : horizonTokens.ionCyan;
+    final accentColor = isCredit
+        ? horizonTokens.outflow
+        : horizonTokens.ionCyan;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -405,7 +439,9 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
               icon: const Icon(Icons.more_vert_rounded),
               onSelected: (value) {
                 if (value == 'edit') {
-                  context.push('/accounts/${account.id}/edit').then((_) => _loadAccount());
+                  context
+                      .push('/accounts/${account.id}/edit')
+                      .then((_) => _loadAccount());
                 } else if (value == 'billing') {
                   _showEditBillingDialog();
                 } else if (value == 'default') {
@@ -441,8 +477,11 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
                     value: 'default',
                     child: Row(
                       children: [
-                        Icon(Icons.star_rounded, size: 18,
-                            color: tokens.warning),
+                        Icon(
+                          Icons.star_rounded,
+                          size: 18,
+                          color: tokens.warning,
+                        ),
                         SizedBox(width: 12),
                         Text('Set as Default'),
                       ],
@@ -452,11 +491,13 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
                   value: 'archive',
                   child: Row(
                     children: [
-                      Icon(Icons.archive_rounded, size: 18,
-                          color: tokens.danger),
+                      Icon(
+                        Icons.archive_rounded,
+                        size: 18,
+                        color: tokens.danger,
+                      ),
                       SizedBox(width: 12),
-                      Text('Archive',
-                          style: TextStyle(color: tokens.danger)),
+                      Text('Archive', style: TextStyle(color: tokens.danger)),
                     ],
                   ),
                 ),
@@ -536,22 +577,24 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
             if (isCredit) ...[
               // Credit Card Summary
               CreditCardSummaryCard(
-                outstandingDebt: _cardDetails?.outstandingDebt ??
+                outstandingDebt:
+                    _cardDetails?.outstandingDebt ??
                     _balance?.outstandingDebt ??
                     '0.00',
-                creditLimit: _cardDetails?.creditLimit ??
-                    account.creditLimit ??
-                    '0.00',
-                availableCredit: _cardDetails?.availableCredit ??
+                creditLimit:
+                    _cardDetails?.creditLimit ?? account.creditLimit ?? '0.00',
+                availableCredit:
+                    _cardDetails?.availableCredit ??
                     _balance?.availableCredit ??
                     '0.00',
-                creditBalance: _cardDetails?.creditBalance ??
+                creditBalance:
+                    _cardDetails?.creditBalance ??
                     _balance?.creditBalance ??
                     '0.00',
                 utilizationPercentage:
                     _cardDetails?.utilizationPercentage ??
-                        _balance?.utilizationPercentage ??
-                        '0.00%',
+                    _balance?.utilizationPercentage ??
+                    '0.00%',
                 currencyCode: account.currencyCode,
                 isDark: isDark,
               ),
@@ -559,7 +602,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
 
               // Billing & Due Dates Card
               CreditCardBillingCard(
-                billing: _cardDetails?.billingInfo ??
+                billing:
+                    _cardDetails?.billingInfo ??
                     _balance?.billingInfo ??
                     const CreditCardBillingModel(),
                 onEditBilling: _showEditBillingDialog,
@@ -573,21 +617,29 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
                 isDark: isDark,
                 children: [
                   _InfoRow(label: 'Type', value: _typeLabel(account.type)),
-                  _InfoRow(label: 'Subtype', value: _subtypeLabel(account.subtype)),
+                  _InfoRow(
+                    label: 'Subtype',
+                    value: _subtypeLabel(account.subtype),
+                  ),
                   _InfoRow(label: 'Currency', value: account.currencyCode),
                   if (account.institutionName != null)
                     _InfoRow(
-                        label: 'Card Issuer', value: account.institutionName!),
+                      label: 'Card Issuer',
+                      value: account.institutionName!,
+                    ),
                   if (account.maskedLast4 != null)
                     _InfoRow(
-                        label: 'Card Number',
-                        value: '•••• ${account.maskedLast4}'),
+                      label: 'Card Number',
+                      value: '•••• ${account.maskedLast4}',
+                    ),
                   _InfoRow(
                     label: 'Status',
-                    value: account.status[0].toUpperCase() +
+                    value:
+                        account.status[0].toUpperCase() +
                         account.status.substring(1),
-                    valueColor:
-                        account.isActive ? tokens.success : tokens.danger,
+                    valueColor: account.isActive
+                        ? tokens.success
+                        : tokens.danger,
                   ),
                 ],
               ),
@@ -608,21 +660,29 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
                 isDark: isDark,
                 children: [
                   _InfoRow(label: 'Type', value: _typeLabel(account.type)),
-                  _InfoRow(label: 'Subtype', value: _subtypeLabel(account.subtype)),
+                  _InfoRow(
+                    label: 'Subtype',
+                    value: _subtypeLabel(account.subtype),
+                  ),
                   _InfoRow(label: 'Currency', value: account.currencyCode),
                   if (account.institutionName != null)
                     _InfoRow(
-                        label: 'Institution', value: account.institutionName!),
+                      label: 'Institution',
+                      value: account.institutionName!,
+                    ),
                   if (account.maskedLast4 != null)
                     _InfoRow(
-                        label: 'Account No.',
-                        value: '••••${account.maskedLast4}'),
+                      label: 'Account No.',
+                      value: '••••${account.maskedLast4}',
+                    ),
                   _InfoRow(
                     label: 'Status',
-                    value: account.status[0].toUpperCase() +
+                    value:
+                        account.status[0].toUpperCase() +
                         account.status.substring(1),
-                    valueColor:
-                        account.isActive ? tokens.success : tokens.danger,
+                    valueColor: account.isActive
+                        ? tokens.success
+                        : tokens.danger,
                   ),
                   _InfoRow(
                     label: 'Default Account',
@@ -640,7 +700,8 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
                 children: [
                   _MoneyRow(
                     label: 'Current Ledger Balance',
-                    decimalString: _balance?.currentBalance ?? account.openingAmount,
+                    decimalString:
+                        _balance?.currentBalance ?? account.openingAmount,
                     currencyCode: account.currencyCode,
                     isDark: isDark,
                   ),
@@ -823,22 +884,26 @@ class _HeaderCard extends StatelessWidget {
               ),
               if (account.isDefault)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: tokens.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(AppDimensions.radiusSM),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.star_rounded,
-                          size: 12, color: tokens.primary),
+                      Icon(Icons.star_rounded, size: 12, color: tokens.primary),
                       const SizedBox(width: 4),
-                      Text('Default',
-                          style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: tokens.primary)),
+                      Text(
+                        'Default',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: tokens.primary,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -848,7 +913,9 @@ class _HeaderCard extends StatelessWidget {
           const Divider(height: 1),
           const SizedBox(height: 16),
           Text(
-            account.type == 'credit_card' ? 'Outstanding Debt' : 'Current Balance',
+            account.type == 'credit_card'
+                ? 'Outstanding Debt'
+                : 'Current Balance',
             style: theme.textTheme.bodySmall?.copyWith(
               color: tokens.textSecondary,
               letterSpacing: 0.5,
@@ -908,8 +975,7 @@ class _InfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: tokens.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-        border: Border.all(
-            color: tokens.divider),
+        border: Border.all(color: tokens.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -918,8 +984,9 @@ class _InfoCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
             child: Text(
               title,
-              style: theme.textTheme.titleSmall
-                  ?.copyWith(fontWeight: FontWeight.w700),
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           const Divider(height: 24, indent: 16, endIndent: 16),
@@ -1010,8 +1077,9 @@ class _MoneyRow extends StatelessWidget {
           MoneyText(
             decimalString: decimalString,
             currencyCode: currencyCode,
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -1040,9 +1108,7 @@ class _ActivityFeedCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: tokens.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLG),
-        border: Border.all(
-          color: tokens.divider,
-        ),
+        border: Border.all(color: tokens.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1054,8 +1120,9 @@ class _ActivityFeedCard extends StatelessWidget {
               children: [
                 Text(
                   'Account Activity',
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 if (isLoading)
                   const SizedBox(
@@ -1082,8 +1149,7 @@ class _ActivityFeedCard extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: activities.length,
-              separatorBuilder: (_, _) =>
-                  const Divider(height: 1, indent: 56),
+              separatorBuilder: (_, _) => const Divider(height: 1, indent: 56),
               itemBuilder: (context, index) {
                 final item = activities[index];
                 final isPositive = item.isIncomeOrInflow;
@@ -1117,10 +1183,7 @@ class _ActivityFeedCard extends StatelessWidget {
                   ),
                   subtitle: Text(
                     '${item.date}${item.note != null && item.note!.isNotEmpty ? ' • ${item.note}' : ''}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: tokens.textSecondary,
-                    ),
+                    style: TextStyle(fontSize: 11, color: tokens.textSecondary),
                   ),
                   trailing: Text(
                     '$sign$currencyCode ${item.amount}',

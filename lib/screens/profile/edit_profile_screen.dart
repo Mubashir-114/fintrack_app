@@ -237,7 +237,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ),
                             ),
                             GestureDetector(
-                              onTap: _isUpdating || _picking ? null : _choosePhoto,
+                              onTap: _isUpdating || _picking
+                                  ? null
+                                  : _choosePhoto,
                               child: Container(
                                 padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
@@ -245,7 +247,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: tokens.ionCyan.withValues(alpha: 0.4),
+                                      color: tokens.ionCyan.withValues(
+                                        alpha: 0.4,
+                                      ),
                                       blurRadius: 6,
                                     ),
                                   ],
@@ -272,11 +276,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             expandWidth: false,
                             height: 38,
                             isLoading: _picking,
-                            onPressed: _isUpdating || _picking ? null : _choosePhoto,
+                            onPressed: _isUpdating || _picking
+                                ? null
+                                : _choosePhoto,
                           ),
                           if ((_photoChanged
                                   ? _photo
-                                  : context.watch<AuthProvider>().avatarBytes) !=
+                                  : context
+                                        .watch<AuthProvider>()
+                                        .avatarBytes) !=
                               null)
                             HorizonButton(
                               text: 'Remove',
@@ -356,7 +364,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 HorizonButton(
                   text: 'Cancel',
                   variant: HorizonButtonVariant.ghost,
-                  onPressed: _isUpdating ? null : () => Navigator.of(context).pop(),
+                  onPressed: _isUpdating
+                      ? null
+                      : () => Navigator.of(context).pop(),
                 ),
                 const SizedBox(height: 32),
               ],

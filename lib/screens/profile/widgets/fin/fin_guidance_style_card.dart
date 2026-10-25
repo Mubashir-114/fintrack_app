@@ -25,7 +25,8 @@ class FinGuidanceStyleCard extends StatelessWidget {
           context: context,
           tokens: tokens,
           title: 'Helpful Insights',
-          subtitle: 'Active suggestions on recurring spends and envelope pacing.',
+          subtitle:
+              'Active suggestions on recurring spends and envelope pacing.',
           isSelected: frequency == 'standard',
           onTap: () => onFrequencyChanged('standard'),
         );
@@ -34,18 +35,15 @@ class FinGuidanceStyleCard extends StatelessWidget {
           context: context,
           tokens: tokens,
           title: 'Minimal Alerts',
-          subtitle: 'Quiet presence. Alerts only during critical threshold overruns.',
+          subtitle:
+              'Quiet presence. Alerts only during critical threshold overruns.',
           isSelected: frequency == 'minimal',
           onTap: () => onFrequencyChanged('minimal'),
         );
 
         if (isNarrow) {
           return Column(
-            children: [
-              option1,
-              const SizedBox(height: 8),
-              option2,
-            ],
+            children: [option1, const SizedBox(height: 8), option2],
           );
         }
 
@@ -109,7 +107,9 @@ class FinGuidanceStyleCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? tokens.ionCyan : tokens.textMedium.withValues(alpha: 0.4),
+                        color: isSelected
+                            ? tokens.ionCyan
+                            : tokens.textMedium.withValues(alpha: 0.4),
                         width: 1.5,
                       ),
                     ),

@@ -49,11 +49,7 @@ class AccountIcon extends StatelessWidget {
         color: accentColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppDimensions.radiusMD),
       ),
-      child: Icon(
-        _icon,
-        color: accentColor,
-        size: size * 0.48,
-      ),
+      child: Icon(_icon, color: accentColor, size: size * 0.48),
     );
   }
 }

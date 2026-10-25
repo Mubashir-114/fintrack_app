@@ -6,10 +6,7 @@ export 'budget_alert_summary.dart';
 
 /// Legacy export wrapper forwarding to the redesigned [BudgetAlertSummary].
 class BudgetAlertsBanner extends StatelessWidget {
-  const BudgetAlertsBanner({
-    super.key,
-    required this.alerts,
-  });
+  const BudgetAlertsBanner({super.key, required this.alerts});
 
   final BudgetAlertsResponseModel alerts;
 

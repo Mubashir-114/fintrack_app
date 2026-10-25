@@ -161,7 +161,9 @@ class BudgetProvider extends ChangeNotifier {
         if (cached != null) {
           try {
             _budgetStatuses = (cached as List)
-                .map((i) => BudgetStatusModel.fromJson(i as Map<String, dynamic>))
+                .map(
+                  (i) => BudgetStatusModel.fromJson(i as Map<String, dynamic>),
+                )
                 .toList();
             notifyListeners();
           } catch (_) {
@@ -189,7 +191,8 @@ class BudgetProvider extends ChangeNotifier {
           generation != _statusGeneration) {
         return;
       }
-      _errorMessage = e.response?.data["message"] ??
+      _errorMessage =
+          e.response?.data["message"] ??
           e.message ??
           "Failed to load budget status";
     } catch (e) {
@@ -256,7 +259,8 @@ class BudgetProvider extends ChangeNotifier {
           generation != _progressGeneration) {
         return;
       }
-      _errorMessage = e.response?.data["message"] ??
+      _errorMessage =
+          e.response?.data["message"] ??
           e.message ??
           "Failed to load budget progress";
     } catch (e) {
@@ -321,7 +325,9 @@ class BudgetProvider extends ChangeNotifier {
         return;
       }
       _errorMessage = e is DioException
-          ? (e.response?.data["message"] ?? e.message ?? "Failed to load suggestions")
+          ? (e.response?.data["message"] ??
+                e.message ??
+                "Failed to load suggestions")
           : e.toString();
     } finally {
       if (sessionGeneration == _sessionGeneration &&
@@ -351,7 +357,9 @@ class BudgetProvider extends ChangeNotifier {
         return;
       }
       _errorMessage = e is DioException
-          ? (e.response?.data["message"] ?? e.message ?? "Failed to load history")
+          ? (e.response?.data["message"] ??
+                e.message ??
+                "Failed to load history")
           : e.toString();
     } finally {
       if (sessionGeneration == _sessionGeneration &&
@@ -374,13 +382,16 @@ class BudgetProvider extends ChangeNotifier {
         .where((b) => b.categoryId == suggestion.categoryId)
         .firstOrNull;
     final existingBudget = _budgets
-        .where((b) =>
-            b.categoryId == suggestion.categoryId &&
-            b.month == _selectedMonth &&
-            b.year == _selectedYear)
+        .where(
+          (b) =>
+              b.categoryId == suggestion.categoryId &&
+              b.month == _selectedMonth &&
+              b.year == _selectedYear,
+        )
         .firstOrNull;
 
-    final existingId = existingStatus?.budgetId ??
+    final existingId =
+        existingStatus?.budgetId ??
         existingProgress?.budgetId ??
         existingBudget?.id;
 

@@ -13,29 +13,35 @@ class _FakeAccountRepository extends AccountRepository {}
 
 void main() {
   group('DecimalMoney Exact Arithmetic (No Doubles)', () {
-    test('converts exact decimal strings to minor units and back without IEEE-754 error', () {
-      expect(DecimalMoney.parseToMinor('0.00'), BigInt.zero);
-      expect(DecimalMoney.parseToMinor('100.50'), BigInt.from(10050));
-      expect(DecimalMoney.parseToMinor('0.05'), BigInt.from(5));
-      expect(DecimalMoney.parseToMinor('-25.75'), BigInt.from(-2575));
+    test(
+      'converts exact decimal strings to minor units and back without IEEE-754 error',
+      () {
+        expect(DecimalMoney.parseToMinor('0.00'), BigInt.zero);
+        expect(DecimalMoney.parseToMinor('100.50'), BigInt.from(10050));
+        expect(DecimalMoney.parseToMinor('0.05'), BigInt.from(5));
+        expect(DecimalMoney.parseToMinor('-25.75'), BigInt.from(-2575));
 
-      // Precision test: 0.10 + 0.20 must exactly equal 0.30
-      final sum = DecimalMoney.add('0.10', '0.20');
-      expect(sum, '0.30');
+        // Precision test: 0.10 + 0.20 must exactly equal 0.30
+        final sum = DecimalMoney.add('0.10', '0.20');
+        expect(sum, '0.30');
 
-      // Subtraction
-      final diff = DecimalMoney.subtract('1000.00', '350.25');
-      expect(diff, '649.75');
+        // Subtraction
+        final diff = DecimalMoney.subtract('1000.00', '350.25');
+        expect(diff, '649.75');
 
-      // Comparison
-      expect(DecimalMoney.compare('150.00', '200.00'), -1);
-      expect(DecimalMoney.compare('200.00', '200.00'), 0);
-      expect(DecimalMoney.compare('250.00', '200.00'), 1);
+        // Comparison
+        expect(DecimalMoney.compare('150.00', '200.00'), -1);
+        expect(DecimalMoney.compare('200.00', '200.00'), 0);
+        expect(DecimalMoney.compare('250.00', '200.00'), 1);
 
-      // Boundaries (large BigInt values)
-      final largeVal = '9007199254740991.99';
-      expect(DecimalMoney.formatMinor(DecimalMoney.parseToMinor(largeVal)), largeVal);
-    });
+        // Boundaries (large BigInt values)
+        final largeVal = '9007199254740991.99';
+        expect(
+          DecimalMoney.formatMinor(DecimalMoney.parseToMinor(largeVal)),
+          largeVal,
+        );
+      },
+    );
 
     test('validates decimal currency formats strictly', () {
       expect(DecimalMoney.isValidDecimal('100'), isTrue);
@@ -49,34 +55,37 @@ void main() {
   });
 
   group('Credit Card Models Serialization', () {
-    test('CreditCardBillingModel parses dates, status, and estimation flag', () {
-      final json = {
-        'statementClosingDay': 15,
-        'paymentDueDay': 5,
-        'closingDate': '2026-10-15',
-        'dueDate': '2026-11-05',
-        'daysUntilDue': 25,
-        'isDue': false,
-        'isOverdue': false,
-        'status': 'current',
-        'isEstimated': true,
-      };
+    test(
+      'CreditCardBillingModel parses dates, status, and estimation flag',
+      () {
+        final json = {
+          'statementClosingDay': 15,
+          'paymentDueDay': 5,
+          'closingDate': '2026-10-15',
+          'dueDate': '2026-11-05',
+          'daysUntilDue': 25,
+          'isDue': false,
+          'isOverdue': false,
+          'status': 'current',
+          'isEstimated': true,
+        };
 
-      final billing = CreditCardBillingModel.fromJson(json);
-      expect(billing.statementClosingDay, 15);
-      expect(billing.paymentDueDay, 5);
-      expect(billing.closingDate, '2026-10-15');
-      expect(billing.dueDate, '2026-11-05');
-      expect(billing.daysUntilDue, 25);
-      expect(billing.isDue, isFalse);
-      expect(billing.isOverdue, isFalse);
-      expect(billing.status, 'current');
-      expect(billing.isEstimated, isTrue);
+        final billing = CreditCardBillingModel.fromJson(json);
+        expect(billing.statementClosingDay, 15);
+        expect(billing.paymentDueDay, 5);
+        expect(billing.closingDate, '2026-10-15');
+        expect(billing.dueDate, '2026-11-05');
+        expect(billing.daysUntilDue, 25);
+        expect(billing.isDue, isFalse);
+        expect(billing.isOverdue, isFalse);
+        expect(billing.status, 'current');
+        expect(billing.isEstimated, isTrue);
 
-      final out = billing.toJson();
-      expect(out['status'], 'current');
-      expect(out['isEstimated'], isTrue);
-    });
+        final out = billing.toJson();
+        expect(out['status'], 'current');
+        expect(out['isEstimated'], isTrue);
+      },
+    );
 
     test('CreditCardDetailsModel parses exact string financial amounts', () {
       final json = {
@@ -173,101 +182,117 @@ void main() {
   });
 
   group('Credit Card UI Components (Widgets)', () {
-    testWidgets('CreditCardSummaryCard renders outstanding debt and utilization', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: CreditCardSummaryCard(
-              outstandingDebt: '12500.00',
-              creditLimit: '50000.00',
-              availableCredit: '37500.00',
-              creditBalance: '0.00',
-              utilizationPercentage: '25.00%',
-              currencyCode: 'INR',
-              isDark: false,
+    testWidgets(
+      'CreditCardSummaryCard renders outstanding debt and utilization',
+      (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: CreditCardSummaryCard(
+                outstandingDebt: '12500.00',
+                creditLimit: '50000.00',
+                availableCredit: '37500.00',
+                creditBalance: '0.00',
+                utilizationPercentage: '25.00%',
+                currencyCode: 'INR',
+                isDark: false,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('Credit Card Status'), findsOneWidget);
-      expect(find.text('Current Outstanding Debt'), findsOneWidget);
-      expect(find.textContaining('12,500.00'), findsOneWidget);
-      expect(find.text('25.00% Utilized'), findsOneWidget);
-      expect(find.text('INR 50000.00'), findsOneWidget);
-      expect(find.text('INR 37500.00'), findsOneWidget);
-    });
+        expect(find.text('Credit Card Status'), findsOneWidget);
+        expect(find.text('Current Outstanding Debt'), findsOneWidget);
+        expect(find.textContaining('12,500.00'), findsOneWidget);
+        expect(find.text('25.00% Utilized'), findsOneWidget);
+        expect(find.text('INR 50000.00'), findsOneWidget);
+        expect(find.text('INR 37500.00'), findsOneWidget);
+      },
+    );
 
-    testWidgets('CreditCardBillingCard renders estimated cycle dates and disclaimer', (tester) async {
-      bool editTapped = false;
-      const billing = CreditCardBillingModel(
-        statementClosingDay: 15,
-        paymentDueDay: 5,
-        closingDate: '2026-10-15',
-        dueDate: '2026-11-05',
-        daysUntilDue: 25,
-        status: 'current',
-        isEstimated: true,
-      );
+    testWidgets(
+      'CreditCardBillingCard renders estimated cycle dates and disclaimer',
+      (tester) async {
+        bool editTapped = false;
+        const billing = CreditCardBillingModel(
+          statementClosingDay: 15,
+          paymentDueDay: 5,
+          closingDate: '2026-10-15',
+          dueDate: '2026-11-05',
+          daysUntilDue: 25,
+          status: 'current',
+          isEstimated: true,
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CreditCardBillingCard(
-              billing: billing,
-              onEditBilling: () => editTapped = true,
-              isDark: false,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: CreditCardBillingCard(
+                billing: billing,
+                onEditBilling: () => editTapped = true,
+                isDark: false,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('Billing & Due Dates'), findsOneWidget);
-      expect(find.text('Current'), findsOneWidget);
-      expect(find.text('2026-10-15'), findsOneWidget);
-      expect(find.text('2026-11-05'), findsOneWidget);
-      expect(find.text('Payment due in 25 days.'), findsOneWidget);
-      expect(find.textContaining('Dates are estimated from your configured cycle days'), findsOneWidget);
+        expect(find.text('Billing & Due Dates'), findsOneWidget);
+        expect(find.text('Current'), findsOneWidget);
+        expect(find.text('2026-10-15'), findsOneWidget);
+        expect(find.text('2026-11-05'), findsOneWidget);
+        expect(find.text('Payment due in 25 days.'), findsOneWidget);
+        expect(
+          find.textContaining(
+            'Dates are estimated from your configured cycle days',
+          ),
+          findsOneWidget,
+        );
 
-      await tester.tap(find.byIcon(Icons.settings_outlined));
-      expect(editTapped, isTrue);
-    });
+        await tester.tap(find.byIcon(Icons.settings_outlined));
+        expect(editTapped, isTrue);
+      },
+    );
 
-    testWidgets('CreditCardRepaymentHistoryCard renders repayment history items', (tester) async {
-      final payments = [
-        const TransferModel(
-          id: 1,
-          sourceAccountId: 2,
-          destinationAccountId: 10,
-          amount: '2500.00',
-          currencyCode: 'INR',
-          transferDate: '2026-10-08',
-          note: 'Partial Repayment',
-          sourceAccountName: 'HDFC Savings',
-        ),
-      ];
+    testWidgets(
+      'CreditCardRepaymentHistoryCard renders repayment history items',
+      (tester) async {
+        final payments = [
+          const TransferModel(
+            id: 1,
+            sourceAccountId: 2,
+            destinationAccountId: 10,
+            amount: '2500.00',
+            currencyCode: 'INR',
+            transferDate: '2026-10-08',
+            note: 'Partial Repayment',
+            sourceAccountName: 'HDFC Savings',
+          ),
+        ];
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CreditCardRepaymentHistoryCard(
-              payments: payments,
-              currencyCode: 'INR',
-              isLoading: false,
-              isDark: false,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: CreditCardRepaymentHistoryCard(
+                payments: payments,
+                currencyCode: 'INR',
+                isLoading: false,
+                isDark: false,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('Repayment History'), findsOneWidget);
-      expect(find.text('Paid from HDFC Savings'), findsOneWidget);
-      expect(find.text('2026-10-08'), findsOneWidget);
-      expect(find.text('Partial Repayment'), findsOneWidget);
-      expect(find.textContaining('2,500.00'), findsOneWidget);
-    });
+        expect(find.text('Repayment History'), findsOneWidget);
+        expect(find.text('Paid from HDFC Savings'), findsOneWidget);
+        expect(find.text('2026-10-08'), findsOneWidget);
+        expect(find.text('Partial Repayment'), findsOneWidget);
+        expect(find.textContaining('2,500.00'), findsOneWidget);
+      },
+    );
 
-    testWidgets('CreditCardBillingDialog validates day boundaries (1-31)', (tester) async {
+    testWidgets('CreditCardBillingDialog validates day boundaries (1-31)', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

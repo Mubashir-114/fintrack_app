@@ -97,7 +97,8 @@ class FinActionPreview {
     return FinActionPreview(
       capability: json['capability'] as String? ?? '',
       title: json['title'] as String? ?? 'Action Preview',
-      description: json['description'] as String? ?? json['summary'] as String? ?? '',
+      description:
+          json['description'] as String? ?? json['summary'] as String? ?? '',
       parameters: (json['parameters'] as Map<String, dynamic>?) ?? {},
       impact: json['impact'] as String? ?? json['impactNote'] as String? ?? '',
       requiresConfirmation: json['requiresConfirmation'] as bool? ?? true,
@@ -118,10 +119,8 @@ class FinNavigationAction {
   final String route;
   final String? explicitLabel;
 
-  const FinNavigationAction({
-    required this.route,
-    String? label,
-  }) : explicitLabel = label;
+  const FinNavigationAction({required this.route, String? label})
+    : explicitLabel = label;
 
   String get label {
     final l = explicitLabel;
@@ -180,10 +179,10 @@ class CompanionPreferences {
     this.proactiveHints = true,
     this.priorityGoalId,
     this.focusCategory,
-  })  : enablePersonalizedGreetings =
-            personalizedGreetings ?? enablePersonalizedGreetings ?? true,
-        enableCharacterAnimations =
-            animationsEnabled ?? enableCharacterAnimations ?? true;
+  }) : enablePersonalizedGreetings =
+           personalizedGreetings ?? enablePersonalizedGreetings ?? true,
+       enableCharacterAnimations =
+           animationsEnabled ?? enableCharacterAnimations ?? true;
 
   factory CompanionPreferences.fromJson(Map<String, dynamic> json) {
     return CompanionPreferences(
@@ -237,10 +236,12 @@ class CompanionPreferences {
     return CompanionPreferences(
       preferredName: preferredName ?? this.preferredName,
       responseStyle: responseStyle ?? this.responseStyle,
-      enablePersonalizedGreetings: personalizedGreetings ??
+      enablePersonalizedGreetings:
+          personalizedGreetings ??
           enablePersonalizedGreetings ??
           this.enablePersonalizedGreetings,
-      enableCharacterAnimations: animationsEnabled ??
+      enableCharacterAnimations:
+          animationsEnabled ??
           enableCharacterAnimations ??
           this.enableCharacterAnimations,
       showAcrossApp: showAcrossApp ?? this.showAcrossApp,

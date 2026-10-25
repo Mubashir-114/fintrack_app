@@ -47,7 +47,12 @@ class _IncomeDetailsScreenState extends State<IncomeDetailsScreen> {
     }
   }
 
-  Widget _sourceCard(BuildContext context, String source, double amount, int count) {
+  Widget _sourceCard(
+    BuildContext context,
+    String source,
+    double amount,
+    int count,
+  ) {
     final colors = AppColors.of(context);
     return FinSurface(
       emphasized: true,
@@ -62,20 +67,38 @@ class _IncomeDetailsScreenState extends State<IncomeDetailsScreen> {
               color: colors.success.withValues(alpha: .12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.south_west_rounded, color: colors.success, size: 20),
+            child: Icon(
+              Icons.south_west_rounded,
+              color: colors.success,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(source, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text(
+                  source,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 3),
-                Text('$count credited ${count == 1 ? 'entry' : 'entries'}', style: TextStyle(fontSize: 11, color: colors.textSecondary)),
+                Text(
+                  '$count credited ${count == 1 ? 'entry' : 'entries'}',
+                  style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                ),
               ],
             ),
           ),
-          MoneyText(decimalString: amount.toStringAsFixed(2), style: TextStyle(color: colors.success, fontWeight: FontWeight.w800)),
+          MoneyText(
+            decimalString: amount.toStringAsFixed(2),
+            style: TextStyle(
+              color: colors.success,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ],
       ),
     );
@@ -94,14 +117,30 @@ class _IncomeDetailsScreenState extends State<IncomeDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 3),
-                Text('${_sourceFor(item)} • ${_dateLabel(item.transactionDate)}${sms ? ' • SMS detected' : ''}', style: TextStyle(fontSize: 11, color: colors.textSecondary)),
+                Text(
+                  '${_sourceFor(item)} • ${_dateLabel(item.transactionDate)}${sms ? ' • SMS detected' : ''}',
+                  style: TextStyle(fontSize: 11, color: colors.textSecondary),
+                ),
               ],
             ),
           ),
           const SizedBox(width: 12),
-          MoneyText(decimalString: item.amount.toStringAsFixed(2), showSign: true, style: TextStyle(color: colors.success, fontSize: 13, fontWeight: FontWeight.w800)),
+          MoneyText(
+            decimalString: item.amount.toStringAsFixed(2),
+            showSign: true,
+            style: TextStyle(
+              color: colors.success,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ],
       ),
     );
@@ -115,7 +154,10 @@ class _IncomeDetailsScreenState extends State<IncomeDetailsScreen> {
       appBar: AppBar(
         title: const Text('Income details'),
         actions: [
-          TextButton(onPressed: () => context.push('/ledger'), child: const Text('Ledger')),
+          TextButton(
+            onPressed: () => context.push('/ledger'),
+            child: const Text('Ledger'),
+          ),
         ],
       ),
       body: Consumer2<DashboardProvider, TransactionProvider>(
@@ -143,36 +185,83 @@ class _IncomeDetailsScreenState extends State<IncomeDetailsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Credited this month', style: TextStyle(fontSize: 12, color: colors.textSecondary)),
+                      Text(
+                        'Credited this month',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colors.textSecondary,
+                        ),
+                      ),
                       const SizedBox(height: 8),
-                      MoneyText(decimalString: overview?.monthlyIncome ?? '0.00', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: colors.textPrimary)),
+                      MoneyText(
+                        decimalString: overview?.monthlyIncome ?? '0.00',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w900,
+                          color: colors.textPrimary,
+                        ),
+                      ),
                       const SizedBox(height: 7),
-                      Text('This is income received during the selected period, not stored wealth.', style: TextStyle(fontSize: 11, color: colors.textSecondary)),
+                      Text(
+                        'This is income received during the selected period, not stored wealth.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: colors.textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 22),
-                const PremiumSectionHeader(title: 'Where it came from', subtitle: 'Source-wise totals from credited entries'),
+                const PremiumSectionHeader(
+                  title: 'Where it came from',
+                  subtitle: 'Source-wise totals from credited entries',
+                ),
                 const SizedBox(height: 10),
                 if (transactions.isLoading && transactions.transactions.isEmpty)
-                  const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator()))
+                  const Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
                 else if (bySource.isEmpty)
-                  PremiumEmptyStateCard(icon: Icons.south_west_rounded, title: 'No income entries yet', message: 'Credited salary and other income will be grouped here.', accent: colors.success)
+                  PremiumEmptyStateCard(
+                    icon: Icons.south_west_rounded,
+                    title: 'No income entries yet',
+                    message:
+                        'Credited salary and other income will be grouped here.',
+                    accent: colors.success,
+                  )
                 else
                   for (final entry in bySource.entries) ...[
-                    _sourceCard(context, entry.key, entry.value.fold<double>(0, (sum, item) => sum + item.amount), entry.value.length),
+                    _sourceCard(
+                      context,
+                      entry.key,
+                      entry.value.fold<double>(
+                        0,
+                        (sum, item) => sum + item.amount,
+                      ),
+                      entry.value.length,
+                    ),
                     const SizedBox(height: 8),
                   ],
                 const SizedBox(height: 16),
-                const PremiumSectionHeader(title: 'Credited timeline', subtitle: 'Recent deposits and detected income'),
+                const PremiumSectionHeader(
+                  title: 'Credited timeline',
+                  subtitle: 'Recent deposits and detected income',
+                ),
                 const SizedBox(height: 6),
                 FinSurface(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     children: [
-                      for (var i = 0; i < transactions.transactions.length; i++) ...[
+                      for (
+                        var i = 0;
+                        i < transactions.transactions.length;
+                        i++
+                      ) ...[
                         _timelineEntry(context, transactions.transactions[i]),
-                        if (i != transactions.transactions.length - 1) Divider(height: 1, color: colors.divider),
+                        if (i != transactions.transactions.length - 1)
+                          Divider(height: 1, color: colors.divider),
                       ],
                     ],
                   ),

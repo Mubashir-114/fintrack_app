@@ -6,13 +6,15 @@
 class AccountModel {
   final int id;
   final String type; // "bank" | "cash" | "wallet" | "credit_card"
-  final String subtype; // "savings" | "current" | "salary" | "cash" | "stored_value" | "credit_card"
+  final String
+  subtype; // "savings" | "current" | "salary" | "cash" | "stored_value" | "credit_card"
   final String displayName;
   final String? institutionName;
   final String? maskedLast4;
   final String currencyCode; // "INR" in Phase 3A
   /// Exact decimal string — e.g. "12500.00". Never parse to double.
   final String openingAmount;
+
   /// Null for non-credit-card accounts.
   final String? creditLimit;
   final bool isDefault;

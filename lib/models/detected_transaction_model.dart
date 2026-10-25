@@ -64,29 +64,61 @@ class DetectedTransactionModel {
       id: json['id'] as int,
       userId: json['userId'] as int? ?? json['user_id'] as int? ?? 0,
       accountId: json['accountId'] as int? ?? json['account_id'] as int?,
-      accountName: json['accountName'] as String? ?? json['account_name'] as String?,
+      accountName:
+          json['accountName'] as String? ?? json['account_name'] as String?,
       categoryId: json['categoryId'] as int? ?? json['category_id'] as int?,
-      categoryName: json['categoryName'] as String? ?? json['category_name'] as String?,
+      categoryName:
+          json['categoryName'] as String? ?? json['category_name'] as String?,
       classification: json['classification'] as String? ?? 'expense',
       amount: json['amount']?.toString() ?? '0.00',
-      transactionDate: json['transactionDate'] as String? ?? json['transaction_date'] as String? ?? '',
-      merchantRaw: json['merchantRaw'] as String? ?? json['merchant_raw'] as String? ?? '',
-      merchantClean: json['merchantClean'] as String? ?? json['merchant_clean'] as String? ?? '',
+      transactionDate:
+          json['transactionDate'] as String? ??
+          json['transaction_date'] as String? ??
+          '',
+      merchantRaw:
+          json['merchantRaw'] as String? ??
+          json['merchant_raw'] as String? ??
+          '',
+      merchantClean:
+          json['merchantClean'] as String? ??
+          json['merchant_clean'] as String? ??
+          '',
       bank: json['bank'] as String?,
       sender: json['sender'] as String?,
-      referenceNumber: json['referenceNumber'] as String? ?? json['reference_number'] as String?,
-      maskedAccountHint: json['maskedAccountHint'] as String? ?? json['masked_account_hint'] as String?,
+      referenceNumber:
+          json['referenceNumber'] as String? ??
+          json['reference_number'] as String?,
+      maskedAccountHint:
+          json['maskedAccountHint'] as String? ??
+          json['masked_account_hint'] as String?,
       smsHash: json['smsHash'] as String? ?? json['sms_hash'] as String? ?? '',
       confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
-      confidenceReason: json['confidenceReason'] as String? ?? json['confidence_reason'] as String?,
-      suggestedAccountId: json['suggestedAccountId'] as int? ?? json['suggested_account_id'] as int?,
-      suggestedAccountName: json['suggestedAccountName'] as String? ?? json['suggested_account_name'] as String?,
-      suggestedCategoryId: json['suggestedCategoryId'] as int? ?? json['suggested_category_id'] as int?,
-      suggestedCategoryName: json['suggestedCategoryName'] as String? ?? json['suggested_category_name'] as String?,
-      isAccountAmbiguous: json['isAccountAmbiguous'] as bool? ?? json['is_account_ambiguous'] == 1 || json['is_account_ambiguous'] == true,
+      confidenceReason:
+          json['confidenceReason'] as String? ??
+          json['confidence_reason'] as String?,
+      suggestedAccountId:
+          json['suggestedAccountId'] as int? ??
+          json['suggested_account_id'] as int?,
+      suggestedAccountName:
+          json['suggestedAccountName'] as String? ??
+          json['suggested_account_name'] as String?,
+      suggestedCategoryId:
+          json['suggestedCategoryId'] as int? ??
+          json['suggested_category_id'] as int?,
+      suggestedCategoryName:
+          json['suggestedCategoryName'] as String? ??
+          json['suggested_category_name'] as String?,
+      isAccountAmbiguous:
+          json['isAccountAmbiguous'] as bool? ??
+          json['is_account_ambiguous'] == 1 ||
+              json['is_account_ambiguous'] == true,
       status: json['status'] as String? ?? 'suggested',
-      rejectionReason: json['rejectionReason'] as String? ?? json['rejection_reason'] as String?,
-      confirmedTransactionId: json['confirmedTransactionId'] as int? ?? json['confirmed_transaction_id'] as int?,
+      rejectionReason:
+          json['rejectionReason'] as String? ??
+          json['rejection_reason'] as String?,
+      confirmedTransactionId:
+          json['confirmedTransactionId'] as int? ??
+          json['confirmed_transaction_id'] as int?,
       createdAt: json['createdAt'] as String? ?? json['created_at'] as String?,
       updatedAt: json['updatedAt'] as String? ?? json['updated_at'] as String?,
     );
@@ -175,11 +207,13 @@ class DetectedTransactionModel {
       suggestedAccountId: suggestedAccountId ?? this.suggestedAccountId,
       suggestedAccountName: suggestedAccountName ?? this.suggestedAccountName,
       suggestedCategoryId: suggestedCategoryId ?? this.suggestedCategoryId,
-      suggestedCategoryName: suggestedCategoryName ?? this.suggestedCategoryName,
+      suggestedCategoryName:
+          suggestedCategoryName ?? this.suggestedCategoryName,
       isAccountAmbiguous: isAccountAmbiguous ?? this.isAccountAmbiguous,
       status: status ?? this.status,
       rejectionReason: rejectionReason ?? this.rejectionReason,
-      confirmedTransactionId: confirmedTransactionId ?? this.confirmedTransactionId,
+      confirmedTransactionId:
+          confirmedTransactionId ?? this.confirmedTransactionId,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

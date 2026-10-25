@@ -17,18 +17,14 @@ class BudgetRepository {
     if (year != null) queryParams['year'] = year;
     if (categoryId != null) queryParams['categoryId'] = categoryId;
 
-    final response = await _dio.get(
-      "budgets",
-      queryParameters: queryParams,
-    );
+    final response = await _dio.get("budgets", queryParameters: queryParams);
 
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final list = json["budgets"] as List;
-        return list.map((item) => BudgetModel.fromJson(item as Map<String, dynamic>)).toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final list = json["budgets"] as List;
+      return list
+          .map((item) => BudgetModel.fromJson(item as Map<String, dynamic>))
+          .toList();
+    });
   }
 
   Future<ApiResponse<List<BudgetStatusModel>>> getBudgetStatus({
@@ -37,19 +33,17 @@ class BudgetRepository {
   }) async {
     final response = await _dio.get(
       "budgets/status",
-      queryParameters: {
-        'month': month,
-        'year': year,
-      },
+      queryParameters: {'month': month, 'year': year},
     );
 
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final list = json["budgets"] as List;
-        return list.map((item) => BudgetStatusModel.fromJson(item as Map<String, dynamic>)).toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final list = json["budgets"] as List;
+      return list
+          .map(
+            (item) => BudgetStatusModel.fromJson(item as Map<String, dynamic>),
+          )
+          .toList();
+    });
   }
 
   Future<ApiResponse<BudgetProgressResponseModel>> getBudgetProgress({
@@ -57,10 +51,7 @@ class BudgetRepository {
     required int year,
     double? savingsTarget,
   }) async {
-    final queryParams = <String, dynamic>{
-      'month': month,
-      'year': year,
-    };
+    final queryParams = <String, dynamic>{'month': month, 'year': year};
     if (savingsTarget != null && savingsTarget > 0) {
       queryParams['savingsTarget'] = savingsTarget;
     }
@@ -72,7 +63,8 @@ class BudgetRepository {
 
     return ApiResponse.fromJson(
       response.data,
-      (json) => BudgetProgressResponseModel.fromJson(json as Map<String, dynamic>),
+      (json) =>
+          BudgetProgressResponseModel.fromJson(json as Map<String, dynamic>),
     );
   }
 
@@ -82,15 +74,13 @@ class BudgetRepository {
   }) async {
     final response = await _dio.get(
       "budgets/alerts",
-      queryParameters: {
-        'month': month,
-        'year': year,
-      },
+      queryParameters: {'month': month, 'year': year},
     );
 
     return ApiResponse.fromJson(
       response.data,
-      (json) => BudgetAlertsResponseModel.fromJson(json as Map<String, dynamic>),
+      (json) =>
+          BudgetAlertsResponseModel.fromJson(json as Map<String, dynamic>),
     );
   }
 
@@ -111,13 +101,15 @@ class BudgetRepository {
       queryParameters: queryParams,
     );
 
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final list = json["suggestions"] as List? ?? [];
-        return list.map((item) => BudgetSuggestionModel.fromJson(item as Map<String, dynamic>)).toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final list = json["suggestions"] as List? ?? [];
+      return list
+          .map(
+            (item) =>
+                BudgetSuggestionModel.fromJson(item as Map<String, dynamic>),
+          )
+          .toList();
+    });
   }
 
   Future<ApiResponse<List<BudgetHistoryItemModel>>> getBudgetHistory({
@@ -125,18 +117,18 @@ class BudgetRepository {
   }) async {
     final response = await _dio.get(
       "budgets/history",
-      queryParameters: {
-        'months': months,
-      },
+      queryParameters: {'months': months},
     );
 
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final list = json["history"] as List? ?? [];
-        return list.map((item) => BudgetHistoryItemModel.fromJson(item as Map<String, dynamic>)).toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final list = json["history"] as List? ?? [];
+      return list
+          .map(
+            (item) =>
+                BudgetHistoryItemModel.fromJson(item as Map<String, dynamic>),
+          )
+          .toList();
+    });
   }
 
   Future<ApiResponse<BudgetModel>> addBudget({
@@ -186,9 +178,6 @@ class BudgetRepository {
 
   Future<ApiResponse<void>> removeBudget(int id) async {
     final response = await _dio.delete("budgets/$id");
-    return ApiResponse.fromJson(
-      response.data,
-      (_) {},
-    );
+    return ApiResponse.fromJson(response.data, (_) {});
   }
 }

@@ -59,6 +59,7 @@ class SmartRepo extends SmartTransactionRepository {
       data: candidates.skip((page - 1) * limit).take(limit).toList(),
     );
   }
+
   @override
   Future<ApiResponse<Map<String, dynamic>>> confirmTransaction(
     int id, {
@@ -165,29 +166,32 @@ void main() {
     await CacheService.initialize(memoryOnly: true);
   });
 
-  test('pending review handles non-JSON server failures and can retry', () async {
-    final request = RequestOptions(path: 'smart-transactions');
-    final repo = SmartRepo()
-      ..loadError = DioException(
-        requestOptions: request,
-        response: Response(
+  test(
+    'pending review handles non-JSON server failures and can retry',
+    () async {
+      final request = RequestOptions(path: 'smart-transactions');
+      final repo = SmartRepo()
+        ..loadError = DioException(
           requestOptions: request,
-          statusCode: 503,
-          data: 'Service unavailable',
-        ),
-        message: 'Server unavailable',
-      );
-    final sms = SmsProvider(smartRepo: repo);
-    await sms.loadDetectedTransactions();
-    expect(sms.detectedErrorMessage, 'Server unavailable');
-    expect(sms.isLoadingDetected, isFalse);
-    repo
-      ..loadError = null
-      ..candidates = [candidate(1)];
-    await sms.loadDetectedTransactions();
-    expect(sms.detectedErrorMessage, isNull);
-    expect(sms.detectedCount, 1);
-  });
+          response: Response(
+            requestOptions: request,
+            statusCode: 503,
+            data: 'Service unavailable',
+          ),
+          message: 'Server unavailable',
+        );
+      final sms = SmsProvider(smartRepo: repo);
+      await sms.loadDetectedTransactions();
+      expect(sms.detectedErrorMessage, 'Server unavailable');
+      expect(sms.isLoadingDetected, isFalse);
+      repo
+        ..loadError = null
+        ..candidates = [candidate(1)];
+      await sms.loadDetectedTransactions();
+      expect(sms.detectedErrorMessage, isNull);
+      expect(sms.detectedCount, 1);
+    },
+  );
 
   test(
     'Add All ignores selection, excludes invalid, duplicate and completed candidates',
@@ -319,8 +323,13 @@ void main() {
       expect(transactions.refreshes, 0);
       expect(accounts.refreshes, 0);
       final button = tester.widget<HorizonButton>(
-        find.byWidgetPredicate((widget) => widget is HorizonButton &&
-            (batch ? widget.text.startsWith('Add Eligible (') : widget.text == 'Confirm')),
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is HorizonButton &&
+              (batch
+                  ? widget.text.startsWith('Add Eligible (')
+                  : widget.text == 'Confirm'),
+        ),
       );
       expect(button.onPressed, isNull);
       repo.gate!.complete();

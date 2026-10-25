@@ -85,7 +85,9 @@ class MockReportCaptureProvider extends ReportProvider {
   Future<void> loadAllReports() async {}
 }
 
-BudgetProgressResponseModel createStandardProgress({String status = "approaching_limit"}) {
+BudgetProgressResponseModel createStandardProgress({
+  String status = "approaching_limit",
+}) {
   final isExceeded = status == "exceeded";
   return BudgetProgressResponseModel(
     month: 10,
@@ -174,7 +176,9 @@ BudgetProgressResponseModel createStandardProgress({String status = "approaching
   );
 }
 
-BudgetAlertsResponseModel createStandardAlerts({String status = "approaching_limit"}) {
+BudgetAlertsResponseModel createStandardAlerts({
+  String status = "approaching_limit",
+}) {
   final isExceeded = status == "exceeded";
   final exceededList = isExceeded
       ? [
@@ -229,8 +233,12 @@ Widget _wrapScreen({
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<BudgetProvider>.value(value: budgetProvider),
-      ChangeNotifierProvider<ReportProvider>(create: (_) => MockReportCaptureProvider()),
-      ChangeNotifierProvider<CurrencyProvider>(create: (_) => CurrencyProvider()..setCurrency('INR')),
+      ChangeNotifierProvider<ReportProvider>(
+        create: (_) => MockReportCaptureProvider(),
+      ),
+      ChangeNotifierProvider<CurrencyProvider>(
+        create: (_) => CurrencyProvider()..setCurrency('INR'),
+      ),
     ],
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -286,14 +294,13 @@ void main() {
       'MaterialIcons': 'fonts/MaterialIcons-Regular.otf',
     }.entries) {
       try {
-        await (FontLoader(entry.key)
-              ..addFont(
-                rootBundle.load(
-                  entry.key == 'MaterialIcons'
-                      ? entry.value
-                      : 'assets/fonts/${entry.value}.ttf',
-                ),
-              ))
+        await (FontLoader(entry.key)..addFont(
+              rootBundle.load(
+                entry.key == 'MaterialIcons'
+                    ? entry.value
+                    : 'assets/fonts/${entry.value}.ttf',
+              ),
+            ))
             .load();
       } catch (_) {}
     }
@@ -455,10 +462,7 @@ void main() {
   testWidgets('Capture empty_state', (tester) async {
     _setViewport(tester, const Size(393, 852));
     final provider = MockBudgetCaptureProvider();
-    provider.configure(
-      progress: null,
-      alerts: null,
-    );
+    provider.configure(progress: null, alerts: null);
 
     await tester.pumpWidget(
       _wrapScreen(

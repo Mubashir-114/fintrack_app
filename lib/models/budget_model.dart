@@ -299,7 +299,8 @@ class BudgetPeriodModel {
       daysElapsed: json["daysElapsed"] as int? ?? 0,
       daysRemaining: json["daysRemaining"] as int? ?? 0,
       isCurrentPeriod: json["isCurrentPeriod"] as bool? ?? false,
-      estimationMethod: json["estimationMethod"] as String? ?? "Linear Daily Burn-Rate",
+      estimationMethod:
+          json["estimationMethod"] as String? ?? "Linear Daily Burn-Rate",
     );
   }
 
@@ -338,13 +339,24 @@ class BudgetProgressResponseModel {
     return BudgetProgressResponseModel(
       month: json["month"] as int,
       year: json["year"] as int,
-      period: BudgetPeriodModel.fromJson(json["period"] as Map<String, dynamic>? ?? {}),
-      overall: BudgetOverallProgressModel.fromJson(json["overall"] as Map<String, dynamic>? ?? {}),
+      period: BudgetPeriodModel.fromJson(
+        json["period"] as Map<String, dynamic>? ?? {},
+      ),
+      overall: BudgetOverallProgressModel.fromJson(
+        json["overall"] as Map<String, dynamic>? ?? {},
+      ),
       categoryBudgets: catList
-          .map((item) => BudgetCategoryProgressModel.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) => BudgetCategoryProgressModel.fromJson(
+              item as Map<String, dynamic>,
+            ),
+          )
           .toList(),
-      uncategorizedSpending: json["uncategorizedSpending"]?.toString() ?? "0.00",
-      savings: BudgetSavingsProgressModel.fromJson(json["savings"] as Map<String, dynamic>? ?? {}),
+      uncategorizedSpending:
+          json["uncategorizedSpending"]?.toString() ?? "0.00",
+      savings: BudgetSavingsProgressModel.fromJson(
+        json["savings"] as Map<String, dynamic>? ?? {},
+      ),
     );
   }
 
@@ -425,11 +437,7 @@ class BudgetInsightModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      "type": type,
-      "title": title,
-      "message": message,
-    };
+    return {"type": type, "title": title, "message": message};
   }
 }
 
@@ -461,16 +469,24 @@ class BudgetAlertsResponseModel {
       month: json["month"] as int,
       year: json["year"] as int,
       overallAlert: json["overallAlert"] != null
-          ? BudgetAlertModel.fromJson(json["overallAlert"] as Map<String, dynamic>)
+          ? BudgetAlertModel.fromJson(
+              json["overallAlert"] as Map<String, dynamic>,
+            )
           : null,
       approachingLimit: appList
-          .map((item) => BudgetAlertModel.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) => BudgetAlertModel.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       exceeded: excList
-          .map((item) => BudgetAlertModel.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) => BudgetAlertModel.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       insights: insList
-          .map((item) => BudgetInsightModel.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) => BudgetInsightModel.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       totalAlertsCount: json["totalAlertsCount"] as int? ?? 0,
     );
@@ -538,7 +554,8 @@ class BudgetEstimatesModel {
     return BudgetEstimatesModel(
       trend: json["trend"] as String? ?? "stable",
       suggestedBudget: json["suggestedBudget"]?.toString() ?? "0.00",
-      estimatedSavingsPotential: json["estimatedSavingsPotential"]?.toString() ?? "0.00",
+      estimatedSavingsPotential:
+          json["estimatedSavingsPotential"]?.toString() ?? "0.00",
       rationale: json["rationale"] as String? ?? "",
     );
   }

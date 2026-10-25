@@ -25,7 +25,8 @@ class TransactionProvider extends ChangeNotifier {
   int? _selectedCategoryId;
   String? _searchQuery;
   DateTimeRange? _selectedDateRange;
-  String _sortBy = "transaction_date"; // "transaction_date", "amount", "created_at"
+  String _sortBy =
+      "transaction_date"; // "transaction_date", "amount", "created_at"
   String _sortOrder = "desc"; // "asc", "desc"
 
   bool get isLoading => _isLoading;
@@ -156,7 +157,9 @@ class TransactionProvider extends ChangeNotifier {
         if (cachedData != null) {
           try {
             final List<dynamic> transactionsList = cachedData["transactions"];
-            _transactions = transactionsList.map((item) => TransactionModel.fromJson(item)).toList();
+            _transactions = transactionsList
+                .map((item) => TransactionModel.fromJson(item))
+                .toList();
             _totalTransactions = cachedData["total"] ?? _transactions.length;
             notifyListeners();
           } catch (_) {
@@ -187,10 +190,12 @@ class TransactionProvider extends ChangeNotifier {
         _transactions.addAll(response.data.transactions);
       } else {
         _transactions = response.data.transactions;
-        
+
         // Save first page results to local cache
         await CacheService.save(cacheKey, {
-          "transactions": response.data.transactions.map((t) => t.toJson()).toList(),
+          "transactions": response.data.transactions
+              .map((t) => t.toJson())
+              .toList(),
           "total": response.data.total,
         });
       }
@@ -202,7 +207,10 @@ class TransactionProvider extends ChangeNotifier {
           loadGeneration != _loadGeneration) {
         return;
       }
-      _errorMessage = e.response?.data["message"] ?? e.message ?? "Failed to load transactions";
+      _errorMessage =
+          e.response?.data["message"] ??
+          e.message ??
+          "Failed to load transactions";
     } catch (e) {
       if (sessionGeneration != _sessionGeneration ||
           loadGeneration != _loadGeneration) {
@@ -252,7 +260,10 @@ class TransactionProvider extends ChangeNotifier {
       return true;
     } on DioException catch (e) {
       if (sessionGeneration != _sessionGeneration) return false;
-      _errorMessage = e.response?.data["message"] ?? e.message ?? "Failed to add transaction";
+      _errorMessage =
+          e.response?.data["message"] ??
+          e.message ??
+          "Failed to add transaction";
       return false;
     } catch (e) {
       if (sessionGeneration != _sessionGeneration) return false;
@@ -301,7 +312,10 @@ class TransactionProvider extends ChangeNotifier {
       return true;
     } on DioException catch (e) {
       if (sessionGeneration != _sessionGeneration) return false;
-      _errorMessage = e.response?.data["message"] ?? e.message ?? "Failed to update transaction";
+      _errorMessage =
+          e.response?.data["message"] ??
+          e.message ??
+          "Failed to update transaction";
       return false;
     } catch (e) {
       if (sessionGeneration != _sessionGeneration) return false;
@@ -332,7 +346,10 @@ class TransactionProvider extends ChangeNotifier {
       return true;
     } on DioException catch (e) {
       if (sessionGeneration != _sessionGeneration) return false;
-      _errorMessage = e.response?.data["message"] ?? e.message ?? "Failed to delete transaction";
+      _errorMessage =
+          e.response?.data["message"] ??
+          e.message ??
+          "Failed to delete transaction";
       return false;
     } catch (e) {
       if (sessionGeneration != _sessionGeneration) return false;

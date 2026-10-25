@@ -29,12 +29,15 @@ class FinBudgetInsight extends StatelessWidget {
     final tokens = HorizonThemeTokens.of(context);
     final limitNum = double.tryParse(overall.budgetLimit) ?? 0.0;
     final spentNum = double.tryParse(overall.actualSpending) ?? 0.0;
-    final remainingNum = double.tryParse(overall.remainingAmount) ?? (limitNum - spentNum);
-    final utilizationNum = double.tryParse(overall.utilizationPercentage) ??
+    final remainingNum =
+        double.tryParse(overall.remainingAmount) ?? (limitNum - spentNum);
+    final utilizationNum =
+        double.tryParse(overall.utilizationPercentage) ??
         (limitNum > 0 ? (spentNum / limitNum * 100) : 0.0);
 
     final isExceeded = overall.status == "exceeded" || spentNum > limitNum;
-    final isApproaching = overall.status == "approaching_limit" ||
+    final isApproaching =
+        overall.status == "approaching_limit" ||
         (!isExceeded && utilizationNum >= 75.0);
 
     // FIN Character Pose: Calm & helpful
@@ -47,17 +50,20 @@ class FinBudgetInsight extends StatelessWidget {
       finState = FinCharacterState.explaining;
       accentBorder = tokens.outflow.withValues(alpha: 0.35);
       headline = "Spending has exceeded your monthly plan.";
-      subline = "${currency.format(remainingNum.abs())} over limit with ${period.daysRemaining} days left in the cycle.";
+      subline =
+          "${currency.format(remainingNum.abs())} over limit with ${period.daysRemaining} days left in the cycle.";
     } else if (isApproaching) {
       finState = FinCharacterState.caution;
       accentBorder = tokens.warning.withValues(alpha: 0.35);
       headline = "You're using your monthly budget faster than planned.";
-      subline = "${currency.format(remainingNum)} remains for the next ${period.daysRemaining} days.";
+      subline =
+          "${currency.format(remainingNum)} remains for the next ${period.daysRemaining} days.";
     } else {
       finState = FinCharacterState.attentive;
       accentBorder = tokens.rimNeutral;
       headline = "Your monthly spending pace is steady.";
-      subline = "${currency.format(remainingNum)} available across the next ${period.daysRemaining} days.";
+      subline =
+          "${currency.format(remainingNum)} available across the next ${period.daysRemaining} days.";
     }
 
     return Container(
@@ -81,10 +87,7 @@ class FinBudgetInsight extends StatelessWidget {
               border: Border.all(color: tokens.rimNeutral),
             ),
             alignment: Alignment.center,
-            child: FinCharacter(
-              size: 38,
-              state: finState,
-            ),
+            child: FinCharacter(size: 38, state: finState),
           ),
           const SizedBox(width: 12),
 

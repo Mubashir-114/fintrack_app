@@ -92,7 +92,11 @@ class MockProactiveRepository extends AnalyticsRepository {
       success: true,
       message: "Success",
       data: {
-        "period": {"startDate": "2026-10-01", "endDate": "2026-10-31", "label": "October 2026"},
+        "period": {
+          "startDate": "2026-10-01",
+          "endDate": "2026-10-31",
+          "label": "October 2026",
+        },
         "insights": [],
       },
     );
@@ -119,43 +123,47 @@ void main() {
       expect(out['period'], 'October 2026');
     });
 
-    test('SmartAlertItem parses correctly with priority and calculated values', () {
-      final json = {
-        'id': 'alert_budget_exceeded_Food_2026-10',
-        'type': 'budget_exceeded',
-        'severity': 'critical',
-        'priority': 1,
-        'category': 'Food & Dining',
-        'period': 'current_month',
-        'title': 'Budget Exceeded: Food & Dining',
-        'explanation': 'You spent ₹11,200.00 against your ₹10,000.00 budget (112.0%).',
-        'calculatedValues': {
-          'spent': 11200.0,
-          'budget': 10000.0,
-          'overspentAmount': 1200.0,
-          'percentage': 112.0,
-        },
-        'provenance': {
-          'source': 'MySQL analytics_readonly',
-          'recordCount': 15,
-          'period': 'October 2026',
-          'evaluatedAt': '2026-10-13T10:00:00Z',
-        },
-      };
+    test(
+      'SmartAlertItem parses correctly with priority and calculated values',
+      () {
+        final json = {
+          'id': 'alert_budget_exceeded_Food_2026-10',
+          'type': 'budget_exceeded',
+          'severity': 'critical',
+          'priority': 1,
+          'category': 'Food & Dining',
+          'period': 'current_month',
+          'title': 'Budget Exceeded: Food & Dining',
+          'explanation':
+              'You spent ₹11,200.00 against your ₹10,000.00 budget (112.0%).',
+          'calculatedValues': {
+            'spent': 11200.0,
+            'budget': 10000.0,
+            'overspentAmount': 1200.0,
+            'percentage': 112.0,
+          },
+          'provenance': {
+            'source': 'MySQL analytics_readonly',
+            'recordCount': 15,
+            'period': 'October 2026',
+            'evaluatedAt': '2026-10-13T10:00:00Z',
+          },
+        };
 
-      final alert = SmartAlertItem.fromJson(json);
-      expect(alert.id, 'alert_budget_exceeded_Food_2026-10');
-      expect(alert.type, 'budget_exceeded');
-      expect(alert.severity, 'critical');
-      expect(alert.priority, 1);
-      expect(alert.category, 'Food & Dining');
-      expect(alert.calculatedValues['spent'], 11200.0);
-      expect(alert.provenance?.recordCount, 15);
+        final alert = SmartAlertItem.fromJson(json);
+        expect(alert.id, 'alert_budget_exceeded_Food_2026-10');
+        expect(alert.type, 'budget_exceeded');
+        expect(alert.severity, 'critical');
+        expect(alert.priority, 1);
+        expect(alert.category, 'Food & Dining');
+        expect(alert.calculatedValues['spent'], 11200.0);
+        expect(alert.provenance?.recordCount, 15);
 
-      final out = alert.toJson();
-      expect(out['id'], 'alert_budget_exceeded_Food_2026-10');
-      expect(out['priority'], 1);
-    });
+        final out = alert.toJson();
+        expect(out['id'], 'alert_budget_exceeded_Food_2026-10');
+        expect(out['priority'], 1);
+      },
+    );
 
     test('AlertPreferences default values and query params mapping', () {
       const prefs = AlertPreferences();
@@ -244,18 +252,21 @@ void main() {
       expect(provider.activeAlerts.first.id, 'alert_budget_1');
     });
 
-    test('dismissAlert removes item from activeAlerts and records dismissed ID', () async {
-      mockRepo.mockAlerts = [testAlert1, testAlert2];
-      await provider.loadAlerts();
+    test(
+      'dismissAlert removes item from activeAlerts and records dismissed ID',
+      () async {
+        mockRepo.mockAlerts = [testAlert1, testAlert2];
+        await provider.loadAlerts();
 
-      expect(provider.activeAlerts.length, 2);
+        expect(provider.activeAlerts.length, 2);
 
-      await provider.dismissAlert('alert_budget_1');
+        await provider.dismissAlert('alert_budget_1');
 
-      expect(provider.dismissedAlertIds.contains('alert_budget_1'), true);
-      expect(provider.activeAlerts.length, 1);
-      expect(provider.activeAlerts.first.id, 'alert_anomaly_2');
-    });
+        expect(provider.dismissedAlertIds.contains('alert_budget_1'), true);
+        expect(provider.activeAlerts.length, 1);
+        expect(provider.activeAlerts.first.id, 'alert_anomaly_2');
+      },
+    );
 
     test('resetDismissedAlerts restores all dismissed alerts', () async {
       mockRepo.mockAlerts = [testAlert1, testAlert2];
@@ -271,43 +282,52 @@ void main() {
       expect(provider.activeAlerts.length, 2);
     });
 
-    test('disabling enableProactiveInsights returns empty activeAlerts', () async {
-      mockRepo.mockAlerts = [testAlert1, testAlert2];
-      await provider.loadAlerts();
+    test(
+      'disabling enableProactiveInsights returns empty activeAlerts',
+      () async {
+        mockRepo.mockAlerts = [testAlert1, testAlert2];
+        await provider.loadAlerts();
 
-      expect(provider.activeAlerts.length, 2);
+        expect(provider.activeAlerts.length, 2);
 
-      await provider.updatePreferences(
-        provider.preferences.copyWith(enableProactiveInsights: false),
-      );
+        await provider.updatePreferences(
+          provider.preferences.copyWith(enableProactiveInsights: false),
+        );
 
-      expect(provider.activeAlerts.isEmpty, true);
-      expect(provider.preferences.enableProactiveInsights, false);
-    });
+        expect(provider.activeAlerts.isEmpty, true);
+        expect(provider.preferences.enableProactiveInsights, false);
+      },
+    );
 
-    test('clearSession clears all alerts, dismissed state, and resets preferences', () async {
-      mockRepo.mockAlerts = [testAlert1, testAlert2];
-      await provider.loadAlerts();
-      await provider.dismissAlert('alert_budget_1');
+    test(
+      'clearSession clears all alerts, dismissed state, and resets preferences',
+      () async {
+        mockRepo.mockAlerts = [testAlert1, testAlert2];
+        await provider.loadAlerts();
+        await provider.dismissAlert('alert_budget_1');
 
-      expect(provider.alerts.isNotEmpty, true);
-      expect(provider.dismissedAlertIds.isNotEmpty, true);
+        expect(provider.alerts.isNotEmpty, true);
+        expect(provider.dismissedAlertIds.isNotEmpty, true);
 
-      provider.clearSession();
+        provider.clearSession();
 
-      expect(provider.alerts.isEmpty, true);
-      expect(provider.activeAlerts.isEmpty, true);
-      expect(provider.dismissedAlertIds.isEmpty, true);
-      expect(provider.preferences.enableProactiveInsights, true);
-    });
+        expect(provider.alerts.isEmpty, true);
+        expect(provider.activeAlerts.isEmpty, true);
+        expect(provider.dismissedAlertIds.isEmpty, true);
+        expect(provider.preferences.enableProactiveInsights, true);
+      },
+    );
 
-    test('askAlertQuestion passes structured period and category to assistant query', () async {
-      await provider.askAlertQuestion(testAlert1, "Why am I over budget?");
+    test(
+      'askAlertQuestion passes structured period and category to assistant query',
+      () async {
+        await provider.askAlertQuestion(testAlert1, "Why am I over budget?");
 
-      expect(mockRepo.lastCapturedQuestion, "Why am I over budget?");
-      expect(mockRepo.lastCapturedCategory, "Food");
-      expect(mockRepo.lastCapturedPeriod, "current_month");
-    });
+        expect(mockRepo.lastCapturedQuestion, "Why am I over budget?");
+        expect(mockRepo.lastCapturedCategory, "Food");
+        expect(mockRepo.lastCapturedPeriod, "current_month");
+      },
+    );
   });
 
   group('Phase 5C UI Widgets Rendering', () {
@@ -351,45 +371,56 @@ void main() {
       );
     }
 
-    testWidgets('InsightsFeedView renders prioritized alert card and contextual questions', (tester) async {
-      mockRepo.mockAlerts = [testAlert];
-      await provider.loadAlerts();
+    testWidgets(
+      'InsightsFeedView renders prioritized alert card and contextual questions',
+      (tester) async {
+        mockRepo.mockAlerts = [testAlert];
+        await provider.loadAlerts();
 
-      await tester.pumpWidget(createTestApp(const InsightsFeedView()));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(createTestApp(const InsightsFeedView()));
+        await tester.pumpAndSettle();
 
-      expect(find.text("Smart Alerts Feed"), findsOneWidget);
-      expect(find.text("CRITICAL"), findsOneWidget);
-      expect(find.text("Budget Exceeded: Dining"), findsOneWidget);
-      expect(find.textContaining("Over budget by ₹1,500.00"), findsOneWidget);
-      expect(find.textContaining("MySQL analytics_readonly • October 2026"), findsOneWidget);
+        expect(find.text("Smart Alerts Feed"), findsOneWidget);
+        expect(find.text("CRITICAL"), findsOneWidget);
+        expect(find.text("Budget Exceeded: Dining"), findsOneWidget);
+        expect(find.textContaining("Over budget by ₹1,500.00"), findsOneWidget);
+        expect(
+          find.textContaining("MySQL analytics_readonly • October 2026"),
+          findsOneWidget,
+        );
 
-      // Contextual questions for budget alert
-      expect(find.text("Why am I over budget?"), findsOneWidget);
-      expect(find.text("How was this calculated?"), findsOneWidget);
-      expect(find.text("What can I do to improve?"), findsOneWidget);
-    });
+        // Contextual questions for budget alert
+        expect(find.text("Why am I over budget?"), findsOneWidget);
+        expect(find.text("How was this calculated?"), findsOneWidget);
+        expect(find.text("What can I do to improve?"), findsOneWidget);
+      },
+    );
 
-    testWidgets('Tapping dismiss button in InsightsFeedView dismisses the alert', (tester) async {
-      mockRepo.mockAlerts = [testAlert];
-      await provider.loadAlerts();
+    testWidgets(
+      'Tapping dismiss button in InsightsFeedView dismisses the alert',
+      (tester) async {
+        mockRepo.mockAlerts = [testAlert];
+        await provider.loadAlerts();
 
-      await tester.pumpWidget(createTestApp(const InsightsFeedView()));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(createTestApp(const InsightsFeedView()));
+        await tester.pumpAndSettle();
 
-      expect(find.text("Budget Exceeded: Dining"), findsOneWidget);
+        expect(find.text("Budget Exceeded: Dining"), findsOneWidget);
 
-      // Tap dismiss icon
-      await tester.tap(find.byIcon(Icons.close_rounded));
-      await tester.pumpAndSettle();
+        // Tap dismiss icon
+        await tester.tap(find.byIcon(Icons.close_rounded));
+        await tester.pumpAndSettle();
 
-      // Card is dismissed, now empty state is shown
-      expect(find.text("Budget Exceeded: Dining"), findsNothing);
-      expect(find.text("All Clear! No Active Alerts"), findsOneWidget);
-      expect(find.text("Reset Dismissed"), findsOneWidget);
-    });
+        // Card is dismissed, now empty state is shown
+        expect(find.text("Budget Exceeded: Dining"), findsNothing);
+        expect(find.text("All Clear! No Active Alerts"), findsOneWidget);
+        expect(find.text("Reset Dismissed"), findsOneWidget);
+      },
+    );
 
-    testWidgets('Tapping contextual AI question chip calls askAlertQuestion', (tester) async {
+    testWidgets('Tapping contextual AI question chip calls askAlertQuestion', (
+      tester,
+    ) async {
       mockRepo.mockAlerts = [testAlert];
       await provider.loadAlerts();
 
@@ -403,7 +434,9 @@ void main() {
       expect(mockRepo.lastCapturedCategory, "Dining");
     });
 
-    testWidgets('AlertPreferencesSheet renders controls and threshold slider', (tester) async {
+    testWidgets('AlertPreferencesSheet renders controls and threshold slider', (
+      tester,
+    ) async {
       await tester.pumpWidget(createTestApp(const AlertPreferencesSheet()));
       await tester.pumpAndSettle();
 

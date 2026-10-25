@@ -76,10 +76,8 @@ class HorizonChartTheme {
       show: true,
       drawVerticalLine: false,
       horizontalInterval: 1,
-      getDrawingHorizontalLine: (value) => FlLine(
-        color: tokens.rimNeutral,
-        strokeWidth: 1,
-      ),
+      getDrawingHorizontalLine: (value) =>
+          FlLine(color: tokens.rimNeutral, strokeWidth: 1),
     );
   }
 

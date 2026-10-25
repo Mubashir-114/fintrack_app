@@ -55,10 +55,7 @@ class AnalyticsRepository {
       body['conversationContext'] = conversationContext.toJson();
     }
 
-    final response = await _dio.post(
-      "analytics/query",
-      data: body,
-    );
+    final response = await _dio.post("analytics/query", data: body);
 
     return ApiResponse.fromJson(
       response.data,
@@ -76,7 +73,9 @@ class AnalyticsRepository {
     final Map<String, dynamic> query = {};
     if (period != null && period.isNotEmpty) query['period'] = period;
     if (month != null && month.isNotEmpty) query['month'] = month;
-    if (startDate != null && startDate.isNotEmpty) query['startDate'] = startDate;
+    if (startDate != null && startDate.isNotEmpty) {
+      query['startDate'] = startDate;
+    }
     if (endDate != null && endDate.isNotEmpty) query['endDate'] = endDate;
 
     final response = await _dio.get(
@@ -101,7 +100,9 @@ class AnalyticsRepository {
     final Map<String, dynamic> query = {};
     if (period != null && period.isNotEmpty) query['period'] = period;
     if (month != null && month.isNotEmpty) query['month'] = month;
-    if (startDate != null && startDate.isNotEmpty) query['startDate'] = startDate;
+    if (startDate != null && startDate.isNotEmpty) {
+      query['startDate'] = startDate;
+    }
     if (endDate != null && endDate.isNotEmpty) query['endDate'] = endDate;
 
     if (preferences != null) {
@@ -118,16 +119,13 @@ class AnalyticsRepository {
       queryParameters: query.isNotEmpty ? query : null,
     );
 
-    return ApiResponse.fromJson(
-      response.data,
-      (json) {
-        final dataMap = json as Map<String, dynamic>;
-        final rawAlerts = dataMap['alerts'] as List<dynamic>? ?? [];
-        return rawAlerts
-            .map((a) => SmartAlertItem.fromJson(a as Map<String, dynamic>))
-            .toList();
-      },
-    );
+    return ApiResponse.fromJson(response.data, (json) {
+      final dataMap = json as Map<String, dynamic>;
+      final rawAlerts = dataMap['alerts'] as List<dynamic>? ?? [];
+      return rawAlerts
+          .map((a) => SmartAlertItem.fromJson(a as Map<String, dynamic>))
+          .toList();
+    });
   }
 
   /// Fetches persistent companion relationship preferences.
@@ -169,10 +167,7 @@ class AnalyticsRepository {
   ) async {
     final response = await _dio.post(
       "analytics/companion/action/confirm",
-      data: {
-        'capabilityId': capabilityId,
-        'parameters': parameters,
-      },
+      data: {'capabilityId': capabilityId, 'parameters': parameters},
     );
     return ApiResponse.fromJson(
       response.data,
