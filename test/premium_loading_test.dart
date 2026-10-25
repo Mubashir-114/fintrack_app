@@ -203,6 +203,32 @@ void main() {
     auth.dispose();
   });
 
+  testWidgets(
+    'session verification failure allows immediate navigation to sign in via Sign In Again button',
+    (tester) async {
+      await TokenService.saveToken('test-only-token');
+      final auth = _Auth();
+      final router = await _mount(tester, auth);
+      expect(auth.calls, 1);
+      auth.response.complete(false);
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('splash-retry-button')), findsOneWidget);
+      expect(find.byKey(const ValueKey('splash-go-to-login')), findsOneWidget);
+      expect(await TokenService.getToken(), 'test-only-token');
+
+      await tester.tap(find.byKey(const ValueKey('splash-go-to-login')));
+      await tester.pump();
+      await tester.pump();
+
+      expect(router.routeInformationProvider.value.uri.path, '/login');
+      await tester.pumpWidget(const SizedBox());
+      router.dispose();
+      auth.dispose();
+    },
+  );
+
   testWidgets('loading painting stops for reduced motion and hidden views', (
     tester,
   ) async {

@@ -159,7 +159,9 @@ class _SplashScreenState extends State<SplashScreen> {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: tokens.ionCyan.withValues(alpha: 0.5),
+                                    color: tokens.ionCyan.withValues(
+                                      alpha: 0.5,
+                                    ),
                                     blurRadius: 8,
                                     spreadRadius: 2,
                                   ),
@@ -204,7 +206,9 @@ class _SplashScreenState extends State<SplashScreen> {
                                 width: 6,
                                 height: 6,
                                 decoration: BoxDecoration(
-                                  color: _showRetry ? tokens.outflow : tokens.ionCyan,
+                                  color: _showRetry
+                                      ? tokens.outflow
+                                      : tokens.ionCyan,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -229,10 +233,24 @@ class _SplashScreenState extends State<SplashScreen> {
                         if (_showRetry) ...[
                           const SizedBox(height: 24),
                           HorizonButton(
+                            key: const ValueKey('splash-retry-button'),
                             text: 'Retry Connection',
                             icon: Icons.refresh_rounded,
                             variant: HorizonButtonVariant.secondary,
                             onPressed: _initialize,
+                          ),
+                          const SizedBox(height: 12),
+                          HorizonButton(
+                            key: const ValueKey('splash-go-to-login'),
+                            text: 'Sign In Again',
+                            icon: Icons.login_rounded,
+                            variant: HorizonButtonVariant.ghost,
+                            onPressed: () async {
+                              await context.read<AuthProvider>().logout();
+                              if (context.mounted) {
+                                context.go('/login');
+                              }
+                            },
                           ),
                         ],
                       ],

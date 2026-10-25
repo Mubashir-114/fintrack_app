@@ -108,13 +108,12 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } on DioException catch (e) {
       if (generation != _sessionGeneration) return false;
-      _errorMessage =
-          e.response?.data["message"] ?? e.message ?? "Login failed";
+      _errorMessage = _formatAuthError(e, fallback: "Login failed");
       notifyListeners();
       return false;
     } catch (e) {
       if (generation != _sessionGeneration) return false;
-      _errorMessage = e.toString();
+      _errorMessage = _formatAuthError(e, fallback: "Login failed");
       notifyListeners();
       return false;
     } finally {
@@ -160,13 +159,12 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } on DioException catch (e) {
       if (generation != _sessionGeneration) return false;
-      _errorMessage =
-          e.response?.data["message"] ?? e.message ?? "Registration failed";
+      _errorMessage = _formatAuthError(e, fallback: "Registration failed");
       notifyListeners();
       return false;
     } catch (e) {
       if (generation != _sessionGeneration) return false;
-      _errorMessage = e.toString();
+      _errorMessage = _formatAuthError(e, fallback: "Registration failed");
       notifyListeners();
       return false;
     } finally {
@@ -237,16 +235,19 @@ class AuthProvider extends ChangeNotifier {
           await logout();
         }
       } else {
-        _errorMessage =
-            e.response?.data["message"] ??
-            e.message ??
-            "Unable to restore session";
+        _errorMessage = _formatAuthError(
+          e,
+          fallback: "Unable to restore session",
+        );
         notifyListeners();
       }
       return false;
-    } catch (_) {
+    } catch (e) {
       if (generation == _sessionGeneration) {
-        _errorMessage = "Unable to restore session";
+        _errorMessage = _formatAuthError(
+          e,
+          fallback: "Unable to restore session",
+        );
         notifyListeners();
       }
       return false;
@@ -323,10 +324,84 @@ class AuthProvider extends ChangeNotifier {
   }
 
   String _accountError(Object error, String fallback) {
-    if (error is DioException && error.response?.data is Map) {
-      final message = error.response?.data['message'];
-      if (message is String) return message;
+    return _formatAuthError(error, fallback: fallback);
+  }
+
+  String _formatAuthError(Object error, {required String fallback}) {
+    if (error is! DioException) {
+      final text = error.toString();
+      return text.isNotEmpty ? text : fallback;
     }
+
+    final dioError = error;
+
+    if (dioError.type == DioExceptionType.connectionTimeout ||
+        dioError.type == DioExceptionType.sendTimeout ||
+        dioError.type == DioExceptionType.receiveTimeout) {
+      return 'Connection timed out. The server may be waking up or your network is slow. Please try again.';
+    }
+
+    if (dioError.type == DioExceptionType.connectionError) {
+      return 'Unable to reach the server. Please check your internet connection.';
+    }
+
+    final response = dioError.response;
+    final statusCode = response?.statusCode;
+    final data = response?.data;
+
+    String? serverMessage;
+    if (data is Map) {
+      final errors = data['errors'];
+      if (errors is List && errors.isNotEmpty) {
+        final first = errors.first;
+        if (first is Map &&
+            first['message'] is String &&
+            (first['message'] as String).trim().isNotEmpty) {
+          serverMessage = (first['message'] as String).trim();
+        }
+      }
+      if (serverMessage == null &&
+          data['message'] is String &&
+          (data['message'] as String).trim().isNotEmpty) {
+        serverMessage = (data['message'] as String).trim();
+      }
+    }
+
+    if (statusCode != null) {
+      switch (statusCode) {
+        case 400:
+          return serverMessage ?? 'Invalid request. Please check your input.';
+        case 401:
+          return serverMessage ??
+              'Invalid email or password. Please try again.';
+        case 403:
+          return serverMessage ??
+              'Access denied. Please check your permissions.';
+        case 429:
+          return serverMessage ??
+              'Too many attempts. Please try again in 15 minutes.';
+        case 500:
+        case 502:
+        case 503:
+        case 504:
+          if (serverMessage != null &&
+              serverMessage != 'Internal Server Error') {
+            return serverMessage;
+          }
+          return 'The server is temporarily unavailable. Please try again shortly.';
+        default:
+          return serverMessage ?? fallback;
+      }
+    }
+
+    if (serverMessage != null) {
+      return serverMessage;
+    }
+
+    if (dioError.message != null && dioError.message!.trim().isNotEmpty) {
+      return dioError.message!.trim();
+    }
+
     return fallback;
   }
 

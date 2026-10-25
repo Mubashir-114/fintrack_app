@@ -12,6 +12,8 @@ class HorizonTextField extends StatefulWidget {
     super.key,
     this.controller,
     this.flat = false,
+    this.inputHeight = HorizonDimensions.inputHeight,
+    this.labelSpacing = HorizonDimensions.spaceSM,
     this.focusNode,
     this.label,
     this.showInlineLabel = true,
@@ -33,6 +35,8 @@ class HorizonTextField extends StatefulWidget {
   });
 
   final bool flat;
+  final double inputHeight;
+  final double labelSpacing;
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? label;
@@ -136,13 +140,11 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
               letterSpacing: 0.08 * 10,
             ),
           ),
-          const SizedBox(height: HorizonDimensions.spaceSM),
+          SizedBox(height: widget.labelSpacing),
         ],
         AnimatedContainer(
           duration: HorizonMotion.quick,
-          constraints: const BoxConstraints(
-            minHeight: HorizonDimensions.inputHeight,
-          ),
+          constraints: BoxConstraints(minHeight: widget.inputHeight),
           decoration: BoxDecoration(
             color: widget.flat ? tokens.surface2 : tokens.surface1,
             borderRadius: HorizonDimensions.borderDefault,

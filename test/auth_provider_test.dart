@@ -390,4 +390,146 @@ void main() {
     expect(CacheService.userId, 42);
     expect(token.value, 'new-test-token');
   });
+
+  group('auth error formatting and status code distinction', () {
+    final testCases = <Map<String, dynamic>>[
+      {
+        'name': 'HTTP 400 with validation errors array extracts field message',
+        'error': DioException(
+          requestOptions: RequestOptions(path: '/api/auth/login'),
+          response: Response(
+            requestOptions: RequestOptions(path: '/api/auth/login'),
+            statusCode: 400,
+            data: {
+              'success': false,
+              'message': 'Validation failed',
+              'errors': [
+                {'field': 'email', 'message': 'Valid email required'},
+              ],
+            },
+          ),
+        ),
+        'expected': 'Valid email required',
+      },
+      {
+        'name': 'HTTP 401 invalid credentials uses backend message',
+        'error': DioException(
+          requestOptions: RequestOptions(path: '/api/auth/login'),
+          response: Response(
+            requestOptions: RequestOptions(path: '/api/auth/login'),
+            statusCode: 401,
+            data: {'success': false, 'message': 'Invalid credentials'},
+          ),
+        ),
+        'expected': 'Invalid credentials',
+      },
+      {
+        'name': 'HTTP 403 access forbidden maps properly',
+        'error': DioException(
+          requestOptions: RequestOptions(path: '/api/auth/login'),
+          response: Response(
+            requestOptions: RequestOptions(path: '/api/auth/login'),
+            statusCode: 403,
+            data: {'success': false, 'message': 'Not allowed by CORS'},
+          ),
+        ),
+        'expected': 'Not allowed by CORS',
+      },
+      {
+        'name': 'HTTP 429 rate limit exceeded maps properly',
+        'error': DioException(
+          requestOptions: RequestOptions(path: '/api/auth/login'),
+          response: Response(
+            requestOptions: RequestOptions(path: '/api/auth/login'),
+            statusCode: 429,
+            data: {
+              'success': false,
+              'message': 'Too many attempts. Please try again in 15 minutes.',
+            },
+          ),
+        ),
+        'expected': 'Too many attempts. Please try again in 15 minutes.',
+      },
+      {
+        'name':
+            'HTTP 500 with generic Internal Server Error displays user-friendly message',
+        'error': DioException(
+          requestOptions: RequestOptions(path: '/api/auth/login'),
+          response: Response(
+            requestOptions: RequestOptions(path: '/api/auth/login'),
+            statusCode: 500,
+            data: {'success': false, 'message': 'Internal Server Error'},
+          ),
+        ),
+        'expected':
+            'The server is temporarily unavailable. Please try again shortly.',
+      },
+      {
+        'name': 'HTTP 503 with specific database message preserves information',
+        'error': DioException(
+          requestOptions: RequestOptions(path: '/api/auth/login'),
+          response: Response(
+            requestOptions: RequestOptions(path: '/api/auth/login'),
+            statusCode: 503,
+            data: {
+              'success': false,
+              'message':
+                  'Database service unavailable. Please try again shortly.',
+            },
+          ),
+        ),
+        'expected': 'Database service unavailable. Please try again shortly.',
+      },
+      {
+        'name': 'HTTP 502 with HTML payload does not crash and handles safely',
+        'error': DioException(
+          requestOptions: RequestOptions(path: '/api/auth/login'),
+          response: Response(
+            requestOptions: RequestOptions(path: '/api/auth/login'),
+            statusCode: 502,
+            data: '<html><head><title>502 Bad Gateway</title></head></html>',
+          ),
+        ),
+        'expected':
+            'The server is temporarily unavailable. Please try again shortly.',
+      },
+      {
+        'name': 'connectionTimeout provides clear timeout guidance',
+        'error': DioException(
+          requestOptions: RequestOptions(path: '/api/auth/login'),
+          type: DioExceptionType.connectionTimeout,
+        ),
+        'expected':
+            'Connection timed out. The server may be waking up or your network is slow. Please try again.',
+      },
+      {
+        'name': 'connectionError provides clear network guidance',
+        'error': DioException(
+          requestOptions: RequestOptions(path: '/api/auth/login'),
+          type: DioExceptionType.connectionError,
+        ),
+        'expected':
+            'Unable to reach the server. Please check your internet connection.',
+      },
+    ];
+
+    for (final tc in testCases) {
+      test(tc['name'] as String, () async {
+        final token = _TokenState();
+        final repository = _FakeAuthRepository(
+          loginHandler: () async => throw tc['error'] as Object,
+        );
+        final provider = _provider(repository: repository, token: token);
+
+        expect(
+          await provider.login(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
+          isFalse,
+        );
+        expect(provider.errorMessage, tc['expected']);
+      });
+    }
+  });
 }
