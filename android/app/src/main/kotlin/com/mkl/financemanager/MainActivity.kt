@@ -1,6 +1,7 @@
 package com.mkl.financemanager
 
 import android.content.ComponentName
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import io.flutter.embedding.android.FlutterActivity
@@ -18,13 +19,39 @@ class MainActivity : FlutterActivity() {
         )
     }
 
+    private val isDebug: Boolean
+        get() = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        if (isDebug) {
+            // Ensure MainActivity is explicitly enabled in debug mode
+            try {
+                packageManager.setComponentEnabledSetting(
+                    ComponentName(this, MainActivity::class.java),
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP,
+                )
+            } catch (_: Exception) {}
+        }
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-                    "getCurrentLauncherIcon" -> result.success(currentLauncherIcon())
+                    "getCurrentLauncherIcon" -> {
+                        if (isDebug) {
+                            result.success("graphite_champagne")
+                        } else {
+                            result.success(currentLauncherIcon())
+                        }
+                    }
                     "setLauncherIcon" -> {
+                        if (isDebug) {
+                            // Safely bypass alias switching in debug mode to preserve stable launcher
+                            result.success(true)
+                            return@setMethodCallHandler
+                        }
                         val iconKey = call.argument<String>("iconKey")
                         val targetAlias = ALIASES[iconKey]
                         if (iconKey == null || targetAlias == null) {
@@ -53,6 +80,8 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun switchLauncherIcon(targetAlias: String) {
+        if (isDebug) return
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val settings = ALIASES.values.map { alias ->
                 PackageManager.ComponentEnabledSetting(
@@ -86,6 +115,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun setAliasState(alias: String, state: Int) {
+        if (isDebug) return
         val component = ComponentName(this, alias)
         if (packageManager.getComponentEnabledSetting(component) != state) {
             packageManager.setComponentEnabledSetting(
@@ -97,11 +127,13 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun currentLauncherIcon(): String? {
+        if (isDebug) return "graphite_champagne"
         val enabledKeys = ALIASES.filter { (_, alias) -> isAliasEnabled(alias) }.keys
         return enabledKeys.singleOrNull()
     }
 
     private fun isAliasEnabled(alias: String): Boolean {
+        if (isDebug) return false
         val component = ComponentName(this, alias)
         return when (packageManager.getComponentEnabledSetting(component)) {
             PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> true

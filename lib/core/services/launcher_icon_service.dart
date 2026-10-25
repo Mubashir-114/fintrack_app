@@ -29,8 +29,8 @@ class LauncherIconService {
 
   /// Serializes reconciliation so rapid theme changes cannot finish out of order.
   static Future<bool> synchronize(ThemeCollection collection) {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
-      return Future<bool>.value(false);
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android || kDebugMode) {
+      return Future<bool>.value(true);
     }
 
     final completer = Completer<bool>();
