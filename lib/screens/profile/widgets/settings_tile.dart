@@ -1,20 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/constants/app_colors.dart';
-import '../../../core/widgets/fin_surface.dart';
+import '../../../core/horizon/horizon.dart';
 
-class SettingsTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final Widget? subtitleWidget;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-  final Color? iconColor;
-  final Color? iconBackgroundColor;
-  final bool isDestructive;
-  final bool showDivider;
-
+/// A single settings row in the Profile deck.
+///
+/// Deliberately flat: hierarchy comes from the icon container, type weight and
+/// row rhythm rather than an enclosing card or heavy border.
+class SettingsTile extends StatefulWidget {
   const SettingsTile({
     super.key,
     required this.icon,
@@ -23,104 +15,135 @@ class SettingsTile extends StatelessWidget {
     this.subtitleWidget,
     this.trailing,
     this.onTap,
-    this.iconColor,
-    this.iconBackgroundColor,
     this.isDestructive = false,
     this.showDivider = true,
   });
 
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Widget? subtitleWidget;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  final bool isDestructive;
+  final bool showDivider;
+
+  @override
+  State<SettingsTile> createState() => _SettingsTileState();
+}
+
+class _SettingsTileState extends State<SettingsTile> {
+  bool _pressed = false;
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final colors = AppColors.of(context);
-
-    final effectiveIconColor = isDestructive
-        ? colors.danger
-        : (iconColor ?? colors.primary);
-
-    final effectiveIconBg =
-        iconBackgroundColor ??
-        (isDestructive
-            ? colors.danger.withValues(alpha: 0.12)
-            : colors.primary.withValues(alpha: isDark ? 0.14 : 0.10));
-
-    final titleColor = isDestructive ? colors.danger : colors.textPrimary;
-
-    final subtitleColor = colors.textSecondary;
-
-    final dividerColor = colors.divider.withValues(alpha: isDark ? 0.6 : 0.8);
+    final tokens = HorizonThemeTokens.of(context);
+    final accent = widget.isDestructive ? tokens.outflow : tokens.ionCyan;
+    final titleColor = widget.isDestructive ? tokens.outflow : tokens.textHigh;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            splashColor: effectiveIconColor.withValues(alpha: 0.08),
-            highlightColor: effectiveIconColor.withValues(alpha: 0.04),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-              child: Row(
-                children: [
-                  FinIconTile(
-                    icon: icon,
-                    color: effectiveIconColor,
-                    backgroundColor: effectiveIconBg,
-                    size: 38,
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.1,
-                            color: titleColor,
-                          ),
+        Semantics(
+          button: widget.onTap != null,
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: widget.onTap,
+              onHighlightChanged: (value) {
+                if (_pressed != value) setState(() => _pressed = value);
+              },
+              splashColor: accent.withValues(alpha: 0.06),
+              highlightColor: Colors.transparent,
+              child: AnimatedContainer(
+                duration: reduceMotion
+                    ? Duration.zero
+                    : const Duration(milliseconds: 180),
+                curve: HorizonMotion.emphasized,
+                color: _pressed
+                    ? accent.withValues(alpha: tokens.isDark ? 0.06 : 0.05)
+                    : Colors.transparent,
+                constraints: const BoxConstraints(minHeight: 56),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 11,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: accent.withValues(
+                          alpha: tokens.isDark ? 0.12 : 0.09,
                         ),
-                        if (subtitleWidget != null) ...[
-                          const SizedBox(height: 3),
-                          subtitleWidget!,
-                        ] else if (subtitle != null &&
-                            subtitle!.isNotEmpty) ...[
-                          const SizedBox(height: 2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        widget.icon,
+                        size: 18,
+                        color: widget.isDestructive
+                            ? tokens.outflow
+                            : tokens.textHigh.withValues(
+                                alpha: tokens.isDark ? 0.92 : 0.86,
+                              ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                           Text(
-                            subtitle!,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: subtitleColor,
+                            widget.title,
+                            style: HorizonTypography.bodyMd.copyWith(
+                              color: titleColor,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.1,
                               height: 1.3,
                             ),
                           ),
+                          if (widget.subtitleWidget != null) ...[
+                            const SizedBox(height: 3),
+                            widget.subtitleWidget!,
+                          ] else if (widget.subtitle != null &&
+                              widget.subtitle!.isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              widget.subtitle!,
+                              style: HorizonTypography.bodySm.copyWith(
+                                color: tokens.textMedium,
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                  ),
-                  if (trailing != null)
-                    trailing!
-                  else if (onTap != null)
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      size: 20,
-                      color: colors.textSecondary.withValues(
-                        alpha: isDark ? 0.7 : 0.8,
                       ),
                     ),
-                ],
+                    if (widget.trailing != null) ...[
+                      const SizedBox(width: HorizonDimensions.spaceMD),
+                      widget.trailing!,
+                    ],
+                    if (widget.onTap != null) ...[
+                      const SizedBox(width: HorizonDimensions.spaceSM),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 18,
+                        color: tokens.textLow,
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
-        if (showDivider)
+        if (widget.showDivider)
           Padding(
-            padding: const EdgeInsets.only(left: 68),
-            child: Divider(height: 1, thickness: 1, color: dividerColor),
+            padding: const EdgeInsets.only(left: 58),
+            child: Container(height: 1, color: tokens.rowDivider),
           ),
       ],
     );

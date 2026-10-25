@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:frontend/core/constants/app_colors.dart';
@@ -133,7 +134,7 @@ void main() {
 
   group('ProfileScreen Layout & Read-Only Hierarchy', () {
     testWidgets(
-      'renders compact identity header and grouped settings without permanent form fields',
+      'renders editorial identity hero and flat settings sections without permanent form fields',
       (tester) async {
         final fakeAuth = _FakeAuthProvider(
           initialUser: const UserModel(
@@ -150,33 +151,223 @@ void main() {
           ),
         );
 
-        // Verify compact identity header
+        // Identity hero: avatar monogram, name, email, edit and FIN access
         expect(find.text('Elena Rostova'), findsOneWidget);
         expect(find.text('elena@fintrack.io'), findsOneWidget);
         expect(find.text('E'), findsOneWidget); // Monogram initial
-        expect(find.text('EDIT PROFILE'), findsOneWidget); // Subtle edit action
+        expect(find.text('Edit profile'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('profile-fin-presence')),
+          findsOneWidget,
+        );
+        expect(find.text('FIN'), findsOneWidget);
+
+        // No technical page branding or command-deck labels remain
+        expect(find.textContaining('Command Deck'), findsNothing);
+        expect(find.textContaining('Telemetry'), findsNothing);
 
         // Verify no permanent form fields are exposed on main screen
         expect(find.byType(TextFormField), findsNothing);
-        expect(find.text('UPDATE DETAILS'), findsNothing);
-        expect(find.text('CHANGE PASSWORD'), findsNothing);
 
-        // Verify grouped settings sections
-        expect(find.text('PREFERENCES & APPEARANCE'), findsOneWidget);
+        // Verify flat settings sections
+        expect(find.text('Preferences'), findsOneWidget);
         expect(find.text('Appearance'), findsOneWidget);
-        expect(find.text('Accounts & Wallets'), findsOneWidget);
-        expect(find.text('Push Notifications'), findsNothing);
-        expect(find.text('Display Currency'), findsOneWidget);
+        expect(find.text('Accounts & money storage'), findsOneWidget);
+        expect(find.text('Display currency'), findsOneWidget);
 
-        expect(find.text('SECURITY & CONTROL'), findsOneWidget);
-        expect(find.text('Security & Password'), findsOneWidget);
-        expect(find.text('Privacy & Data Controls'), findsOneWidget);
-        expect(find.text('About Application'), findsOneWidget);
+        expect(find.text('Security'), findsOneWidget);
+        expect(find.text('Security & password'), findsOneWidget);
+        expect(find.text('Privacy'), findsOneWidget);
 
-        expect(find.text('ACCOUNT OPERATIONS'), findsOneWidget);
-        expect(find.text('Log Out'), findsOneWidget);
+        expect(find.text('FinTrack'), findsOneWidget);
+        expect(find.text('SMS import'), findsOneWidget);
+
+        expect(find.text('Account'), findsOneWidget);
+        expect(find.text('Log out'), findsOneWidget);
+        expect(find.text('Delete account'), findsOneWidget);
       },
     );
+
+    testWidgets('keeps identity actions from overlapping into 2x text', (
+      tester,
+    ) async {
+      final fakeAuth = _FakeAuthProvider(
+        initialUser: const UserModel(
+          id: 42,
+          name: 'Alexandra Konstantinopoulos-Rivera',
+          email: 'alexandra.konstantinopoulos@very-long-domain.example.com',
+        ),
+      );
+
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: MultiProvider(
+            providers: [
+              ChangeNotifierProvider<AuthProvider>.value(value: fakeAuth),
+              ChangeNotifierProvider(create: (_) => CurrencyProvider()),
+            ],
+            child: const ProfileScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Edit profile'), findsOneWidget);
+      final editRect = tester.getRect(
+        find.byKey(const ValueKey('profile-edit')),
+      );
+      expect(editRect.left, greaterThanOrEqualTo(0));
+      expect(editRect.right, lessThanOrEqualTo(320));
+    });
+  });
+
+  group('ProfileScreen actions', () {
+    Future<GoRouter> pumpProfileApp(
+      WidgetTester tester,
+      _FakeAuthProvider auth,
+    ) async {
+      final router = GoRouter(
+        initialLocation: '/profile',
+        routes: [
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
+          for (final path in [
+            '/profile/edit',
+            '/profile/appearance',
+            '/profile/security',
+            '/profile/privacy',
+            '/profile/delete',
+            '/profile/fin',
+            '/accounts',
+            '/sms-import',
+          ])
+            GoRoute(
+              path: path,
+              builder: (context, state) =>
+                  Scaffold(body: Center(child: Text('opened $path'))),
+            ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ChangeNotifierProvider<AuthProvider>.value(
+          value: auth,
+          child: ChangeNotifierProvider<CurrencyProvider>(
+            create: (_) => CurrencyProvider(),
+            child: MaterialApp.router(
+              theme: AppTheme.darkTheme,
+              routerConfig: router,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      return router;
+    }
+
+    testWidgets('keeps every existing profile destination reachable', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(393, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final auth = _FakeAuthProvider(
+        initialUser: const UserModel(
+          id: 7,
+          name: 'Elena Rostova',
+          email: 'elena@fintrack.io',
+        ),
+      );
+      final router = await pumpProfileApp(tester, auth);
+
+      final destinations = <String, String>{
+        'Appearance': '/profile/appearance',
+        'Accounts & money storage': '/accounts',
+        'Security & password': '/profile/security',
+        'Privacy': '/profile/privacy',
+        'SMS import': '/sms-import',
+        'Delete account': '/profile/delete',
+      };
+
+      for (final entry in destinations.entries) {
+        await tester.tap(find.text(entry.key));
+        await tester.pumpAndSettle();
+        expect(
+          find.text('opened ${entry.value}'),
+          findsOneWidget,
+          reason: '${entry.key} should open ${entry.value}',
+        );
+        router.go('/profile');
+        await tester.pumpAndSettle();
+      }
+
+      await tester.tap(find.byKey(const ValueKey('profile-edit')));
+      await tester.pumpAndSettle();
+      expect(find.text('opened /profile/edit'), findsOneWidget);
+      router.go('/profile');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('profile-fin-presence')));
+      await tester.pumpAndSettle();
+      expect(find.text('opened /profile/fin'), findsOneWidget);
+      router.go('/profile');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('FIN companion'));
+      await tester.pumpAndSettle();
+      expect(find.text('opened /profile/fin'), findsOneWidget);
+    });
+
+    testWidgets('opens the currency picker and confirms logout', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(393, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final auth = _FakeAuthProvider(
+        initialUser: const UserModel(
+          id: 7,
+          name: 'Elena Rostova',
+          email: 'elena@fintrack.io',
+        ),
+      );
+      await pumpProfileApp(tester, auth);
+
+      await tester.tap(find.text('Display currency'));
+      await tester.pumpAndSettle();
+      expect(find.text('USD (\$)'), findsOneWidget);
+      expect(find.text('EUR (€)'), findsOneWidget);
+      await tester.tapAt(const Offset(4, 4));
+      await tester.pumpAndSettle();
+      expect(find.text('EUR (€)'), findsNothing);
+
+      await tester.tap(find.text('Log out'));
+      await tester.pumpAndSettle();
+      expect(find.text('Log out?'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(find.text('Log out?'), findsNothing);
+      expect(find.text('Elena Rostova'), findsOneWidget);
+    });
   });
 
   group('EditProfileScreen', () {
