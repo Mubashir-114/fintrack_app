@@ -11,8 +11,10 @@ class HorizonTextField extends StatefulWidget {
   const HorizonTextField({
     super.key,
     this.controller,
+    this.flat = false,
     this.focusNode,
     this.label,
+    this.showInlineLabel = true,
     this.hintText,
     this.errorText,
     this.prefixIcon,
@@ -30,9 +32,11 @@ class HorizonTextField extends StatefulWidget {
     this.isCurrency = false,
   });
 
+  final bool flat;
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? label;
+  final bool showInlineLabel;
   final String? hintText;
   final String? errorText;
   final IconData? prefixIcon;
@@ -101,10 +105,7 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
     if (hasError) {
       borderColor = tokens.outflow;
       glowShadows = [
-        BoxShadow(
-          color: tokens.outflow.withValues(alpha: 0.20),
-          blurRadius: 8,
-        ),
+        BoxShadow(color: tokens.outflow.withValues(alpha: 0.20), blurRadius: 8),
       ];
     } else if (_isFocused) {
       borderColor = tokens.ionCyan;
@@ -116,7 +117,7 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
         ),
       ];
     } else {
-      borderColor = tokens.rimNeutral;
+      borderColor = widget.flat ? Colors.transparent : tokens.rimNeutral;
       glowShadows = const [];
     }
 
@@ -139,15 +140,17 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
         ],
         AnimatedContainer(
           duration: HorizonMotion.quick,
-          constraints: const BoxConstraints(minHeight: HorizonDimensions.inputHeight),
+          constraints: const BoxConstraints(
+            minHeight: HorizonDimensions.inputHeight,
+          ),
           decoration: BoxDecoration(
-            color: tokens.surface1,
+            color: widget.flat ? tokens.surface2 : tokens.surface1,
             borderRadius: HorizonDimensions.borderDefault,
             border: Border.all(
               color: borderColor,
               width: _isFocused ? 1.5 : 1.0,
             ),
-            boxShadow: glowShadows,
+            boxShadow: widget.flat ? const [] : glowShadows,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 14),
           alignment: Alignment.center,
@@ -195,7 +198,9 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                     contentPadding: EdgeInsets.zero,
                     hintText: widget.hintText,
                     errorMaxLines: 3,
-                    labelText: widget.label,
+                    labelText: widget.flat || !widget.showInlineLabel
+                        ? null
+                        : widget.label,
                     floatingLabelBehavior: FloatingLabelBehavior.never,
                     hintStyle: HorizonTypography.bodyMd.copyWith(
                       color: tokens.textLow,
@@ -215,7 +220,9 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
               else if (widget.obscureText)
                 IconButton(
                   icon: Icon(
-                    _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    _obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
                     size: 20,
                     color: tokens.textLow,
                   ),

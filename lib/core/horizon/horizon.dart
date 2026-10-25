@@ -14,6 +14,13 @@ export 'theme/horizon_theme.dart';
 // Components
 export 'components/horizon_surface.dart';
 export 'components/horizon_button.dart';
+export 'components/horizon_icon_button.dart';
+export 'components/horizon_count_up_text.dart';
+export 'components/horizon_trend_line.dart';
+export 'components/horizon_staggered_reveal.dart';
+export 'components/horizon_range_switcher.dart';
+export 'components/horizon_section_header.dart';
+export 'components/horizon_metric_strip.dart';
 export 'components/horizon_text_field.dart';
 export 'components/horizon_chip.dart';
 export 'components/horizon_transaction_row.dart';

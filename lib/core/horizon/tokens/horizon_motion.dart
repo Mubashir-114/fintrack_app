@@ -21,6 +21,9 @@ class HorizonMotion {
   /// Ambient background telemetry pulse duration: 4000ms.
   static const Duration ambient = Duration(milliseconds: 4000);
 
+  /// One-off expressive feedback such as a companion gesture: 520ms.
+  static const Duration expressive = Duration(milliseconds: 520);
+
   /// Scale factor applied during tactile press feedback.
   static const double pressScaleFactor = 0.98;
 

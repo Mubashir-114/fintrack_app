@@ -7,6 +7,11 @@ class HorizonDimensions {
   // ---------------------------------------------------------------------------
   // Spacing Grid
   // ---------------------------------------------------------------------------
+  static const double avatarIdentitySize = 64;
+  static const double compactActionsWidth = 300;
+  static const double formMaxWidth = 440;
+  static const double settingsMaxWidth = 720;
+
   static const double spaceXS = 4; // 0.25rem
   static const double spaceSM = 8; // 0.5rem
   static const double spaceMD = 12; // 0.75rem
@@ -45,14 +50,20 @@ class HorizonDimensions {
   // Corner Radii
   // ---------------------------------------------------------------------------
   static const double radiusSM = 4; // 0.25rem (system alerts, micro chips)
-  static const double radiusDefault = 8; // 0.5rem (primary form controls, metric chips)
+  static const double radiusDefault =
+      8; // 0.5rem (primary form controls, metric chips)
   static const double radiusMD = 12; // 0.75rem
-  static const double radiusLG = 16; // 1.0rem (balance overview cards, ledger groups)
-  static const double radiusXL = 24; // 1.5rem (primary modal sheets, persistent hero shields)
-  static const double radiusFull = 9999; // full pill (binary state toggles, filter pills, dock)
+  static const double radiusLG =
+      16; // 1.0rem (balance overview cards, ledger groups)
+  static const double radiusXL =
+      24; // 1.5rem (primary modal sheets, persistent hero shields)
+  static const double radiusFull =
+      9999; // full pill (binary state toggles, filter pills, dock)
 
   static final BorderRadius borderSM = BorderRadius.circular(radiusSM);
-  static final BorderRadius borderDefault = BorderRadius.circular(radiusDefault);
+  static final BorderRadius borderDefault = BorderRadius.circular(
+    radiusDefault,
+  );
   static final BorderRadius borderMD = BorderRadius.circular(radiusMD);
   static final BorderRadius borderLG = BorderRadius.circular(radiusLG);
   static final BorderRadius borderXL = BorderRadius.circular(radiusXL);
